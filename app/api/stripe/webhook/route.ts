@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
@@ -14,7 +13,7 @@ export const dynamic = "force-dynamic";
 const DEFAULT_SKU_PREFIX = "default-";
 
 export async function POST(request: Request) {
-  const signature = headers().get("stripe-signature");
+  const signature = request.headers.get("stripe-signature");
 
   if (!process.env.STRIPE_WEBHOOK_SECRET || !signature) {
     return NextResponse.json(

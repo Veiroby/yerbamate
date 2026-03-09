@@ -189,7 +189,6 @@ export async function POST(request: Request) {
       total,
       currency,
       shippingAddress,
-      billingAddress: null,
       items: {
         create: validatedItems.map((item) => ({
           productId: item.productId,
