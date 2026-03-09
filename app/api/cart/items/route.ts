@@ -1,0 +1,98 @@
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
+import { prisma } from "@/lib/db";
+import { recordEvent } from "@/lib/analytics";
+
+async function getOrCreateSessionId() {
+  const cookieStore = await cookies();
+  const existing = cookieStore.get("cart_session_id")?.value;
+  if (existing) return existing;
+  const sessionId = randomUUID();
+  cookieStore.set("cart_session_id", sessionId, {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+  });
+  return sessionId;
+}
+
+export async function POST(request: Request) {
+  const sessionId = await getOrCreateSessionId();
+  const formData = await request.formData();
+
+  const productId = formData.get("productId")?.toString();
+  const quantityRaw = formData.get("quantity")?.toString() ?? "1";
+
+  const quantity = Number.parseInt(quantityRaw, 10);
+
+  if (!productId || !Number.isFinite(quantity) || quantity <= 0) {
+    return NextResponse.json(
+      { error: "Invalid product or quantity" },
+      { status: 400 },
+    );
+  }
+
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+  });
+
+  if (!product || !product.active) {
+    return NextResponse.json({ error: "Product not found" }, { status: 404 });
+  }
+
+  const cart =
+    (await prisma.cart.findUnique({ where: { sessionId } })) ??
+    (await prisma.cart.create({
+      data: { sessionId },
+    }));
+
+  const existingItem = await prisma.cartItem.findFirst({
+    where: {
+      cartId: cart.id,
+      productId: product.id,
+      variantId: null,
+    },
+  });
+
+  if (existingItem) {
+    await prisma.cartItem.update({
+      where: { id: existingItem.id },
+      data: {
+        quantity: existingItem.quantity + quantity,
+      },
+    });
+  } else {
+    await prisma.cartItem.create({
+      data: {
+        cartId: cart.id,
+        productId: product.id,
+        quantity,
+        unitPrice: product.price,
+      },
+    });
+  }
+
+  await recordEvent("add_to_cart", {
+    sessionId,
+    payload: {
+      productId: product.id,
+      productName: product.name,
+      quantity,
+      currency: product.currency,
+      value: Number(product.price) * quantity,
+    },
+  });
+
+  const url = new URL(request.url);
+  const redirectTo = url.searchParams.get("redirect");
+  const allowed =
+    redirectTo === "/checkout" || redirectTo === "/cart" || redirectTo === "";
+  const target = allowed && redirectTo ? redirectTo : "/cart";
+
+  return NextResponse.redirect(new URL(target, request.url), {
+    status: 303,
+  });
+}
+
