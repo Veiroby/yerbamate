@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     redirectTo === "/checkout" || redirectTo === "/cart" || redirectTo === "";
   const target = allowed && redirectTo ? redirectTo : "/cart";
 
-  return NextResponse.redirect(new URL(target, request.url), {
+  return NextResponse.redirect(target, {
     status: 303,
   });
 }
