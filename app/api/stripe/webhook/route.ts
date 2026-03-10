@@ -3,9 +3,8 @@ import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 import { recordEvent } from "@/lib/analytics";
 import {
-  sendEmail,
-  renderOrderConfirmationHtml,
   isEmailConfigured,
+  sendOrderConfirmationEmail,
 } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
@@ -77,21 +76,19 @@ export async function POST(request: Request) {
       }
 
       if (isEmailConfigured()) {
-        const siteOrigin =
-          process.env.NEXT_PUBLIC_APP_ORIGIN ?? "http://localhost:3000";
-        const html = renderOrderConfirmationHtml({
+        const result = await sendOrderConfirmationEmail({
           orderNumber: order.orderNumber,
           email: order.email,
-          total: order.total.toString(),
+          total: Number(order.total),
           currency: order.currency,
           items: order.items,
-          siteOrigin,
         });
-        await sendEmail({
-          to: order.email,
-          subject: `Order ${order.orderNumber} confirmed`,
-          html,
-        });
+        if (result.ok) {
+          await prisma.order.update({
+            where: { id: order.id },
+            data: { confirmationEmailSentAt: new Date() },
+          });
+        }
       }
 
       await recordEvent("purchase", {

@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/db";
+import { isEmailConfigured, sendOrderConfirmationEmail } from "@/lib/email";
+import { OrderStatus } from "@/app/generated/prisma/client";
 
 export default async function AdminOrdersPage() {
   const orders = await prisma.order.findMany({
@@ -22,12 +24,39 @@ export default async function AdminOrdersPage() {
               key={order.id}
               action={async (formData) => {
                 "use server";
-                const status = formData.get("status")?.toString();
+                const status = formData.get("status")?.toString() as
+                  | OrderStatus
+                  | undefined;
                 if (!status) return;
-                await prisma.order.update({
+
+                const updated = await prisma.order.update({
                   where: { id: order.id },
-                  data: { status: status as any },
+                  data: { status },
+                  include: {
+                    items: { include: { product: true } },
+                  },
                 });
+
+                if (
+                  status === "PAID" &&
+                  isEmailConfigured() &&
+                  !updated.confirmationEmailSentAt
+                ) {
+                  const result = await sendOrderConfirmationEmail({
+                    orderNumber: updated.orderNumber,
+                    email: updated.email,
+                    total: Number(updated.total),
+                    currency: updated.currency,
+                    items: updated.items,
+                  });
+
+                  if (result.ok) {
+                    await prisma.order.update({
+                      where: { id: updated.id },
+                      data: { confirmationEmailSentAt: new Date() },
+                    });
+                  }
+                }
               }}
               className="space-y-2 rounded-xl border border-zinc-200 p-3"
             >

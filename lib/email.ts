@@ -84,6 +84,39 @@ type OrderItemForEmail = {
   product?: { name: string } | null;
 };
 
+export async function sendOrderConfirmationEmail(options: {
+  orderNumber: string;
+  email: string;
+  total: number | string;
+  currency: string;
+  items: OrderItemForEmail[];
+  siteOriginOverride?: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  if (!isEmailConfigured()) {
+    return { ok: false, error: "Email not configured" };
+  }
+
+  const siteOrigin =
+    options.siteOriginOverride ??
+    process.env.NEXT_PUBLIC_APP_ORIGIN ??
+    "http://localhost:3000";
+
+  const html = renderOrderConfirmationHtml({
+    orderNumber: options.orderNumber,
+    email: options.email,
+    total: String(options.total),
+    currency: options.currency,
+    items: options.items,
+    siteOrigin,
+  });
+
+  return sendEmail({
+    to: options.email,
+    subject: `Order ${options.orderNumber} confirmed`,
+    html,
+  });
+}
+
 export function renderOrderConfirmationHtml(options: {
   orderNumber: string;
   email: string;
