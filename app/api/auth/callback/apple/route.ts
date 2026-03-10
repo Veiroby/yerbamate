@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAppleProfile, mergeAppleName } from "@/lib/oauth";
+import { getAppleProfile, getAuthRedirectUrl, mergeAppleName } from "@/lib/oauth";
 import { createSession, findOrCreateUserFromOAuth } from "@/lib/auth";
 
 /** Apple uses response_mode=form_post, so callback is POST with code, id_token, and optionally user (name) */
@@ -8,7 +8,7 @@ export async function POST(request: Request) {
   try {
     formData = await request.formData();
   } catch {
-    return NextResponse.redirect(new URL("/account/profile?error=oauth", request.url));
+    return NextResponse.redirect(getAuthRedirectUrl("/account/profile?error=oauth", request));
   }
 
   const code = formData.get("code")?.toString();
@@ -17,10 +17,10 @@ export async function POST(request: Request) {
   const error = formData.get("error")?.toString();
 
   if (error) {
-    return NextResponse.redirect(new URL("/account/profile?error=denied", request.url));
+    return NextResponse.redirect(getAuthRedirectUrl("/account/profile?error=denied", request));
   }
   if (!code) {
-    return NextResponse.redirect(new URL("/account/profile?error=no_code", request.url));
+    return NextResponse.redirect(getAuthRedirectUrl("/account/profile?error=no_code", request));
   }
 
   try {
@@ -38,9 +38,9 @@ export async function POST(request: Request) {
     }
     const userId = await findOrCreateUserFromOAuth(profile);
     await createSession(userId);
-    return NextResponse.redirect(new URL("/account/profile", request.url));
+    return NextResponse.redirect(getAuthRedirectUrl("/account/profile", request));
   } catch (e) {
     console.error("Apple callback:", e);
-    return NextResponse.redirect(new URL("/account/profile?error=oauth", request.url));
+    return NextResponse.redirect(getAuthRedirectUrl("/account/profile?error=oauth", request));
   }
 }

@@ -19,15 +19,31 @@ export type OAuthProfile = {
   image: string | null;
 };
 
-function getBaseUrl(request?: Request): string {
-  if (typeof process.env.NEXTAUTH_URL === "string" && process.env.NEXTAUTH_URL) {
-    return process.env.NEXTAUTH_URL.replace(/\/$/, "");
+function normalizeOrigin(value: string): string {
+  return value.trim().replace(/\/$/, "");
+}
+
+export function getBaseUrl(request?: Request): string {
+  const nextAuthUrl = process.env.NEXTAUTH_URL;
+  if (typeof nextAuthUrl === "string" && nextAuthUrl.trim()) {
+    return normalizeOrigin(nextAuthUrl);
   }
-  if (request) {
+
+  const publicOrigin = process.env.NEXT_PUBLIC_APP_ORIGIN;
+  if (typeof publicOrigin === "string" && publicOrigin.trim()) {
+    return normalizeOrigin(publicOrigin);
+  }
+
+  if (request && process.env.NODE_ENV !== "production") {
     const u = new URL(request.url);
     return `${u.protocol}//${u.host}`;
   }
+
   return "http://localhost:3000";
+}
+
+export function getAuthRedirectUrl(path: string, request?: Request): string {
+  return new URL(path, getBaseUrl(request)).toString();
 }
 
 /** Build Google authorization URL */

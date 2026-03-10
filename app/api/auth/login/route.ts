@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createSession, verifyPassword } from "@/lib/auth";
+import { getAuthRedirectUrl } from "@/lib/oauth";
 
 export async function POST(request: Request) {
   const formData = await request.formData();
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
   await createSession(user.id);
 
   const redirectTo = user.isAdmin ? "/admin" : "/account/orders";
-  return NextResponse.redirect(new URL(redirectTo, request.url), {
+  return NextResponse.redirect(getAuthRedirectUrl(redirectTo, request), {
     status: 303,
   });
 }

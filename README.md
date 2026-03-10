@@ -21,6 +21,9 @@ At minimum, set:
 - `STRIPE_SECRET_KEY` (use `sk_test_...` in development)
 - `STRIPE_WEBHOOK_SECRET` (use Stripe CLI or Dashboard)
 - `NEXT_PUBLIC_APP_ORIGIN`
+- `NEXTAUTH_URL` (for example `https://www.yerbatea.lv` in production)
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
 - `RESEND_API_KEY`
 - `RESEND_FROM` (for example `YerbaTea <orders@yerbatea.lv>`; must be verified in Resend)
 
@@ -72,6 +75,26 @@ Copy the printed `whsec_...` into `.env` as `STRIPE_WEBHOOK_SECRET`.
 - Never expose `STRIPE_SECRET_KEY` to the browser.
 - Always verify webhook signatures using `STRIPE_WEBHOOK_SECRET`.
 - Use HTTPS in production.
+
+## Google sign-in
+
+Google OAuth is already wired in the app via:
+
+- `GET /api/auth/google`
+- `GET /api/auth/callback/google`
+
+Create credentials in Google Cloud Console:
+
+1. Go to **APIs & Services -> OAuth consent screen** and configure your app.
+2. Go to **APIs & Services -> Credentials -> Create Credentials -> OAuth client ID**.
+3. Choose **Web application**.
+4. Add:
+   - Authorized JavaScript origin: `https://www.yerbatea.lv`
+   - Authorized redirect URI: `https://www.yerbatea.lv/api/auth/callback/google`
+5. Copy the generated values into:
+   - `GOOGLE_CLIENT_ID`
+   - `GOOGLE_CLIENT_SECRET`
+6. Set `NEXTAUTH_URL=https://www.yerbatea.lv` on the production server.
 
 ## Learn More
 
