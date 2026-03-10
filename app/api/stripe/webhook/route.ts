@@ -81,6 +81,11 @@ export async function POST(request: Request) {
           email: order.email,
           total: Number(order.total),
           currency: order.currency,
+          createdAt: order.createdAt,
+          subtotal: order.subtotal,
+          shippingCost: order.shippingCost,
+          tax: order.tax,
+          shippingAddress: order.shippingAddress,
           items: order.items,
         });
         if (result.ok) {

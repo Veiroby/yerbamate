@@ -1,4 +1,9 @@
 import { Resend } from "resend";
+import {
+  buildInvoiceFilename,
+  generateInvoicePdf,
+  type InvoiceOrderData,
+} from "@/lib/invoice";
 
 const resend =
   process.env.RESEND_API_KEY && process.env.RESEND_FROM
@@ -12,11 +17,18 @@ export function isEmailConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM);
 }
 
+type EmailAttachment = {
+  filename: string;
+  content: string;
+  contentType?: string;
+};
+
 export async function sendEmail(options: {
   to: string | string[];
   subject: string;
   html: string;
   replyTo?: string;
+  attachments?: EmailAttachment[];
 }): Promise<{ ok: boolean; error?: string }> {
   if (!resend) {
     console.warn("[email] Resend not configured (RESEND_API_KEY / RESEND_FROM)");
@@ -30,6 +42,7 @@ export async function sendEmail(options: {
       subject: options.subject,
       html: options.html,
       replyTo: options.replyTo,
+      attachments: options.attachments,
     });
     if (error) {
       console.error("[email] send failed", error);
@@ -89,6 +102,11 @@ export async function sendOrderConfirmationEmail(options: {
   email: string;
   total: number | string;
   currency: string;
+  createdAt: Date;
+  subtotal: { toString(): string };
+  shippingCost: { toString(): string };
+  tax: { toString(): string };
+  shippingAddress: unknown;
   items: OrderItemForEmail[];
   siteOriginOverride?: string;
 }): Promise<{ ok: boolean; error?: string }> {
@@ -110,10 +128,30 @@ export async function sendOrderConfirmationEmail(options: {
     siteOrigin,
   });
 
+  const invoicePdf = await generateInvoicePdf({
+    orderNumber: options.orderNumber,
+    email: options.email,
+    currency: options.currency,
+    createdAt: options.createdAt,
+    subtotal: options.subtotal,
+    shippingCost: options.shippingCost,
+    tax: options.tax,
+    total: { toString: () => String(options.total) },
+    shippingAddress: options.shippingAddress,
+    items: options.items,
+  } satisfies InvoiceOrderData);
+
   return sendEmail({
     to: options.email,
     subject: `Order ${options.orderNumber} confirmed`,
     html,
+    attachments: [
+      {
+        filename: buildInvoiceFilename(options.orderNumber),
+        content: Buffer.from(invoicePdf).toString("base64"),
+        contentType: "application/pdf",
+      },
+    ],
   });
 }
 

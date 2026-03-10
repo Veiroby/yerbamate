@@ -47,6 +47,11 @@ export default async function AdminOrdersPage() {
                     email: updated.email,
                     total: Number(updated.total),
                     currency: updated.currency,
+                    createdAt: updated.createdAt,
+                    subtotal: updated.subtotal,
+                    shippingCost: updated.shippingCost,
+                    tax: updated.tax,
+                    shippingAddress: updated.shippingAddress,
                     items: updated.items,
                   });
 
