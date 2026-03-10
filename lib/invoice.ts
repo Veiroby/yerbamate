@@ -1,4 +1,7 @@
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import fontkit from "@pdf-lib/fontkit";
+import { PDFDocument, rgb } from "pdf-lib";
 
 const SELLER_DETAILS = {
   name: "SIA YerbaTea",
@@ -43,8 +46,17 @@ export async function generateInvoicePdf(
   order: InvoiceOrderData,
 ): Promise<Uint8Array> {
   const pdf = await PDFDocument.create();
-  const font = await pdf.embedFont(StandardFonts.Helvetica);
-  const boldFont = await pdf.embedFont(StandardFonts.HelveticaBold);
+  pdf.registerFontkit(fontkit);
+
+  const regularFontBytes = await readFile(
+    path.join(process.cwd(), "public", "fonts", "NotoSans-Regular.ttf"),
+  );
+  const boldFontBytes = await readFile(
+    path.join(process.cwd(), "public", "fonts", "NotoSans-Bold.ttf"),
+  );
+
+  const font = await pdf.embedFont(regularFontBytes, { subset: true });
+  const boldFont = await pdf.embedFont(boldFontBytes, { subset: true });
   const page = pdf.addPage([595.28, 841.89]); // A4
 
   const left = 48;
