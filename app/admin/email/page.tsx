@@ -1,12 +1,10 @@
 import { prisma } from "@/lib/db";
 import { isEmailConfigured } from "@/lib/email";
-import { isMailchimpConfigured } from "@/lib/mailchimp";
 
 export default async function AdminEmailPage() {
-  const [subscriberCount, resendConfigured, mailchimpConfigured] = await Promise.all([
+  const [subscriberCount, resendConfigured] = await Promise.all([
     prisma.newsletterSubscriber.count(),
     Promise.resolve(isEmailConfigured()),
-    Promise.resolve(isMailchimpConfigured()),
   ]);
 
   return (
@@ -16,27 +14,9 @@ export default async function AdminEmailPage() {
           Email marketing
         </h1>
         <p className="mt-1 text-sm text-zinc-500">
-          Newsletter (Mailchimp), order confirmation & abandoned cart (Resend)
+          Newsletter, order confirmation & abandoned cart (Resend)
         </p>
       </div>
-
-      {!mailchimpConfigured && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-          <strong>Mailchimp not configured.</strong> Set{" "}
-          <code className="rounded bg-amber-100 px-1">MAILCHIMP_API_KEY</code> and{" "}
-          <code className="rounded bg-amber-100 px-1">MAILCHIMP_AUDIENCE_ID</code> in{" "}
-          <code className="rounded bg-amber-100 px-1">.env</code> so newsletter signups are added to your audience. Get your API key at{" "}
-          <a
-            href="https://admin.mailchimp.com/account/api/"
-            target="_blank"
-            rel="noreferrer"
-            className="underline"
-          >
-            Mailchimp → Account → API key
-          </a>
-          ; Audience ID is under Audience → Settings.
-        </div>
-      )}
 
       {!resendConfigured && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
@@ -54,13 +34,13 @@ export default async function AdminEmailPage() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-            Newsletter (Mailchimp)
+            Newsletter
           </p>
           <p className="mt-1 text-2xl font-semibold text-zinc-900">
             {subscriberCount}
           </p>
           <p className="mt-0.5 text-xs text-zinc-500">
-            {mailchimpConfigured ? "Synced to your Mailchimp audience" : "Set MAILCHIMP_* to sync"}
+            Synced to Resend Contacts (optional segment)
           </p>
         </div>
         <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
@@ -86,13 +66,6 @@ export default async function AdminEmailPage() {
       <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
         <h2 className="text-sm font-semibold text-zinc-900">Setup</h2>
         <ul className="mt-3 list-inside list-disc space-y-1 text-sm text-zinc-600">
-          <li>
-            <strong>Mailchimp (newsletter):</strong> Set <code>MAILCHIMP_API_KEY</code> (from{" "}
-            <a href="https://admin.mailchimp.com/account/api/" target="_blank" rel="noreferrer" className="text-emerald-600 underline">
-              Account → API key
-            </a>
-            ) and <code>MAILCHIMP_AUDIENCE_ID</code> (Audience → Settings → Audience name and defaults). New signups are added as &quot;subscribed&quot; to that audience.
-          </li>
           <li>
             <strong>Resend (transactional):</strong> Set <code>RESEND_API_KEY</code> and <code>RESEND_FROM</code> for order confirmation and abandoned cart emails. Optional <code>RESEND_SEGMENT_ID</code> to also sync signups to a Resend segment.
           </li>

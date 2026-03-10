@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { addContactToResend } from "@/lib/email";
-import { addMailchimpSubscriber } from "@/lib/mailchimp";
 
 function isValidEmail(s: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s.trim());
@@ -38,15 +37,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ ok: true, message: "You're already subscribed." });
       }
       throw dbErr;
-    }
-
-    try {
-      const mailchimpResult = await addMailchimpSubscriber({ email });
-      if (!mailchimpResult.ok) {
-        console.error("[newsletter] Mailchimp sync failed", mailchimpResult.error);
-      }
-    } catch (e) {
-      console.error("[newsletter] Mailchimp threw", e);
     }
 
     try {

@@ -21,6 +21,8 @@ At minimum, set:
 - `STRIPE_SECRET_KEY` (use `sk_test_...` in development)
 - `STRIPE_WEBHOOK_SECRET` (use Stripe CLI or Dashboard)
 - `NEXT_PUBLIC_APP_ORIGIN`
+- `RESEND_API_KEY`
+- `RESEND_FROM` (for example `YerbaTea <orders@yerbatea.lv>`; must be verified in Resend)
 
 ### Run migrations
 
