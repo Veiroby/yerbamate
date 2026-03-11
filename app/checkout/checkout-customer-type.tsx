@@ -4,9 +4,10 @@ import { useState } from "react";
 
 type Props = {
   onCustomerTypeChange?: (type: "INDIVIDUAL" | "BUSINESS") => void;
+  errors?: Record<string, string>;
 };
 
-export function CheckoutCustomerType({ onCustomerTypeChange }: Props) {
+export function CheckoutCustomerType({ onCustomerTypeChange, errors }: Props) {
   const [customerType, setCustomerType] = useState<"INDIVIDUAL" | "BUSINESS">(
     "INDIVIDUAL",
   );
@@ -17,6 +18,13 @@ export function CheckoutCustomerType({ onCustomerTypeChange }: Props) {
   };
 
   const isBusiness = customerType === "BUSINESS";
+
+  const inputClassName = (fieldName: string) =>
+    `w-full rounded-xl border px-3 py-2 text-sm ${
+      errors?.[fieldName]
+        ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-500"
+        : "border-zinc-300 focus:border-emerald-500 focus:ring-emerald-500"
+    }`;
 
   return (
     <section className="space-y-3">
@@ -57,9 +65,12 @@ export function CheckoutCustomerType({ onCustomerTypeChange }: Props) {
               type="text"
               name="companyName"
               required
-              className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+              className={inputClassName("companyName")}
               placeholder="SIA Example Company"
             />
+            {errors?.companyName && (
+              <p className="text-xs text-red-600 mt-1">{errors.companyName}</p>
+            )}
           </div>
           <div className="space-y-2">
             <label className="block text-xs font-medium text-zinc-600">
@@ -69,9 +80,12 @@ export function CheckoutCustomerType({ onCustomerTypeChange }: Props) {
               type="text"
               name="companyAddress"
               required
-              className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+              className={inputClassName("companyAddress")}
               placeholder="Street 1, City, LV-1000, Latvia"
             />
+            {errors?.companyAddress && (
+              <p className="text-xs text-red-600 mt-1">{errors.companyAddress}</p>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
@@ -82,9 +96,12 @@ export function CheckoutCustomerType({ onCustomerTypeChange }: Props) {
                 type="text"
                 name="vatNumber"
                 required
-                className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+                className={inputClassName("vatNumber")}
                 placeholder="LV12345678901"
               />
+              {errors?.vatNumber && (
+                <p className="text-xs text-red-600 mt-1">{errors.vatNumber}</p>
+              )}
             </div>
             <div className="space-y-2">
               <label className="block text-xs font-medium text-zinc-600">
@@ -94,9 +111,12 @@ export function CheckoutCustomerType({ onCustomerTypeChange }: Props) {
                 type="tel"
                 name="phone"
                 required
-                className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+                className={inputClassName("phone")}
                 placeholder="+371 20000000"
               />
+              {errors?.phone && (
+                <p className="text-xs text-red-600 mt-1">{errors.phone}</p>
+              )}
             </div>
           </div>
         </div>

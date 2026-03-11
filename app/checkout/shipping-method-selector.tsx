@@ -196,6 +196,7 @@ type Props = {
   currency?: string;
   subtotal?: number;
   onMethodsLoaded?: (methods: ShippingOption[]) => void;
+  onShippingMethodChange?: (methodId: string) => void;
 };
 
 export function ShippingMethodSelector({
@@ -203,6 +204,7 @@ export function ShippingMethodSelector({
   currency = "EUR",
   subtotal,
   onMethodsLoaded,
+  onShippingMethodChange,
 }: Props) {
   const [methods, setMethods] = useState<ShippingOption[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -212,6 +214,11 @@ export function ShippingMethodSelector({
   const [pickupLoading, setPickupLoading] = useState(false);
 
   const isDpdSelected = selectedId === DPD_PARCEL_MACHINE_METHOD_ID;
+
+  const handleMethodChange = (methodId: string) => {
+    setSelectedId(methodId);
+    onShippingMethodChange?.(methodId);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -227,7 +234,9 @@ export function ShippingMethodSelector({
         const list = (data.methods ?? []) as ShippingOption[];
         setMethods(list);
         onMethodsLoaded?.(list);
-        setSelectedId(list.length > 0 ? list[0].id : null);
+        const defaultId = list.length > 0 ? list[0].id : null;
+        setSelectedId(defaultId);
+        if (defaultId) onShippingMethodChange?.(defaultId);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -235,7 +244,7 @@ export function ShippingMethodSelector({
     return () => {
       cancelled = true;
     };
-  }, [country, subtotal, onMethodsLoaded]);
+  }, [country, subtotal, onMethodsLoaded, onShippingMethodChange]);
 
   useEffect(() => {
     if (!isDpdSelected || !country) {
@@ -287,7 +296,7 @@ export function ShippingMethodSelector({
                 name="shippingOptionId"
                 value={method.id}
                 checked={selectedId === method.id}
-                onChange={() => setSelectedId(method.id)}
+                onChange={() => handleMethodChange(method.id)}
                 className="text-emerald-600"
               />
               {method.id === DPD_PARCEL_MACHINE_METHOD_ID && (

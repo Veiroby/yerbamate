@@ -14,12 +14,68 @@ export function CheckoutForm({ currency, subtotal }: Props) {
     "INDIVIDUAL",
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [shippingMethod, setShippingMethod] = useState<string>("standard-flat");
   const formRef = useRef<HTMLFormElement>(null);
 
   const isBusiness = customerType === "BUSINESS";
+  const isDpdParcelMachine = shippingMethod === "dpd-parcel-machine";
+
+  const getInputValue = (name: string): string => {
+    const form = formRef.current;
+    if (!form) return "";
+    const input = form.elements.namedItem(name) as HTMLInputElement | null;
+    return input?.value?.trim() ?? "";
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!getInputValue("email")) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(getInputValue("email"))) {
+      newErrors.email = "Please enter a valid email";
+    }
+
+    if (!getInputValue("name")) {
+      newErrors.name = "Full name is required";
+    }
+
+    if (!isDpdParcelMachine) {
+      if (!getInputValue("addressLine1")) {
+        newErrors.addressLine1 = "Address is required";
+      }
+      if (!getInputValue("city")) {
+        newErrors.city = "City is required";
+      }
+      if (!getInputValue("postalCode")) {
+        newErrors.postalCode = "Postal code is required";
+      }
+    }
+
+    if (isBusiness) {
+      if (!getInputValue("companyName")) {
+        newErrors.companyName = "Company name is required";
+      }
+      if (!getInputValue("companyAddress")) {
+        newErrors.companyAddress = "Company address is required";
+      }
+      if (!getInputValue("vatNumber")) {
+        newErrors.vatNumber = "VAT number is required";
+      }
+      if (!getInputValue("phone")) {
+        newErrors.phone = "Phone number is required";
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleStripeSubmit = () => {
     if (!formRef.current) return;
+    if (!validateForm()) return;
+
     formRef.current.action = "/api/stripe/checkout";
     setIsSubmitting(true);
     formRef.current.submit();
@@ -27,10 +83,19 @@ export function CheckoutForm({ currency, subtotal }: Props) {
 
   const handleWireTransferSubmit = () => {
     if (!formRef.current) return;
+    if (!validateForm()) return;
+
     formRef.current.action = "/api/checkout/wire-transfer";
     setIsSubmitting(true);
     formRef.current.submit();
   };
+
+  const inputClassName = (fieldName: string) =>
+    `w-full rounded-xl border px-3 py-2 text-sm ${
+      errors[fieldName]
+        ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-500"
+        : "border-zinc-300 focus:border-emerald-500 focus:ring-emerald-500"
+    }`;
 
   return (
     <form
@@ -39,6 +104,12 @@ export function CheckoutForm({ currency, subtotal }: Props) {
       className="space-y-5 rounded-2xl border bg-white p-5 shadow-sm"
       onSubmit={(e) => e.preventDefault()}
     >
+      {Object.keys(errors).length > 0 && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
+          Please fill in all required fields highlighted below.
+        </div>
+      )}
+
       <section className="space-y-3">
         <h2 className="text-sm font-semibold text-zinc-900">Contact</h2>
         <div className="space-y-2">
@@ -49,8 +120,11 @@ export function CheckoutForm({ currency, subtotal }: Props) {
             type="email"
             name="email"
             required
-            className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+            className={inputClassName("email")}
           />
+          {errors.email && (
+            <p className="text-xs text-red-600 mt-1">{errors.email}</p>
+          )}
         </div>
         <div className="space-y-2">
           <label className="block text-xs font-medium text-zinc-600">
@@ -60,14 +134,25 @@ export function CheckoutForm({ currency, subtotal }: Props) {
             type="text"
             name="name"
             required
-            className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+            className={inputClassName("name")}
           />
+          {errors.name && (
+            <p className="text-xs text-red-600 mt-1">{errors.name}</p>
+          )}
         </div>
       </section>
 
-      <CheckoutCustomerType onCustomerTypeChange={setCustomerType} />
+      <CheckoutCustomerType
+        onCustomerTypeChange={setCustomerType}
+        errors={errors}
+      />
 
-      <CheckoutShippingBlock currency={currency} subtotal={subtotal} />
+      <CheckoutShippingBlock
+        currency={currency}
+        subtotal={subtotal}
+        errors={errors}
+        onShippingMethodChange={setShippingMethod}
+      />
 
       <div className="space-y-3 pt-2">
         <button

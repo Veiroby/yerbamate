@@ -13,13 +13,24 @@ const COUNTRIES = [
 type Props = {
   currency?: string;
   subtotal?: number;
+  errors?: Record<string, string>;
+  onShippingMethodChange?: (methodId: string) => void;
 };
 
 export function CheckoutShippingBlock({
   currency = "EUR",
   subtotal,
+  errors,
+  onShippingMethodChange,
 }: Props) {
   const [country, setCountry] = useState("LV");
+
+  const inputClassName = (fieldName: string) =>
+    `w-full rounded-xl border px-3 py-2 text-sm ${
+      errors?.[fieldName]
+        ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-500"
+        : "border-zinc-300 focus:border-emerald-500 focus:ring-emerald-500"
+    }`;
 
   return (
     <>
@@ -35,9 +46,12 @@ export function CheckoutShippingBlock({
             type="text"
             name="addressLine1"
             required
-            className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+            className={inputClassName("addressLine1")}
             placeholder="Street address"
           />
+          {errors?.addressLine1 && (
+            <p className="text-xs text-red-600 mt-1">{errors.addressLine1}</p>
+          )}
         </div>
         <div className="space-y-2">
           <label className="block text-xs font-medium text-zinc-600">
@@ -58,8 +72,11 @@ export function CheckoutShippingBlock({
               type="text"
               name="city"
               required
-              className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+              className={inputClassName("city")}
             />
+            {errors?.city && (
+              <p className="text-xs text-red-600 mt-1">{errors.city}</p>
+            )}
           </div>
           <div className="space-y-2">
             <label className="block text-xs font-medium text-zinc-600">
@@ -69,8 +86,11 @@ export function CheckoutShippingBlock({
               type="text"
               name="postalCode"
               required
-              className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+              className={inputClassName("postalCode")}
             />
+            {errors?.postalCode && (
+              <p className="text-xs text-red-600 mt-1">{errors.postalCode}</p>
+            )}
           </div>
         </div>
         <div className="space-y-2">
@@ -96,6 +116,7 @@ export function CheckoutShippingBlock({
         country={country}
         currency={currency}
         subtotal={subtotal}
+        onShippingMethodChange={onShippingMethodChange}
       />
     </>
   );
