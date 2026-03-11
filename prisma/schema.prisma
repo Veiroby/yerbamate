@@ -131,6 +131,8 @@ model Product {
   price         Decimal        @db.Decimal(10, 2)
   currency      String         @default("EUR")
   barcode       String?        @unique
+  brand         String?
+  origin        String?
   active        Boolean        @default(true)
   categoryId    String?
   createdAt     DateTime       @default(now())
@@ -147,6 +149,8 @@ model Product {
   @@index([active])
   @@index([barcode])
   @@index([categoryId])
+  @@index([brand])
+  @@index([origin])
 }
 
 model ProductImage {

@@ -11,6 +11,8 @@ export type ProductCardData = {
   imageAlt: string | null;
   quantityLeft: number;
   description?: string | null;
+  brand?: string | null;
+  origin?: string | null;
 };
 
 type Props = {
@@ -55,6 +57,20 @@ export function ProductCard({ product, showDescription }: Props) {
           )}
         </div>
         <div className="flex flex-1 flex-col px-4 py-3">
+          {(product.brand || product.origin) && (
+            <div className="mb-1 flex flex-wrap gap-1">
+              {product.brand && (
+                <span className="rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-medium text-stone-600">
+                  {product.brand}
+                </span>
+              )}
+              {product.origin && (
+                <span className="rounded bg-teal-50 px-1.5 py-0.5 text-[10px] font-medium text-teal-700">
+                  {product.origin}
+                </span>
+              )}
+            </div>
+          )}
           <h2 className="mb-1 line-clamp-2 text-sm font-medium text-stone-900 group-hover:text-teal-700 transition">
             {product.name}
           </h2>

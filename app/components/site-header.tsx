@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import { SearchButton, SearchModal, ProductSearch } from "./product-search";
 
 type SiteHeaderProps = {
   user: { isAdmin: boolean } | null;
@@ -10,6 +11,7 @@ type SiteHeaderProps = {
 
 const navLinks = [
   { href: "/", label: "Home" },
+  { href: "/products", label: "All Products" },
   { href: "/products?category=yerba-mate", label: "Yerba Mate" },
   { href: "/products?category=mate-gourds", label: "Mate gourds" },
   { href: "/about", label: "About" },
@@ -29,12 +31,24 @@ export function SiteHeader({ user }: SiteHeaderProps) {
   const searchParams = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const isActive = (href: string) => {
@@ -88,8 +102,9 @@ export function SiteHeader({ user }: SiteHeaderProps) {
             ))}
           </nav>
 
-          {/* Desktop: cart + auth (hidden on mobile) */}
-          <div className="hidden items-center gap-4 md:flex">
+          {/* Desktop: search + cart + auth (hidden on mobile) */}
+          <div className="hidden items-center gap-2 md:flex">
+            <SearchButton onClick={() => setSearchOpen(true)} />
             <Link
               href="/cart"
               className="flex h-10 w-10 items-center justify-center rounded-xl text-stone-800 transition-colors hover:bg-stone-200/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
@@ -174,6 +189,11 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           </button>
         </div>
         <nav className="flex flex-col gap-1 p-4">
+          <ProductSearch
+            className="mb-3"
+            placeholder="Search products..."
+            onSearch={() => setSidebarOpen(false)}
+          />
           {navLinks.map(({ href, label }) => (
             <Link
               key={`${href}-${label}`}
@@ -225,6 +245,8 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           </div>
         </nav>
       </aside>
+
+      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }
