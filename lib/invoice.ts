@@ -7,6 +7,9 @@ const SELLER_DETAILS = {
   name: "SIA YerbaTea",
   registrationNumber: "50203504501",
   address: "Ieriku iela 66-112, Riga, LV-1084, Latvia",
+  phone: "+37127552577",
+  iban: "LV30HABA0551057129470",
+  bank: "Swedbank",
 } as const;
 
 type InvoiceItem = {
@@ -36,6 +39,11 @@ export type InvoiceOrderData = {
   total: { toString(): string };
   shippingAddress: unknown;
   items: InvoiceItem[];
+  customerType?: "INDIVIDUAL" | "BUSINESS";
+  companyName?: string;
+  companyAddress?: string;
+  vatNumber?: string;
+  phone?: string;
 };
 
 export function buildInvoiceFilename(orderNumber: string): string {
@@ -108,6 +116,9 @@ export async function generateInvoicePdf(
     { size: 10 },
   );
   drawText(SELLER_DETAILS.address, 330, 758, { size: 10 });
+  drawText(`Phone: ${SELLER_DETAILS.phone}`, 330, 742, { size: 10 });
+  drawText(`Bank: ${SELLER_DETAILS.bank}`, 330, 726, { size: 10 });
+  drawText(`IBAN: ${SELLER_DETAILS.iban}`, 330, 710, { size: 10 });
 
   y -= 32;
   drawRule(y);
@@ -115,14 +126,26 @@ export async function generateInvoicePdf(
 
   drawText("Bill to", left, y, { size: 12, bold: true });
   const shipping = normalizeShippingAddress(order.shippingAddress);
-  const buyerLines = [
-    shipping.name || "Customer",
-    order.email,
-    shipping.line1,
-    shipping.line2,
-    [shipping.postalCode, shipping.city].filter(Boolean).join(" "),
-    shipping.country,
-  ].filter(Boolean) as string[];
+  const isBusiness = order.customerType === "BUSINESS";
+  const buyerLines: string[] = [];
+
+  if (isBusiness && order.companyName) {
+    buyerLines.push(order.companyName);
+    if (order.companyAddress) buyerLines.push(order.companyAddress);
+    if (order.vatNumber) buyerLines.push(`VAT: ${order.vatNumber}`);
+  }
+
+  buyerLines.push(
+    ...[
+      shipping.name || (isBusiness ? undefined : "Customer"),
+      order.email,
+      order.phone,
+      shipping.line1,
+      shipping.line2,
+      [shipping.postalCode, shipping.city].filter(Boolean).join(" "),
+      shipping.country,
+    ].filter(Boolean) as string[],
+  );
 
   let buyerY = y - 18;
   for (const line of buyerLines) {

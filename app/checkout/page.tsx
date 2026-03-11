@@ -6,7 +6,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { calculateShippingForOrder } from "@/lib/shipping/service";
 import { SiteHeader } from "@/app/components/site-header";
 import { SiteFooter } from "@/app/components/site-footer";
-import { CheckoutShippingBlock } from "./checkout-shipping-block";
+import { CheckoutForm } from "./checkout-form";
 
 async function getCartWithItems() {
   const sessionId = (await cookies()).get("cart_session_id")?.value;
@@ -80,56 +80,7 @@ export default async function CheckoutPage() {
           </div>
         ) : (
           <div className="grid gap-8 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1.1fr)]">
-            <form
-              action="/api/stripe/checkout"
-              method="post"
-              className="space-y-5 rounded-2xl border bg-white p-5 shadow-sm"
-            >
-              <section className="space-y-3">
-                <h2 className="text-sm font-semibold text-zinc-900">
-                  Contact
-                </h2>
-                <div className="space-y-2">
-                  <label className="block text-xs font-medium text-zinc-600">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    required
-                    className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-xs font-medium text-zinc-600">
-                    Full name
-                  </label>
-                  <input
-                    type="text"
-                    name="name"
-                    required
-                    className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm"
-                  />
-                </div>
-              </section>
-
-              <CheckoutShippingBlock
-                currency={currency}
-                subtotal={subtotal}
-              />
-
-              <button
-                type="submit"
-                className="mt-2 flex w-full items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-              >
-                Pay securely with Stripe
-              </button>
-
-              <p className="text-xs text-zinc-500">
-                You will be redirected to a secure Stripe Checkout page to
-                complete your payment.
-              </p>
-            </form>
+            <CheckoutForm currency={currency} subtotal={subtotal} />
 
             <section className="space-y-3 rounded-2xl border bg-white p-5 shadow-sm">
               <h2 className="text-sm font-semibold text-zinc-900">

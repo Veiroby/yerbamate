@@ -29,6 +29,16 @@ enum ShippingMethodType {
   PRICE_BASED
 }
 
+enum CustomerType {
+  INDIVIDUAL
+  BUSINESS
+}
+
+enum PaymentMethod {
+  STRIPE
+  WIRE_TRANSFER
+}
+
 model User {
   id           String    @id @default(cuid())
   email        String    @unique
@@ -181,24 +191,30 @@ model CartItem {
 }
 
 model Order {
-  id                    String       @id @default(cuid())
-  orderNumber           String       @unique
-  user                  User?        @relation(fields: [userId], references: [id])
+  id                    String        @id @default(cuid())
+  orderNumber           String        @unique
+  user                  User?         @relation(fields: [userId], references: [id])
   userId                String?
   email                 String
-  sessionId             String?      // cart session at checkout, for abandoned-cart attribution
-  status                OrderStatus  @default(PENDING)
-  subtotal              Decimal      @db.Decimal(10, 2)
-  shippingCost          Decimal      @db.Decimal(10, 2)
-  tax                   Decimal      @db.Decimal(10, 2)
-  total                 Decimal      @db.Decimal(10, 2)
-  currency              String       @default("USD")
-  shippingAddress       Json         // full shipping address snapshot
-  billingAddress        Json?        // optional billing address snapshot
+  sessionId             String?       // cart session at checkout, for abandoned-cart attribution
+  status                OrderStatus   @default(PENDING)
+  customerType          CustomerType  @default(INDIVIDUAL)
+  paymentMethod         PaymentMethod @default(STRIPE)
+  companyName           String?
+  companyAddress        String?
+  vatNumber             String?
+  phone                 String?
+  subtotal              Decimal       @db.Decimal(10, 2)
+  shippingCost          Decimal       @db.Decimal(10, 2)
+  tax                   Decimal       @db.Decimal(10, 2)
+  total                 Decimal       @db.Decimal(10, 2)
+  currency              String        @default("USD")
+  shippingAddress       Json          // full shipping address snapshot
+  billingAddress        Json?         // optional billing address snapshot
   stripePaymentIntentId String?
-  confirmationEmailSentAt DateTime?  // when order confirmation email was last sent
-  createdAt             DateTime     @default(now())
-  updatedAt             DateTime     @updatedAt
+  confirmationEmailSentAt DateTime?   // when order confirmation email was last sent
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
 
   items OrderItem[]
 

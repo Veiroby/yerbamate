@@ -7,7 +7,7 @@ import {
   DPD_PARCEL_MACHINE_METHOD_ID,
   getDpdPickupPointById,
 } from "@/lib/shipping/dpd";
-import { stripe } from "@/lib/stripe";
+import { sendWireTransferInvoiceEmail } from "@/lib/email";
 
 function getSiteOrigin(request: Request): string {
   const configured = process.env.NEXT_PUBLIC_APP_ORIGIN?.trim();
@@ -18,21 +18,6 @@ function getSiteOrigin(request: Request): string {
 }
 
 export async function POST(request: Request) {
-  if (!process.env.STRIPE_SECRET_KEY) {
-    return NextResponse.json(
-      { error: "Stripe is not configured" },
-      { status: 500 },
-    );
-  }
-
-  // Prevent taking payments without a working webhook to mark orders as paid.
-  if (!process.env.STRIPE_WEBHOOK_SECRET && process.env.NODE_ENV === "production") {
-    return NextResponse.json(
-      { error: "Stripe webhook is not configured" },
-      { status: 500 },
-    );
-  }
-
   const sessionId = (await cookies()).get("cart_session_id")?.value;
   if (!sessionId) {
     return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
@@ -76,6 +61,13 @@ export async function POST(request: Request) {
   const vatNumber = formData.get("vatNumber")?.toString() || null;
   const phone = formData.get("phone")?.toString() || null;
 
+  if (customerType !== "BUSINESS") {
+    return NextResponse.json(
+      { error: "Wire transfer is only available for business customers" },
+      { status: 400 },
+    );
+  }
+
   const isDpdParcelMachine = shippingOptionId === DPD_PARCEL_MACHINE_METHOD_ID;
 
   if (isDpdParcelMachine && !dpdPickupPointId) {
@@ -92,13 +84,11 @@ export async function POST(request: Request) {
     );
   }
 
-  if (customerType === "BUSINESS") {
-    if (!companyName || !companyAddress || !vatNumber || !phone) {
-      return NextResponse.json(
-        { error: "Missing required business fields" },
-        { status: 400 },
-      );
-    }
+  if (!companyName || !companyAddress || !vatNumber || !phone) {
+    return NextResponse.json(
+      { error: "Missing required business fields" },
+      { status: 400 },
+    );
   }
 
   if (!isDpdParcelMachine && (!addressLine1 || !city || !postalCode)) {
@@ -199,9 +189,9 @@ export async function POST(request: Request) {
       orderNumber: `ORD-${Date.now()}`,
       email,
       sessionId,
-      status: "REQUIRES_PAYMENT",
-      customerType,
-      paymentMethod: "STRIPE",
+      status: "PENDING",
+      customerType: "BUSINESS",
+      paymentMethod: "WIRE_TRANSFER",
       companyName,
       companyAddress,
       vatNumber,
@@ -221,6 +211,13 @@ export async function POST(request: Request) {
         })),
       },
     },
+    include: {
+      items: {
+        include: {
+          product: true,
+        },
+      },
+    },
   });
 
   await recordEvent("begin_checkout", {
@@ -230,53 +227,39 @@ export async function POST(request: Request) {
       value: total,
       currency,
       itemCount: validatedItems.length,
+      paymentMethod: "WIRE_TRANSFER",
     },
   });
 
-  const lineItems = validatedItems.map((item) => ({
-    quantity: item.quantity,
-    price_data: {
-      currency,
-      unit_amount: Math.round(item.unitPrice * 100),
-      product_data: {
-        name: item.name,
-      },
-    },
-  }));
+  const emailResult = await sendWireTransferInvoiceEmail({
+    orderNumber: order.orderNumber,
+    email: order.email,
+    total: Number(order.total),
+    currency: order.currency,
+    createdAt: order.createdAt,
+    subtotal: order.subtotal,
+    shippingCost: order.shippingCost,
+    tax: order.tax,
+    shippingAddress: order.shippingAddress,
+    items: order.items.map((item) => ({
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      total: item.total,
+      product: item.product ? { name: item.product.name } : null,
+    })),
+    customerType: "BUSINESS",
+    companyName: order.companyName ?? undefined,
+    companyAddress: order.companyAddress ?? undefined,
+    vatNumber: order.vatNumber ?? undefined,
+    phone: order.phone ?? undefined,
+  });
 
-  if (shippingAmount > 0) {
-    lineItems.push({
-      quantity: 1,
-      price_data: {
-        currency,
-        unit_amount: Math.round(shippingAmount * 100),
-        product_data: {
-          name: shipping.option?.name ?? "Shipping",
-        },
-      },
-    });
+  if (!emailResult.ok) {
+    console.error("[wire-transfer] Failed to send invoice email:", emailResult.error);
   }
 
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    customer_email: email,
-    line_items: lineItems,
-    metadata: {
-      orderId: order.id,
-    },
-    success_url: `${getSiteOrigin(request)}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${getSiteOrigin(request)}/cart`,
-  });
+  await prisma.cart.delete({ where: { id: cart.id } });
 
-  if (!session.url) {
-    return NextResponse.json(
-      { error: "Unable to create checkout session" },
-      { status: 500 },
-    );
-  }
-
-  return NextResponse.redirect(session.url, {
-    status: 303,
-  });
+  const redirectUrl = `${getSiteOrigin(request)}/checkout/wire-transfer-success?orderNumber=${encodeURIComponent(order.orderNumber)}`;
+  return NextResponse.redirect(redirectUrl, { status: 303 });
 }
-

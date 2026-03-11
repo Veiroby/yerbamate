@@ -97,6 +97,14 @@ type OrderItemForEmail = {
   product?: { name: string } | null;
 };
 
+type BusinessFields = {
+  customerType?: "INDIVIDUAL" | "BUSINESS";
+  companyName?: string;
+  companyAddress?: string;
+  vatNumber?: string;
+  phone?: string;
+};
+
 export async function sendOrderConfirmationEmail(options: {
   orderNumber: string;
   email: string;
@@ -109,7 +117,7 @@ export async function sendOrderConfirmationEmail(options: {
   shippingAddress: unknown;
   items: OrderItemForEmail[];
   siteOriginOverride?: string;
-}): Promise<{ ok: boolean; error?: string }> {
+} & BusinessFields): Promise<{ ok: boolean; error?: string }> {
   if (!isEmailConfigured()) {
     return { ok: false, error: "Email not configured" };
   }
@@ -139,6 +147,11 @@ export async function sendOrderConfirmationEmail(options: {
     total: { toString: () => String(options.total) },
     shippingAddress: options.shippingAddress,
     items: options.items,
+    customerType: options.customerType,
+    companyName: options.companyName,
+    companyAddress: options.companyAddress,
+    vatNumber: options.vatNumber,
+    phone: options.phone,
   } satisfies InvoiceOrderData);
 
   return sendEmail({
@@ -153,6 +166,92 @@ export async function sendOrderConfirmationEmail(options: {
       },
     ],
   });
+}
+
+export async function sendWireTransferInvoiceEmail(options: {
+  orderNumber: string;
+  email: string;
+  total: number | string;
+  currency: string;
+  createdAt: Date;
+  subtotal: { toString(): string };
+  shippingCost: { toString(): string };
+  tax: { toString(): string };
+  shippingAddress: unknown;
+  items: OrderItemForEmail[];
+  siteOriginOverride?: string;
+} & BusinessFields): Promise<{ ok: boolean; error?: string }> {
+  if (!isEmailConfigured()) {
+    return { ok: false, error: "Email not configured" };
+  }
+
+  const siteOrigin =
+    options.siteOriginOverride ??
+    process.env.NEXT_PUBLIC_APP_ORIGIN ??
+    "http://localhost:3000";
+
+  const html = renderWireTransferInvoiceHtml({
+    orderNumber: options.orderNumber,
+    total: String(options.total),
+    currency: options.currency,
+    siteOrigin,
+  });
+
+  const invoicePdf = await generateInvoicePdf({
+    orderNumber: options.orderNumber,
+    email: options.email,
+    currency: options.currency,
+    createdAt: options.createdAt,
+    subtotal: options.subtotal,
+    shippingCost: options.shippingCost,
+    tax: options.tax,
+    total: { toString: () => String(options.total) },
+    shippingAddress: options.shippingAddress,
+    items: options.items,
+    customerType: options.customerType,
+    companyName: options.companyName,
+    companyAddress: options.companyAddress,
+    vatNumber: options.vatNumber,
+    phone: options.phone,
+  } satisfies InvoiceOrderData);
+
+  return sendEmail({
+    to: options.email,
+    subject: `Invoice for Order ${options.orderNumber} - Payment Required`,
+    html,
+    attachments: [
+      {
+        filename: buildInvoiceFilename(options.orderNumber),
+        content: Buffer.from(invoicePdf).toString("base64"),
+        contentType: "application/pdf",
+      },
+    ],
+  });
+}
+
+function renderWireTransferInvoiceHtml(options: {
+  orderNumber: string;
+  total: string;
+  currency: string;
+  siteOrigin: string;
+}): string {
+  const { orderNumber, total, currency, siteOrigin } = options;
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Invoice for Order ${escapeHtml(orderNumber)}</title></head>
+<body style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#18181b">
+  <h1 style="font-size:1.25rem;margin:0 0 8px">Invoice for Order ${escapeHtml(orderNumber)}</h1>
+  <p style="margin:0 0 24px;line-height:1.6">Dear customer,</p>
+  <p style="margin:0 0 24px;line-height:1.6">Please find invoice attached. We will ship goods after invoice will be paid.</p>
+  <p style="margin:0 0 8px;line-height:1.6"><strong>Payment details:</strong></p>
+  <p style="margin:0 0 8px;line-height:1.6">Bank: Swedbank</p>
+  <p style="margin:0 0 8px;line-height:1.6">IBAN: LV30HABA0551057129470</p>
+  <p style="margin:0 0 8px;line-height:1.6">Reference: ${escapeHtml(orderNumber)}</p>
+  <p style="margin:0 0 24px;line-height:1.6">Amount: ${escapeHtml(formatMoney(Number(total), currency))}</p>
+  <p style="color:#71717a;font-size:0.875rem"><a href="${escapeHtml(siteOrigin)}" style="color:#059669">Back to store</a></p>
+</body>
+</html>`;
 }
 
 export function renderOrderConfirmationHtml(options: {
