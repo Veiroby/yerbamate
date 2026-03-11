@@ -9,9 +9,10 @@ type Props = {
   subtotal: number;
   currency: string;
   showReminder: boolean;
+  bundleSavings?: number;
 };
 
-export function CartOrderSummary({ subtotal, currency, showReminder }: Props) {
+export function CartOrderSummary({ subtotal, currency, showReminder, bundleSavings = 0 }: Props) {
   const [appliedDiscount, setAppliedDiscount] = useState<{
     code: string;
     type: string;
@@ -20,7 +21,7 @@ export function CartOrderSummary({ subtotal, currency, showReminder }: Props) {
   } | null>(null);
 
   const discountAmount = appliedDiscount?.discountAmount ?? 0;
-  const discountedSubtotal = subtotal - discountAmount;
+  const discountedSubtotal = subtotal - discountAmount - bundleSavings;
 
   return (
     <div className="space-y-3 rounded-2xl border bg-white p-4">
@@ -32,6 +33,14 @@ export function CartOrderSummary({ subtotal, currency, showReminder }: Props) {
             {currency} {subtotal.toFixed(2)}
           </dd>
         </div>
+        {bundleSavings > 0 && (
+          <div className="flex justify-between text-emerald-700">
+            <dt>Bundle savings</dt>
+            <dd className="font-medium">
+              -{currency} {bundleSavings.toFixed(2)}
+            </dd>
+          </div>
+        )}
         {appliedDiscount && (
           <div className="flex justify-between text-emerald-700">
             <dt>Discount ({appliedDiscount.code})</dt>
