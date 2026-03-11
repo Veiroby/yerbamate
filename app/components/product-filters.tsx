@@ -75,148 +75,8 @@ export function ProductFilters({ options, className = "" }: Props) {
 
   const hasActiveFilters = Object.values(filters).some((v) => v !== "");
 
-  const FilterContent = () => (
-    <div className="space-y-6">
-      {/* Search */}
-      <div>
-        <label className="block text-sm font-semibold text-stone-900 mb-2">
-          Search
-        </label>
-        <input
-          type="text"
-          value={filters.q}
-          onChange={(e) => setFilters({ ...filters, q: e.target.value })}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") applyFilters(filters);
-          }}
-          placeholder="Search products..."
-          className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-        />
-      </div>
-
-      {/* Category */}
-      <div>
-        <label className="block text-sm font-semibold text-stone-900 mb-2">
-          Category
-        </label>
-        <select
-          value={filters.category}
-          onChange={(e) => handleFilterChange("category", e.target.value)}
-          className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-        >
-          <option value="">All Categories</option>
-          {options.categories.map((cat) => (
-            <option key={cat.slug} value={cat.slug}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Brand */}
-      {options.brands.length > 0 && (
-        <div>
-          <label className="block text-sm font-semibold text-stone-900 mb-2">
-            Brand
-          </label>
-          <select
-            value={filters.brand}
-            onChange={(e) => handleFilterChange("brand", e.target.value)}
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-          >
-            <option value="">All Brands</option>
-            {options.brands.map((brand) => (
-              <option key={brand} value={brand}>
-                {brand}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Origin/Country */}
-      {options.origins.length > 0 && (
-        <div>
-          <label className="block text-sm font-semibold text-stone-900 mb-2">
-            Origin / Country
-          </label>
-          <select
-            value={filters.origin}
-            onChange={(e) => handleFilterChange("origin", e.target.value)}
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-          >
-            <option value="">All Origins</option>
-            {options.origins.map((origin) => (
-              <option key={origin} value={origin}>
-                {origin}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Price Range */}
-      <div>
-        <label className="block text-sm font-semibold text-stone-900 mb-2">
-          Price Range (EUR)
-        </label>
-        <div className="flex items-center gap-2">
-          <input
-            type="number"
-            value={filters.minPrice}
-            onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
-            onBlur={() => applyFilters(filters)}
-            placeholder={`${options.priceRange.min}`}
-            min={0}
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-          />
-          <span className="text-stone-400">—</span>
-          <input
-            type="number"
-            value={filters.maxPrice}
-            onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
-            onBlur={() => applyFilters(filters)}
-            placeholder={`${options.priceRange.max}`}
-            min={0}
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-          />
-        </div>
-      </div>
-
-      {/* Sort */}
-      <div>
-        <label className="block text-sm font-semibold text-stone-900 mb-2">
-          Sort By
-        </label>
-        <select
-          value={filters.sort}
-          onChange={(e) => handleFilterChange("sort", e.target.value)}
-          className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
-        >
-          <option value="">Default</option>
-          <option value="price-asc">Price: Low to High</option>
-          <option value="price-desc">Price: High to Low</option>
-          <option value="name-asc">Name: A to Z</option>
-          <option value="name-desc">Name: Z to A</option>
-          <option value="newest">Newest First</option>
-        </select>
-      </div>
-
-      {/* Clear Filters */}
-      {hasActiveFilters && (
-        <button
-          type="button"
-          onClick={clearFilters}
-          className="w-full rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100"
-        >
-          Clear All Filters
-        </button>
-      )}
-    </div>
-  );
-
   return (
-    <>
+    <div className={className}>
       {/* Mobile filter button */}
       <div className="lg:hidden mb-4">
         <button
@@ -227,7 +87,7 @@ export function ProductFilters({ options, className = "" }: Props) {
           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
           </svg>
-          Filters
+          Filters & Search
           {hasActiveFilters && (
             <span className="rounded-full bg-teal-600 px-2 py-0.5 text-xs text-white">
               Active
@@ -236,13 +96,142 @@ export function ProductFilters({ options, className = "" }: Props) {
         </button>
       </div>
 
-      {/* Desktop sidebar */}
-      <aside className={`hidden lg:block ${className}`}>
-        <div className="sticky top-24 rounded-2xl border border-stone-200 bg-white p-5">
-          <h2 className="mb-4 text-lg font-semibold text-stone-900">Filters</h2>
-          <FilterContent />
+      {/* Desktop horizontal filters */}
+      <div className="hidden lg:block rounded-2xl border border-stone-200 bg-white p-4 mb-6">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4 xl:grid-cols-7">
+          {/* Search */}
+          <div className="col-span-2 xl:col-span-2">
+            <label className="block text-xs font-medium text-stone-500 mb-1">
+              Search
+            </label>
+            <input
+              type="text"
+              value={filters.q}
+              onChange={(e) => setFilters({ ...filters, q: e.target.value })}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") applyFilters(filters);
+              }}
+              placeholder="Search products..."
+              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            />
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block text-xs font-medium text-stone-500 mb-1">
+              Category
+            </label>
+            <select
+              value={filters.category}
+              onChange={(e) => handleFilterChange("category", e.target.value)}
+              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            >
+              <option value="">All</option>
+              {options.categories.map((cat) => (
+                <option key={cat.slug} value={cat.slug}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Brand */}
+          <div>
+            <label className="block text-xs font-medium text-stone-500 mb-1">
+              Brand
+            </label>
+            <select
+              value={filters.brand}
+              onChange={(e) => handleFilterChange("brand", e.target.value)}
+              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            >
+              <option value="">All</option>
+              {options.brands.map((brand) => (
+                <option key={brand} value={brand}>
+                  {brand}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Origin */}
+          <div>
+            <label className="block text-xs font-medium text-stone-500 mb-1">
+              Origin
+            </label>
+            <select
+              value={filters.origin}
+              onChange={(e) => handleFilterChange("origin", e.target.value)}
+              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            >
+              <option value="">All</option>
+              {options.origins.map((origin) => (
+                <option key={origin} value={origin}>
+                  {origin}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sort */}
+          <div>
+            <label className="block text-xs font-medium text-stone-500 mb-1">
+              Sort By
+            </label>
+            <select
+              value={filters.sort}
+              onChange={(e) => handleFilterChange("sort", e.target.value)}
+              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            >
+              <option value="">Default</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+              <option value="name-asc">Name: A to Z</option>
+              <option value="name-desc">Name: Z to A</option>
+              <option value="newest">Newest First</option>
+            </select>
+          </div>
+
+          {/* Clear button */}
+          <div className="flex items-end">
+            {hasActiveFilters && (
+              <button
+                type="button"
+                onClick={clearFilters}
+                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm font-medium text-stone-600 hover:bg-stone-50"
+              >
+                Clear All
+              </button>
+            )}
+          </div>
         </div>
-      </aside>
+
+        {/* Price Range Row */}
+        <div className="mt-4 flex items-center gap-4">
+          <span className="text-xs font-medium text-stone-500">Price (EUR):</span>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              value={filters.minPrice}
+              onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
+              onBlur={() => applyFilters(filters)}
+              placeholder={`${options.priceRange.min}`}
+              min={0}
+              className="w-24 rounded-lg border border-stone-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            />
+            <span className="text-stone-400">—</span>
+            <input
+              type="number"
+              value={filters.maxPrice}
+              onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
+              onBlur={() => applyFilters(filters)}
+              placeholder={`${options.priceRange.max}`}
+              min={0}
+              className="w-24 rounded-lg border border-stone-300 px-3 py-1.5 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Mobile filter modal */}
       {mobileOpen && (
@@ -266,11 +255,148 @@ export function ProductFilters({ options, className = "" }: Props) {
                 </svg>
               </button>
             </div>
-            <FilterContent />
+
+            <div className="space-y-5">
+              {/* Search */}
+              <div>
+                <label className="block text-sm font-semibold text-stone-900 mb-2">
+                  Search
+                </label>
+                <input
+                  type="text"
+                  value={filters.q}
+                  onChange={(e) => setFilters({ ...filters, q: e.target.value })}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") applyFilters(filters);
+                  }}
+                  placeholder="Search products..."
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                />
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="block text-sm font-semibold text-stone-900 mb-2">
+                  Category
+                </label>
+                <select
+                  value={filters.category}
+                  onChange={(e) => handleFilterChange("category", e.target.value)}
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                >
+                  <option value="">All Categories</option>
+                  {options.categories.map((cat) => (
+                    <option key={cat.slug} value={cat.slug}>
+                      {cat.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Brand */}
+              {options.brands.length > 0 && (
+                <div>
+                  <label className="block text-sm font-semibold text-stone-900 mb-2">
+                    Brand
+                  </label>
+                  <select
+                    value={filters.brand}
+                    onChange={(e) => handleFilterChange("brand", e.target.value)}
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  >
+                    <option value="">All Brands</option>
+                    {options.brands.map((brand) => (
+                      <option key={brand} value={brand}>
+                        {brand}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Origin */}
+              {options.origins.length > 0 && (
+                <div>
+                  <label className="block text-sm font-semibold text-stone-900 mb-2">
+                    Origin / Country
+                  </label>
+                  <select
+                    value={filters.origin}
+                    onChange={(e) => handleFilterChange("origin", e.target.value)}
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  >
+                    <option value="">All Origins</option>
+                    {options.origins.map((origin) => (
+                      <option key={origin} value={origin}>
+                        {origin}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* Price Range */}
+              <div>
+                <label className="block text-sm font-semibold text-stone-900 mb-2">
+                  Price Range (EUR)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={filters.minPrice}
+                    onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
+                    onBlur={() => applyFilters(filters)}
+                    placeholder={`${options.priceRange.min}`}
+                    min={0}
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  />
+                  <span className="text-stone-400">—</span>
+                  <input
+                    type="number"
+                    value={filters.maxPrice}
+                    onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
+                    onBlur={() => applyFilters(filters)}
+                    placeholder={`${options.priceRange.max}`}
+                    min={0}
+                    className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  />
+                </div>
+              </div>
+
+              {/* Sort */}
+              <div>
+                <label className="block text-sm font-semibold text-stone-900 mb-2">
+                  Sort By
+                </label>
+                <select
+                  value={filters.sort}
+                  onChange={(e) => handleFilterChange("sort", e.target.value)}
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                >
+                  <option value="">Default</option>
+                  <option value="price-asc">Price: Low to High</option>
+                  <option value="price-desc">Price: High to Low</option>
+                  <option value="name-asc">Name: A to Z</option>
+                  <option value="name-desc">Name: Z to A</option>
+                  <option value="newest">Newest First</option>
+                </select>
+              </div>
+
+              {/* Clear Filters */}
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="w-full rounded-lg border border-stone-300 px-4 py-2 text-sm font-medium text-stone-600 hover:bg-stone-100"
+                >
+                  Clear All Filters
+                </button>
+              )}
+            </div>
           </div>
         </>
       )}
-    </>
+    </div>
   );
 }
 

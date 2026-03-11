@@ -179,57 +179,55 @@ export default async function ProductsPage({ searchParams }: Props) {
           </Link>
         </header>
 
+        <ProductFilters options={filterOptions} />
+
         <ActiveFilters />
 
-        <div className="grid gap-8 lg:grid-cols-[280px_1fr]">
-          <ProductFilters options={filterOptions} />
-
-          <div>
-            {productCards.length === 0 ? (
-              <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center">
-                <svg
-                  className="mx-auto h-12 w-12 text-stone-300"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+        <div>
+          {productCards.length === 0 ? (
+            <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center">
+              <svg
+                className="mx-auto h-12 w-12 text-stone-300"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <h3 className="mt-4 text-lg font-medium text-stone-900">
+                No products found
+              </h3>
+              <p className="mt-2 text-sm text-stone-500">
+                Try adjusting your filters or search terms.
+              </p>
+              <Link
+                href="/products"
+                className="mt-4 inline-flex rounded-xl bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
+              >
+                Clear all filters
+              </Link>
+            </div>
+          ) : (
+            <>
+              <p className="mb-4 text-sm text-stone-500">
+                Showing {productCards.length} product{productCards.length !== 1 ? "s" : ""}
+              </p>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {productCards.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    showDescription
                   />
-                </svg>
-                <h3 className="mt-4 text-lg font-medium text-stone-900">
-                  No products found
-                </h3>
-                <p className="mt-2 text-sm text-stone-500">
-                  Try adjusting your filters or search terms.
-                </p>
-                <Link
-                  href="/products"
-                  className="mt-4 inline-flex rounded-xl bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
-                >
-                  Clear all filters
-                </Link>
+                ))}
               </div>
-            ) : (
-              <>
-                <p className="mb-4 text-sm text-stone-500">
-                  Showing {productCards.length} product{productCards.length !== 1 ? "s" : ""}
-                </p>
-                <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                  {productCards.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      showDescription
-                    />
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
+            </>
+          )}
         </div>
       </main>
       <SiteFooter />
