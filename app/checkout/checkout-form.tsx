@@ -7,9 +7,10 @@ import { CheckoutShippingBlock } from "./checkout-shipping-block";
 type Props = {
   currency: string;
   subtotal: number;
+  discountCode?: string | null;
 };
 
-export function CheckoutForm({ currency, subtotal }: Props) {
+export function CheckoutForm({ currency, subtotal, discountCode }: Props) {
   const [customerType, setCustomerType] = useState<"INDIVIDUAL" | "BUSINESS">(
     "INDIVIDUAL",
   );
@@ -104,6 +105,9 @@ export function CheckoutForm({ currency, subtotal }: Props) {
       className="space-y-5 rounded-2xl border bg-white p-5 shadow-sm"
       onSubmit={(e) => e.preventDefault()}
     >
+      {discountCode && (
+        <input type="hidden" name="discountCode" value={discountCode} />
+      )}
       {Object.keys(errors).length > 0 && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
           Please fill in all required fields highlighted below.

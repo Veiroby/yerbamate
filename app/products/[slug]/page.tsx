@@ -17,17 +17,26 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const slug = decodeURIComponent(rawSlug).trim();
   const user = await getCurrentUser();
 
-  const product = await prisma.product.findUnique({
-    where: { slug },
-    include: {
-      images: {
-        orderBy: { position: "asc" },
+  const [product, bundleOffers] = await Promise.all([
+    prisma.product.findUnique({
+      where: { slug },
+      include: {
+        images: {
+          orderBy: { position: "asc" },
+        },
+        variants: {
+          include: { inventoryItems: true },
+        },
       },
-      variants: {
-        include: { inventoryItems: true },
+    }),
+    prisma.bundleOffer.findMany({
+      where: {
+        active: true,
+        OR: [{ productId: null }, { product: { slug } }],
       },
-    },
-  });
+      orderBy: { discountPercent: "desc" },
+    }),
+  ]);
 
   if (!product || !product.active) {
     notFound();
@@ -41,6 +50,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const soldOut = quantityLeft <= 0;
   const primaryImage = product.images[0];
   const price = Number(product.price);
+
+  const productBundles = bundleOffers.filter(
+    (b) => b.productId === product.id || b.productId === null,
+  );
 
   return (
     <div className="min-h-screen bg-zinc-50 text-zinc-900">
@@ -116,6 +129,24 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   </span>
                 )}
               </div>
+              {productBundles.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {productBundles.map((bundle) => (
+                    <div
+                      key={bundle.id}
+                      className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm"
+                    >
+                      <span className="text-amber-600">🏷️</span>
+                      <span className="font-medium text-amber-800">
+                        Buy {bundle.minQuantity}+ and save {Number(bundle.discountPercent)}%!
+                      </span>
+                      {bundle.description && (
+                        <span className="text-amber-700">— {bundle.description}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {product.description && (

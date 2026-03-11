@@ -29,7 +29,12 @@ async function getCartWithItems() {
   });
 }
 
-export default async function CheckoutPage() {
+type CheckoutPageProps = {
+  searchParams: Promise<{ discountCode?: string }>;
+};
+
+export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
+  const { discountCode } = await searchParams;
   const [cart, user] = await Promise.all([getCartWithItems(), getCurrentUser()]);
   const items = cart?.items ?? [];
 
@@ -46,7 +51,31 @@ export default async function CheckoutPage() {
     subtotal,
   );
 
-  const estimatedTotal = subtotal + shipping.amount;
+  let discountAmount = 0;
+  let appliedDiscountCode: string | null = null;
+
+  if (discountCode) {
+    const discount = await prisma.discountCode.findUnique({
+      where: { code: discountCode.toUpperCase() },
+    });
+
+    if (discount && discount.active) {
+      const isExpired = discount.expiresAt && new Date(discount.expiresAt) < new Date();
+      const isMaxUsed = discount.maxUses && discount.usedCount >= discount.maxUses;
+      const meetsMinOrder = !discount.minOrderValue || subtotal >= Number(discount.minOrderValue);
+
+      if (!isExpired && !isMaxUsed && meetsMinOrder) {
+        appliedDiscountCode = discount.code;
+        if (discount.type === "PERCENTAGE") {
+          discountAmount = Math.round((subtotal * Number(discount.value)) / 100 * 100) / 100;
+        } else {
+          discountAmount = Math.min(Number(discount.value), subtotal);
+        }
+      }
+    }
+  }
+
+  const estimatedTotal = subtotal - discountAmount + shipping.amount;
   const currency = items[0]?.product?.currency ?? "EUR";
 
   return (
@@ -80,7 +109,11 @@ export default async function CheckoutPage() {
           </div>
         ) : (
           <div className="grid gap-8 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1.1fr)]">
-            <CheckoutForm currency={currency} subtotal={subtotal} />
+            <CheckoutForm
+              currency={currency}
+              subtotal={subtotal}
+              discountCode={appliedDiscountCode}
+            />
 
             <section className="space-y-3 rounded-2xl border bg-white p-5 shadow-sm">
               <h2 className="text-sm font-semibold text-zinc-900">
@@ -126,6 +159,14 @@ export default async function CheckoutPage() {
                     {currency} {subtotal.toFixed(2)}
                   </dd>
                 </div>
+                {appliedDiscountCode && discountAmount > 0 && (
+                  <div className="flex justify-between text-emerald-700">
+                    <dt>Discount ({appliedDiscountCode})</dt>
+                    <dd className="font-medium">
+                      -{currency} {discountAmount.toFixed(2)}
+                    </dd>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <dt className="text-zinc-500">Shipping</dt>
                   <dd className="font-medium">

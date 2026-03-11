@@ -4,9 +4,8 @@ import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 import { getCurrentUser } from "@/lib/auth";
 import { SiteHeader } from "@/app/components/site-header";
-import { CartReminder } from "@/app/components/cart-reminder";
 import { SiteFooter } from "@/app/components/site-footer";
-import { CartShippingPreview } from "@/app/cart/cart-shipping-preview";
+import { CartOrderSummary } from "@/app/cart/cart-order-summary";
 
 async function getCart() {
   const sessionId = (await cookies()).get("cart_session_id")?.value;
@@ -97,48 +96,11 @@ export default async function CartPage() {
               ))}
             </div>
 
-            <div className="space-y-3 rounded-2xl border bg-white p-4">
-              <h2 className="text-sm font-semibold text-zinc-900">
-                Order summary
-              </h2>
-              <dl className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <dt className="text-zinc-500">Subtotal</dt>
-                  <dd className="font-medium">
-                    {items[0]?.product?.currency ?? "USD"}{" "}
-                    {subtotal.toFixed(2)}
-                  </dd>
-                </div>
-                <div className="border-t border-zinc-100 pt-3">
-                  <CartShippingPreview
-                    subtotal={subtotal}
-                    currency={items[0]?.product?.currency ?? "EUR"}
-                  />
-                </div>
-              </dl>
-
-              <form action="/checkout" method="get" className="pt-2">
-                <button
-                  type="submit"
-                  className="flex w-full items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-                >
-                  Checkout
-                </button>
-              </form>
-
-              <p className="text-xs text-zinc-500">
-                You can checkout as a guest or create an account during
-                checkout.
-              </p>
-              {!user && (
-                <div className="border-t border-zinc-100 pt-3">
-                  <p className="mb-2 text-xs font-medium text-zinc-700">
-                    Get a reminder
-                  </p>
-                  <CartReminder />
-                </div>
-              )}
-            </div>
+            <CartOrderSummary
+              subtotal={subtotal}
+              currency={items[0]?.product?.currency ?? "EUR"}
+              showReminder={!user}
+            />
           </div>
         )}
       </main>

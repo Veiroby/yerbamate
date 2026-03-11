@@ -39,6 +39,45 @@ enum PaymentMethod {
   WIRE_TRANSFER
 }
 
+enum DiscountType {
+  FIXED_AMOUNT
+  PERCENTAGE
+}
+
+model DiscountCode {
+  id            String       @id @default(cuid())
+  code          String       @unique
+  type          DiscountType
+  value         Decimal      @db.Decimal(10, 2)
+  minOrderValue Decimal?     @db.Decimal(10, 2)
+  maxUses       Int?
+  usedCount     Int          @default(0)
+  active        Boolean      @default(true)
+  expiresAt     DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([code])
+  @@index([active])
+}
+
+model BundleOffer {
+  id              String   @id @default(cuid())
+  name            String
+  description     String?
+  minQuantity     Int
+  discountPercent Decimal  @db.Decimal(5, 2)
+  productId       String?
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  product Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  @@index([active])
+  @@index([productId])
+}
+
 model User {
   id           String    @id @default(cuid())
   email        String    @unique
@@ -97,11 +136,12 @@ model Product {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
-  category   Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  images     ProductImage[]
-  variants   Variant[]
-  orderItems OrderItem[]
-  cartItems  CartItem[]
+  category     Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  images       ProductImage[]
+  variants     Variant[]
+  orderItems   OrderItem[]
+  cartItems    CartItem[]
+  bundleOffers BundleOffer[]
 
   @@index([slug])
   @@index([active])
@@ -205,6 +245,8 @@ model Order {
   vatNumber             String?
   phone                 String?
   subtotal              Decimal       @db.Decimal(10, 2)
+  discountCode          String?
+  discountAmount        Decimal?      @db.Decimal(10, 2)
   shippingCost          Decimal       @db.Decimal(10, 2)
   tax                   Decimal       @db.Decimal(10, 2)
   total                 Decimal       @db.Decimal(10, 2)

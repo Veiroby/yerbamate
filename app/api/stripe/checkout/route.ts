@@ -75,6 +75,7 @@ export async function POST(request: Request) {
   const companyAddress = formData.get("companyAddress")?.toString() || null;
   const vatNumber = formData.get("vatNumber")?.toString() || null;
   const phone = formData.get("phone")?.toString() || null;
+  const discountCodeInput = formData.get("discountCode")?.toString() || null;
 
   const isDpdParcelMachine = shippingOptionId === DPD_PARCEL_MACHINE_METHOD_ID;
 
@@ -150,7 +151,32 @@ export async function POST(request: Request) {
 
   const shippingAmount = shipping.amount ?? 0;
   const tax = 0;
-  const total = subtotal + shippingAmount + tax;
+
+  let discountCode: string | null = null;
+  let discountAmount: number | null = null;
+
+  if (discountCodeInput) {
+    const discount = await prisma.discountCode.findUnique({
+      where: { code: discountCodeInput.toUpperCase() },
+    });
+
+    if (discount && discount.active) {
+      const isExpired = discount.expiresAt && new Date(discount.expiresAt) < new Date();
+      const isMaxUsed = discount.maxUses && discount.usedCount >= discount.maxUses;
+      const meetsMinOrder = !discount.minOrderValue || subtotal >= Number(discount.minOrderValue);
+
+      if (!isExpired && !isMaxUsed && meetsMinOrder) {
+        discountCode = discount.code;
+        if (discount.type === "PERCENTAGE") {
+          discountAmount = Math.round((subtotal * Number(discount.value)) / 100 * 100) / 100;
+        } else {
+          discountAmount = Math.min(Number(discount.value), subtotal);
+        }
+      }
+    }
+  }
+
+  const total = subtotal - (discountAmount ?? 0) + shippingAmount + tax;
 
   const currency = validatedItems[0]?.currency ?? "USD";
 
@@ -207,6 +233,8 @@ export async function POST(request: Request) {
       vatNumber,
       phone,
       subtotal,
+      discountCode,
+      discountAmount,
       shippingCost: shippingAmount,
       tax,
       total,
@@ -222,6 +250,13 @@ export async function POST(request: Request) {
       },
     },
   });
+
+  if (discountCode) {
+    await prisma.discountCode.update({
+      where: { code: discountCode },
+      data: { usedCount: { increment: 1 } },
+    });
+  }
 
   await recordEvent("begin_checkout", {
     sessionId,
@@ -257,10 +292,22 @@ export async function POST(request: Request) {
     });
   }
 
+  let stripeCouponId: string | undefined;
+  if (discountAmount && discountAmount > 0) {
+    const coupon = await stripe.coupons.create({
+      amount_off: Math.round(discountAmount * 100),
+      currency,
+      name: `Discount ${discountCode}`,
+      duration: "once",
+    });
+    stripeCouponId = coupon.id;
+  }
+
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     customer_email: email,
     line_items: lineItems,
+    discounts: stripeCouponId ? [{ coupon: stripeCouponId }] : undefined,
     metadata: {
       orderId: order.id,
     },
