@@ -42,6 +42,10 @@ export function CheckoutForm({ currency, subtotal, discountCode }: Props) {
       newErrors.name = "Full name is required";
     }
 
+    if (!getInputValue("phone")) {
+      newErrors.phone = "Phone number is required for delivery";
+    }
+
     if (!isDpdParcelMachine) {
       if (!getInputValue("addressLine1")) {
         newErrors.addressLine1 = "Address is required";
@@ -63,9 +67,6 @@ export function CheckoutForm({ currency, subtotal, discountCode }: Props) {
       }
       if (!getInputValue("vatNumber")) {
         newErrors.vatNumber = "VAT number is required";
-      }
-      if (!getInputValue("phone")) {
-        newErrors.phone = "Phone number is required";
       }
     }
 
@@ -142,6 +143,21 @@ export function CheckoutForm({ currency, subtotal, discountCode }: Props) {
           />
           {errors.name && (
             <p className="text-xs text-red-600 mt-1">{errors.name}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <label className="block text-xs font-medium text-zinc-600">
+            Phone number
+          </label>
+          <input
+            type="tel"
+            name="phone"
+            required
+            placeholder="+371 12345678"
+            className={inputClassName("phone")}
+          />
+          {errors.phone && (
+            <p className="text-xs text-red-600 mt-1">{errors.phone}</p>
           )}
         </div>
       </section>

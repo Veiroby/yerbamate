@@ -95,6 +95,9 @@ export async function POST(request: Request, { params }: RouteParams) {
   // Calculate total weight (estimate 0.5kg per item)
   const totalWeight = order.items.reduce((sum, item) => sum + item.quantity * 0.5, 0);
 
+  // Get recipient phone - DPD API requires a valid phone number
+  const recipientPhone = order.phone || (shippingAddress as { phone?: string }).phone || DPD_SENDER_DETAILS.phone;
+
   // Create DPD shipment using new API format
   const result = await createDpdShipment({
     senderName: DPD_SENDER_DETAILS.name,
@@ -110,7 +113,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     recipientCity: shippingAddress.city || "",
     recipientPostalCode: shippingAddress.postalCode || "",
     recipientCountry: shippingAddress.country || "LV",
-    recipientPhone: order.phone || "",
+    recipientPhone: recipientPhone,
     recipientEmail: order.email,
     pudoId: shippingAddress.dpdPickupPointId,
     weight: Math.max(totalWeight, 0.5),
