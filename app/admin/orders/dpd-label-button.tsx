@@ -82,9 +82,15 @@ export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel
       // Clean up base64 string
       let cleanBase64 = labelPdf;
       
-      // Remove data URL prefix if present
-      if (cleanBase64.startsWith("data:")) {
-        cleanBase64 = cleanBase64.replace(/^data:[^;]+;base64,/, "");
+      // Remove data URL prefix if present (handles both proper and corrupted formats)
+      if (cleanBase64.includes("base64,")) {
+        cleanBase64 = cleanBase64.split("base64,")[1] || cleanBase64;
+      } else if (cleanBase64.startsWith("data")) {
+        // Handle corrupted data URL like "dataapplication/pdfbase64..."
+        const match = cleanBase64.match(/base64(.+)/i);
+        if (match) {
+          cleanBase64 = match[1];
+        }
       }
       
       // Remove all whitespace and newlines
@@ -95,9 +101,6 @@ export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel
       
       // Handle URL-safe base64 (replace - with + and _ with /)
       cleanBase64 = cleanBase64.replace(/-/g, "+").replace(/_/g, "/");
-      
-      // Remove any invalid base64 characters
-      cleanBase64 = cleanBase64.replace(/[^A-Za-z0-9+/=]/g, "");
       
       // Pad if necessary
       while (cleanBase64.length % 4 !== 0) {

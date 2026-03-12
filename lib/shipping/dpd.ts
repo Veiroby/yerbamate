@@ -357,12 +357,20 @@ export async function createDpdShipment(request: DpdShipmentRequest): Promise<Dp
     console.log("[DPD API] shipmentLabels structure:", JSON.stringify(shipment?.shipmentLabels, null, 2));
     
     if (labelData) {
-      // Clean the label data - ensure it's valid base64
-      labelPdf = String(labelData).replace(/[\s\r\n]/g, "").replace(/[^A-Za-z0-9+/=]/g, "");
+      let rawLabel = String(labelData);
       console.log("[DPD API] Label extracted from shipment response");
-      console.log("[DPD API] Original length:", String(labelData).length);
+      console.log("[DPD API] Original length:", rawLabel.length);
+      console.log("[DPD API] First 100 chars raw:", rawLabel.substring(0, 100));
+      
+      // Check if it's a data URL and extract just the base64 part
+      if (rawLabel.includes("base64,")) {
+        rawLabel = rawLabel.split("base64,")[1] || rawLabel;
+        console.log("[DPD API] Extracted base64 from data URL");
+      }
+      
+      // Clean whitespace only - preserve valid base64 chars
+      labelPdf = rawLabel.replace(/[\s\r\n]/g, "");
       console.log("[DPD API] Cleaned length:", labelPdf.length);
-      console.log("[DPD API] First 100 chars:", labelPdf.substring(0, 100));
     } else {
       // Fetch label separately if not in response
       console.log("[DPD API] Fetching label separately for shipment:", shipmentId);
@@ -427,17 +435,25 @@ export async function getDpdShipmentLabel(
     const data = await response.json();
     console.log("[DPD API] Label response structure:", JSON.stringify(data, null, 2).substring(0, 500));
     
-    const rawLabelPdf = data?.pages?.[0]?.binaryData;
+    let rawLabel = data?.pages?.[0]?.binaryData;
 
-    if (!rawLabelPdf) {
+    if (!rawLabel) {
       return { success: false, error: "No label data in response" };
     }
 
-    // Clean the label data - ensure it's valid base64
-    const labelPdf = String(rawLabelPdf).replace(/[\s\r\n]/g, "").replace(/[^A-Za-z0-9+/=]/g, "");
-    console.log("[DPD API] Label fetched, original length:", String(rawLabelPdf).length);
-    console.log("[DPD API] Label cleaned length:", labelPdf.length);
-    console.log("[DPD API] First 100 chars:", labelPdf.substring(0, 100));
+    rawLabel = String(rawLabel);
+    console.log("[DPD API] Label fetched, original length:", rawLabel.length);
+    console.log("[DPD API] First 100 chars raw:", rawLabel.substring(0, 100));
+    
+    // Check if it's a data URL and extract just the base64 part
+    if (rawLabel.includes("base64,")) {
+      rawLabel = rawLabel.split("base64,")[1] || rawLabel;
+      console.log("[DPD API] Extracted base64 from data URL");
+    }
+    
+    // Clean whitespace only
+    const labelPdf = rawLabel.replace(/[\s\r\n]/g, "");
+    console.log("[DPD API] Cleaned length:", labelPdf.length);
 
     return { success: true, labelPdf }
   } catch (error) {
