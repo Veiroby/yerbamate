@@ -20,3 +20,32 @@ body {
   color: var(--foreground);
   font-family: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
 }
+
+/* Button press effect */
+button:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Smooth transitions for interactive elements */
+button, a {
+  transition-property: color, background-color, border-color, transform, box-shadow;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Cart badge bounce animation */
+@keyframes badge-bounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+}
+
+.animate-badge-bounce {
+  animation: badge-bounce 0.3s ease-in-out;
+}
+
+/* Toast slide-in enhancement */
+[data-sonner-toast] {
+  --normal-bg: white;
+  --normal-border: var(--color-stone-200);
+  --normal-text: var(--foreground);
+}

@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
+import { useCart } from "@/lib/cart-context";
 
 export type ProductCard = {
   id: string;
@@ -13,6 +15,57 @@ export type ProductCard = {
   imageAlt: string | null;
   quantityLeft: number;
 };
+
+function CarouselAddToCartButtons({ productId, productName }: { productId: string; productName: string }) {
+  const { addToCart, isLoading } = useCart();
+  const [adding, setAdding] = useState(false);
+
+  const handleAddToCart = async () => {
+    setAdding(true);
+    await addToCart(productId, productName, 1);
+    setAdding(false);
+  };
+
+  const handleBuyNow = async () => {
+    setAdding(true);
+    const success = await addToCart(productId, productName, 1);
+    setAdding(false);
+    if (success) {
+      window.location.href = "/checkout";
+    }
+  };
+
+  return (
+    <div className="flex gap-2 px-4 pb-4">
+      <button
+        type="button"
+        onClick={handleAddToCart}
+        disabled={adding || isLoading}
+        className="flex-1 rounded-2xl border border-teal-600 py-2 text-xs font-medium text-teal-700 transition hover:bg-teal-50 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {adding ? (
+          <span className="flex items-center justify-center gap-1">
+            <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            Adding...
+          </span>
+        ) : (
+          "Add to cart"
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={handleBuyNow}
+        disabled={adding || isLoading}
+        className="flex-1 rounded-2xl bg-teal-600 py-2 text-xs font-medium text-white transition hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        Buy now
+      </button>
+    </div>
+  );
+}
 
 export function ProductCarousel({ products }: { products: ProductCard[] }) {
   if (products.length === 0) {
@@ -79,36 +132,7 @@ export function ProductCarousel({ products }: { products: ProductCard[] }) {
                 </div>
               </Link>
               {!soldOut && (
-                <div className="flex gap-2 px-4 pb-4">
-                  <form
-                    action="/api/cart/items"
-                    method="post"
-                    className="flex-1"
-                  >
-                    <input type="hidden" name="productId" value={product.id} />
-                    <input type="hidden" name="quantity" value="1" />
-                    <button
-                      type="submit"
-                      className="w-full rounded-2xl border border-teal-600 py-2 text-xs font-medium text-teal-700 transition hover:bg-teal-50"
-                    >
-                      Add to cart
-                    </button>
-                  </form>
-                  <form
-                    action="/api/cart/items?redirect=/checkout"
-                    method="post"
-                    className="flex-1"
-                  >
-                    <input type="hidden" name="productId" value={product.id} />
-                    <input type="hidden" name="quantity" value="1" />
-                    <button
-                      type="submit"
-                      className="w-full rounded-2xl bg-teal-600 py-2 text-xs font-medium text-white transition hover:bg-teal-700"
-                    >
-                      Buy now
-                    </button>
-                  </form>
-                </div>
+                <CarouselAddToCartButtons productId={product.id} productName={product.name} />
               )}
             </div>
           );

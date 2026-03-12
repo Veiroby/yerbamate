@@ -24,17 +24,17 @@ export function CartOrderSummary({ subtotal, currency, showReminder, bundleSavin
   const discountedSubtotal = subtotal - discountAmount - bundleSavings;
 
   return (
-    <div className="space-y-3 rounded-2xl border bg-white p-4">
-      <h2 className="text-sm font-semibold text-zinc-900">Order summary</h2>
+    <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-4">
+      <h2 className="text-sm font-semibold text-stone-900">Order summary</h2>
       <dl className="space-y-1 text-sm">
         <div className="flex justify-between">
-          <dt className="text-zinc-500">Subtotal</dt>
-          <dd className="font-medium">
+          <dt className="text-stone-500">Subtotal</dt>
+          <dd className="font-medium text-stone-900">
             {currency} {subtotal.toFixed(2)}
           </dd>
         </div>
         {bundleSavings > 0 && (
-          <div className="flex justify-between text-emerald-700">
+          <div className="flex justify-between text-teal-700">
             <dt>Bundle savings</dt>
             <dd className="font-medium">
               -{currency} {bundleSavings.toFixed(2)}
@@ -42,19 +42,19 @@ export function CartOrderSummary({ subtotal, currency, showReminder, bundleSavin
           </div>
         )}
         {appliedDiscount && (
-          <div className="flex justify-between text-emerald-700">
+          <div className="flex justify-between text-teal-700">
             <dt>Discount ({appliedDiscount.code})</dt>
             <dd className="font-medium">
               -{currency} {discountAmount.toFixed(2)}
             </dd>
           </div>
         )}
-        <div className="border-t border-zinc-100 pt-3">
+        <div className="border-t border-stone-100 pt-3">
           <CartShippingPreview subtotal={discountedSubtotal} currency={currency} />
         </div>
       </dl>
 
-      <div className="border-t border-zinc-100 pt-3">
+      <div className="border-t border-stone-100 pt-3">
         <DiscountCodeInput
           subtotal={subtotal}
           currency={currency}
@@ -68,18 +68,18 @@ export function CartOrderSummary({ subtotal, currency, showReminder, bundleSavin
         )}
         <button
           type="submit"
-          className="flex w-full items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+          className="flex w-full items-center justify-center rounded-full bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
         >
           Checkout
         </button>
       </form>
 
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-stone-500">
         You can checkout as a guest or create an account during checkout.
       </p>
       {showReminder && (
-        <div className="border-t border-zinc-100 pt-3">
-          <p className="mb-2 text-xs font-medium text-zinc-700">Get a reminder</p>
+        <div className="border-t border-stone-100 pt-3">
+          <p className="mb-2 text-xs font-medium text-stone-700">Get a reminder</p>
           <CartReminder />
         </div>
       )}

@@ -56,12 +56,26 @@ export async function generateInvoicePdf(
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
 
-  const regularFontBytes = await readFile(
-    path.join(process.cwd(), "public", "fonts", "NotoSans-Regular.ttf"),
-  );
-  const boldFontBytes = await readFile(
-    path.join(process.cwd(), "public", "fonts", "NotoSans-Bold.ttf"),
-  );
+  const fontsDir = path.join(process.cwd(), "public", "fonts");
+  const regularFontPath = path.join(fontsDir, "NotoSans-Regular.ttf");
+  const boldFontPath = path.join(fontsDir, "NotoSans-Bold.ttf");
+
+  let regularFontBytes: Buffer;
+  let boldFontBytes: Buffer;
+
+  try {
+    regularFontBytes = await readFile(regularFontPath);
+    boldFontBytes = await readFile(boldFontPath);
+  } catch (err) {
+    console.error(
+      `[invoice] Failed to load fonts from ${fontsDir}:`,
+      err instanceof Error ? err.message : err,
+    );
+    console.error(`[invoice] process.cwd() = ${process.cwd()}`);
+    throw new Error(
+      `Font files not found. Expected at: ${regularFontPath} and ${boldFontPath}`,
+    );
+  }
 
   const font = await pdf.embedFont(regularFontBytes, { subset: true });
   const boldFont = await pdf.embedFont(boldFontBytes, { subset: true });

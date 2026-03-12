@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { SiteHeader } from "@/app/components/site-header";
 import { SiteFooter } from "@/app/components/site-footer";
+import { AddToCartForm } from "./add-to-cart-form";
 
 export const dynamic = "force-dynamic";
 
@@ -56,13 +57,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-50 text-zinc-900">
+    <div className="min-h-screen bg-stone-50 text-stone-900">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} />
 
       <main className="mx-auto max-w-5xl px-4 py-10">
         <Link
           href="/products"
-          className="mb-6 inline-flex text-sm text-zinc-500 hover:text-emerald-600"
+          className="mb-6 inline-flex text-sm text-stone-500 hover:text-teal-600 transition"
         >
           ← Back to products
         </Link>
@@ -70,7 +71,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <div className="grid gap-10 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
           {/* Images */}
           <div className="space-y-4">
-            <div className="relative aspect-square w-full overflow-hidden rounded-2xl border bg-zinc-100 shadow-sm">
+            <div className="relative aspect-square w-full overflow-hidden rounded-2xl border border-stone-200 bg-stone-100 shadow-sm">
               {primaryImage ? (
                 <Image
                   src={primaryImage.url}
@@ -81,13 +82,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   priority
                 />
               ) : (
-                <div className="flex h-full items-center justify-center text-zinc-400">
+                <div className="flex h-full items-center justify-center text-stone-400">
                   No image
                 </div>
               )}
               {soldOut && (
-                <div className="absolute inset-0 flex items-center justify-center bg-zinc-900/50">
-                  <span className="rounded-full bg-zinc-800 px-6 py-3 text-base font-semibold text-white">
+                <div className="absolute inset-0 flex items-center justify-center bg-stone-900/50">
+                  <span className="rounded-full bg-stone-800 px-6 py-3 text-base font-semibold text-white">
                     Sold out
                   </span>
                 </div>
@@ -98,7 +99,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 {product.images.map((image) => (
                   <div
                     key={image.id}
-                    className="relative aspect-square h-20 w-20 shrink-0 overflow-hidden rounded-xl border bg-zinc-100"
+                    className="relative aspect-square h-20 w-20 shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-stone-100"
                   >
                     <Image
                       src={image.url}
@@ -116,15 +117,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {/* Info & purchase */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 md:text-3xl">
+              <h1 className="text-2xl font-semibold tracking-tight text-stone-900 md:text-3xl">
                 {product.name}
               </h1>
               <div className="mt-2 flex flex-wrap items-center gap-3">
-                <p className="text-xl font-semibold text-zinc-900">
+                <p className="text-xl font-semibold text-stone-900">
                   {product.currency} {price.toFixed(2)}
                 </p>
                 {!soldOut && (
-                  <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                  <span className="rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-700">
                     {quantityLeft} in stock
                   </span>
                 )}
@@ -150,64 +151,27 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
 
             {product.description && (
-              <section className="rounded-xl border border-zinc-200 bg-white p-4">
-                <h2 className="mb-2 text-sm font-semibold text-zinc-900">
+              <section className="rounded-xl border border-stone-200 bg-white p-4">
+                <h2 className="mb-2 text-sm font-semibold text-stone-900">
                   Description
                 </h2>
-                <p className="whitespace-pre-line text-sm leading-relaxed text-zinc-600">
+                <p className="whitespace-pre-line text-sm leading-relaxed text-stone-600">
                   {product.description}
                 </p>
               </section>
             )}
 
             {!soldOut && (
-              <form
-                action="/api/cart/items"
-                method="post"
-                className="space-y-4 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm"
-              >
-                <input type="hidden" name="productId" value={product.id} />
-                <div className="space-y-2">
-                  <label
-                    htmlFor="quantity"
-                    className="block text-sm font-semibold text-zinc-900"
-                  >
-                    How many do you want?
-                  </label>
-                  <input
-                    id="quantity"
-                    type="number"
-                    name="quantity"
-                    min={1}
-                    max={quantityLeft}
-                    defaultValue={1}
-                    className="w-24 rounded-xl border border-zinc-300 px-3 py-2.5 text-sm font-medium"
-                  />
-                  {quantityLeft < 10 && (
-                    <p className="text-xs text-zinc-500">
-                      Only {quantityLeft} left in stock
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    type="submit"
-                    className="flex-1 rounded-full border border-emerald-600 py-3 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
-                  >
-                    Add to cart
-                  </button>
-                  <button
-                    type="submit"
-                    formAction="/api/cart/items?redirect=/checkout"
-                    className="flex-1 rounded-full bg-emerald-600 py-3 text-sm font-medium text-white hover:bg-emerald-700"
-                  >
-                    Buy now
-                  </button>
-                </div>
-              </form>
+              <AddToCartForm 
+                productId={product.id} 
+                productName={product.name}
+                quantityLeft={quantityLeft}
+                price={price}
+                currency={product.currency}
+              />
             )}
 
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-stone-500">
               Ships in 1–2 business days. Secure checkout with Stripe. Guest
               checkout supported.
             </p>

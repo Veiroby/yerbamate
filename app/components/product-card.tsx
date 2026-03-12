@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
+import { useCart } from "@/lib/cart-context";
 
 export type ProductCardData = {
   id: string;
@@ -22,6 +26,23 @@ type Props = {
 
 export function ProductCard({ product, showDescription }: Props) {
   const soldOut = product.quantityLeft <= 0;
+  const { addToCart, isLoading } = useCart();
+  const [addingToCart, setAddingToCart] = useState(false);
+
+  const handleAddToCart = async () => {
+    setAddingToCart(true);
+    await addToCart(product.id, product.name, 1);
+    setAddingToCart(false);
+  };
+
+  const handleBuyNow = async () => {
+    setAddingToCart(true);
+    const success = await addToCart(product.id, product.name, 1);
+    setAddingToCart(false);
+    if (success) {
+      window.location.href = "/checkout";
+    }
+  };
 
   return (
     <div
@@ -93,30 +114,32 @@ export function ProductCard({ product, showDescription }: Props) {
       </Link>
       {!soldOut && (
         <div className="flex gap-2 px-4 pb-4">
-          <form action="/api/cart/items" method="post" className="flex-1">
-            <input type="hidden" name="productId" value={product.id} />
-            <input type="hidden" name="quantity" value="1" />
-            <button
-              type="submit"
-              className="w-full rounded-2xl border border-teal-600 py-2.5 text-xs font-medium text-teal-700 transition hover:bg-teal-50"
-            >
-              Add to cart
-            </button>
-          </form>
-          <form
-            action="/api/cart/items?redirect=/checkout"
-            method="post"
-            className="flex-1"
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={addingToCart || isLoading}
+            className="flex-1 rounded-2xl border border-teal-600 py-2.5 text-xs font-medium text-teal-700 transition hover:bg-teal-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <input type="hidden" name="productId" value={product.id} />
-            <input type="hidden" name="quantity" value="1" />
-            <button
-              type="submit"
-              className="w-full rounded-2xl bg-teal-600 py-2.5 text-xs font-medium text-white transition hover:bg-teal-700"
-            >
-              Buy now
-            </button>
-          </form>
+            {addingToCart ? (
+              <span className="flex items-center justify-center gap-1">
+                <svg className="h-3 w-3 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                Adding...
+              </span>
+            ) : (
+              "Add to cart"
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={handleBuyNow}
+            disabled={addingToCart || isLoading}
+            className="flex-1 rounded-2xl bg-teal-600 py-2.5 text-xs font-medium text-white transition hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Buy now
+          </button>
         </div>
       )}
     </div>

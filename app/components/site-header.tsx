@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useCart } from "@/lib/cart-context";
 
 type SiteHeaderProps = {
   user: { isAdmin: boolean } | null;
@@ -25,11 +26,38 @@ function CartIcon({ className }: { className?: string }) {
   );
 }
 
+function CartBadge({ count }: { count: number }) {
+  const [animate, setAnimate] = useState(false);
+  const prevCount = useRef(count);
+
+  useEffect(() => {
+    if (count > prevCount.current) {
+      setAnimate(true);
+      const timer = setTimeout(() => setAnimate(false), 300);
+      return () => clearTimeout(timer);
+    }
+    prevCount.current = count;
+  }, [count]);
+
+  if (count === 0) return null;
+
+  return (
+    <span
+      className={`absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-600 px-1 text-xs font-bold text-white transition-transform ${
+        animate ? "scale-125" : "scale-100"
+      }`}
+    >
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
+
 export function SiteHeader({ user }: SiteHeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const { itemCount } = useCart();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -93,10 +121,11 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           <div className="hidden items-center gap-4 md:flex">
             <Link
               href="/cart"
-              className="flex h-10 w-10 items-center justify-center rounded-xl text-stone-800 transition-colors hover:bg-stone-200/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-              aria-label="Shopping cart"
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl text-stone-800 transition-colors hover:bg-stone-200/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+              aria-label={`Shopping cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
             >
               <CartIcon className="h-6 w-6" />
+              <CartBadge count={itemCount} />
             </Link>
             {user ? (
               <>
@@ -136,10 +165,11 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           {/* Mobile: cart icon (right) so logo stays centered */}
           <Link
             href="/cart"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-stone-800 hover:bg-stone-200/80 md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
-            aria-label="Shopping cart"
+            className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-stone-800 hover:bg-stone-200/80 md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+            aria-label={`Shopping cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
           >
             <CartIcon className="h-6 w-6" />
+            <CartBadge count={itemCount} />
           </Link>
         </div>
       </header>

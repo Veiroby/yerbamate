@@ -85,6 +85,26 @@ export async function POST(request: Request) {
     },
   });
 
+  // Check if the client wants a JSON response (for fetch-based add-to-cart)
+  const acceptHeader = request.headers.get("Accept") ?? "";
+  if (acceptHeader.includes("application/json")) {
+    // Get updated cart item count
+    const updatedCart = await prisma.cart.findUnique({
+      where: { sessionId },
+      include: { items: true },
+    });
+    const cartItemCount = updatedCart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
+
+    return NextResponse.json({
+      success: true,
+      productId: product.id,
+      productName: product.name,
+      quantity,
+      cartItemCount,
+    });
+  }
+
+  // For form submissions, redirect as before
   const url = new URL(request.url);
   const redirectTo = url.searchParams.get("redirect");
   const allowed =

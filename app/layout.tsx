@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Fraunces, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { CookieConsent } from "@/app/components/cookie-consent";
+import { Toaster } from "sonner";
+import { Providers } from "./providers";
 
 const fraunces = Fraunces({
   variable: "--font-fraunces",
@@ -30,8 +32,17 @@ export default function RootLayout({
       <body
         className={`${fraunces.variable} ${dmSans.variable} font-sans antialiased`}
       >
-        {children}
+        <Providers>
+          {children}
+        </Providers>
         <CookieConsent />
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            className: "font-sans",
+            duration: 3000,
+          }}
+        />
       </body>
     </html>
   );
