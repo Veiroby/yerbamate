@@ -89,7 +89,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-stone-600 hover:bg-stone-200/80 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 md:hidden"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-stone-600 hover:bg-stone-200/80 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 lg:hidden"
             aria-label="Open menu"
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -99,18 +99,18 @@ export function SiteHeader({ user }: SiteHeaderProps) {
 
           <Link
             href="/"
-            className="font-serif absolute left-1/2 flex -translate-x-1/2 rounded-xl text-xl font-semibold tracking-tight text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 md:static md:translate-x-0"
+            className="font-serif absolute left-1/2 flex -translate-x-1/2 rounded-xl text-xl font-semibold tracking-tight text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 lg:static lg:translate-x-0"
           >
             YerbaTea
           </Link>
 
           {/* Desktop: center nav (hidden on mobile) */}
-          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 text-sm font-medium md:flex" aria-label="Main navigation">
+          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 text-sm font-medium lg:flex" aria-label="Main navigation">
             {navLinks.map(({ href, label }) => (
               <Link
                 key={`${href}-${label}`}
                 href={href}
-                className={`rounded-lg px-2 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 ${linkClass(href)}`}
+                className={`whitespace-nowrap rounded-lg px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 ${linkClass(href)}`}
               >
                 {label}
               </Link>
@@ -118,7 +118,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           </nav>
 
           {/* Desktop: cart + auth (hidden on mobile) */}
-          <div className="hidden items-center gap-4 md:flex">
+          <div className="hidden items-center gap-3 lg:flex">
             <Link
               href="/cart"
               className="relative flex h-10 w-10 items-center justify-center rounded-xl text-stone-800 transition-colors hover:bg-stone-200/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
@@ -165,7 +165,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           {/* Mobile: cart icon (right) so logo stays centered */}
           <Link
             href="/cart"
-            className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-stone-800 hover:bg-stone-200/80 md:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+            className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-stone-800 hover:bg-stone-200/80 lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
             aria-label={`Shopping cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
           >
             <CartIcon className="h-6 w-6" />
@@ -177,7 +177,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-50 bg-stone-900/50 md:hidden"
+          className="fixed inset-0 z-50 bg-stone-900/50 lg:hidden"
           aria-hidden
           onClick={() => setSidebarOpen(false)}
         />
@@ -185,7 +185,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
 
       {/* Mobile sidebar panel */}
       <aside
-        className={`fixed left-0 top-0 z-50 h-full w-72 max-w-[85vw] border-r border-stone-200 bg-stone-50 shadow-xl transition-transform duration-200 ease-out md:hidden ${
+        className={`fixed left-0 top-0 z-50 h-full w-72 max-w-[85vw] border-r border-stone-200 bg-stone-50 shadow-xl transition-transform duration-200 ease-out lg:hidden ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
         }`}
         aria-hidden={!sidebarOpen}

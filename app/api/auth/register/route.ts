@@ -25,12 +25,9 @@ export async function POST(request: Request) {
   const { allowed, retryAfterMs } = checkRateLimit(rateLimitKey, 5, 60 * 60 * 1000);
   
   if (!allowed) {
-    return NextResponse.json(
-      { error: "Too many registration attempts. Please try again later." },
-      { 
-        status: 429, 
-        headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } 
-      }
+    return NextResponse.redirect(
+      getAuthRedirectUrl("/account/profile?error=too_many_attempts", request),
+      { status: 303 }
     );
   }
 
@@ -41,17 +38,21 @@ export async function POST(request: Request) {
   const password = formData.get("password")?.toString();
 
   if (!email || !password) {
-    return NextResponse.json(
-      { error: "Email and password are required" },
-      { status: 400 },
+    return NextResponse.redirect(
+      getAuthRedirectUrl("/account/profile?error=register_missing_fields", request),
+      { status: 303 }
     );
   }
 
   const passwordCheck = validatePassword(password);
   if (!passwordCheck.valid) {
-    return NextResponse.json(
-      { error: passwordCheck.error },
-      { status: 400 },
+    const errorCode = password.length < 8 ? "password_too_short" :
+      !/[A-Z]/.test(password) ? "password_needs_uppercase" :
+      !/[a-z]/.test(password) ? "password_needs_lowercase" :
+      "password_needs_number";
+    return NextResponse.redirect(
+      getAuthRedirectUrl(`/account/profile?error=${errorCode}`, request),
+      { status: 303 }
     );
   }
 
@@ -60,9 +61,9 @@ export async function POST(request: Request) {
   });
 
   if (existing && existing.passwordHash) {
-    return NextResponse.json(
-      { error: "An account with this email already exists" },
-      { status: 400 },
+    return NextResponse.redirect(
+      getAuthRedirectUrl("/account/profile?error=email_exists", request),
+      { status: 303 }
     );
   }
 

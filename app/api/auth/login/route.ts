@@ -9,12 +9,9 @@ export async function POST(request: Request) {
   const { allowed, retryAfterMs } = checkRateLimit(rateLimitKey, 5, 15 * 60 * 1000);
   
   if (!allowed) {
-    return NextResponse.json(
-      { error: "Too many login attempts. Please try again later." },
-      { 
-        status: 429, 
-        headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } 
-      }
+    return NextResponse.redirect(
+      getAuthRedirectUrl("/account/profile?error=too_many_attempts", request),
+      { status: 303 }
     );
   }
 
@@ -24,9 +21,9 @@ export async function POST(request: Request) {
   const password = formData.get("password")?.toString();
 
   if (!email || !password) {
-    return NextResponse.json(
-      { error: "Email and password are required" },
-      { status: 400 },
+    return NextResponse.redirect(
+      getAuthRedirectUrl("/account/profile?error=missing_fields", request),
+      { status: 303 }
     );
   }
 
@@ -35,17 +32,17 @@ export async function POST(request: Request) {
   });
 
   if (!user || !user.passwordHash) {
-    return NextResponse.json(
-      { error: "Invalid email or password" },
-      { status: 401 },
+    return NextResponse.redirect(
+      getAuthRedirectUrl("/account/profile?error=invalid_credentials", request),
+      { status: 303 }
     );
   }
 
   const valid = await verifyPassword(password, user.passwordHash);
   if (!valid) {
-    return NextResponse.json(
-      { error: "Invalid email or password" },
-      { status: 401 },
+    return NextResponse.redirect(
+      getAuthRedirectUrl("/account/profile?error=invalid_credentials", request),
+      { status: 303 }
     );
   }
 

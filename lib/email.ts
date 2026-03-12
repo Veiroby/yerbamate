@@ -316,6 +316,36 @@ export function renderAbandonedCartHtml(options: {
 </html>`;
 }
 
+export async function sendPasswordResetEmail(options: {
+  email: string;
+  resetUrl: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  if (!isEmailConfigured()) {
+    return { ok: false, error: "Email not configured" };
+  }
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Reset your password</title></head>
+<body style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#18181b">
+  <h1 style="font-size:1.25rem;margin:0 0 16px">Reset your password</h1>
+  <p style="margin:0 0 16px;line-height:1.6">We received a request to reset your password. Click the button below to choose a new password:</p>
+  <p style="margin:0 0 24px">
+    <a href="${escapeHtml(options.resetUrl)}" style="display:inline-block;background:#0d9488;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:600">Reset Password</a>
+  </p>
+  <p style="margin:0 0 16px;line-height:1.6;color:#71717a;font-size:0.875rem">This link will expire in 1 hour.</p>
+  <p style="margin:0;line-height:1.6;color:#71717a;font-size:0.875rem">If you didn't request this, you can safely ignore this email.</p>
+</body>
+</html>`;
+
+  return sendEmail({
+    to: options.email,
+    subject: `Reset your ${SITE_NAME} password`,
+    html,
+  });
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")

@@ -132,13 +132,35 @@ export function AuthForms({ error }: Props) {
   return (
     <div className="space-y-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
       {error && (
-        <p className="rounded-xl bg-amber-50 px-4 py-2 text-sm text-amber-800">
+        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
           {error === "denied" && "Sign-in was cancelled."}
           {error === "oauth" &&
             "Something went wrong with sign-in. Please try again."}
           {error === "no_code" && "Missing authorization. Please try again."}
-          {!["denied", "oauth", "no_code"].includes(error) &&
-            "Something went wrong. Please try again."}
+          {error === "invalid_credentials" &&
+            "Invalid email or password. Please check your details and try again."}
+          {error === "missing_fields" &&
+            "Please enter both email and password."}
+          {error === "too_many_attempts" &&
+            "Too many attempts. Please try again later."}
+          {error === "register_missing_fields" &&
+            "Please enter both email and password to create an account."}
+          {error === "password_too_short" &&
+            "Password must be at least 8 characters."}
+          {error === "password_needs_uppercase" &&
+            "Password must contain an uppercase letter."}
+          {error === "password_needs_lowercase" &&
+            "Password must contain a lowercase letter."}
+          {error === "password_needs_number" &&
+            "Password must contain a number."}
+          {error === "email_exists" &&
+            "An account with this email already exists. Please sign in instead."}
+          {![
+            "denied", "oauth", "no_code", "invalid_credentials", "missing_fields",
+            "too_many_attempts", "register_missing_fields", "password_too_short",
+            "password_needs_uppercase", "password_needs_lowercase", "password_needs_number",
+            "email_exists"
+          ].includes(error) && "Something went wrong. Please try again."}
         </p>
       )}
 
@@ -202,6 +224,14 @@ export function AuthForms({ error }: Props) {
             visible={showSignInPassword}
             onToggle={() => setShowSignInPassword((value) => !value)}
           />
+          <div className="flex items-center justify-end">
+            <Link
+              href="/account/forgot-password"
+              className="text-xs text-teal-700 hover:text-teal-800 hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <button
             type="submit"
             className="flex w-full items-center justify-center rounded-2xl bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"

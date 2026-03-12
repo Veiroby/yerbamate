@@ -5,11 +5,11 @@ import { SiteHeader } from "@/app/components/site-header";
 import { SiteFooter } from "@/app/components/site-footer";
 import { AuthForms } from "../auth-forms";
 
-type Props = { searchParams: Promise<{ error?: string }> };
+type Props = { searchParams: Promise<{ error?: string; status?: string }> };
 
 export default async function ProfilePage({ searchParams }: Props) {
   const user = await getCurrentUser();
-  const { error } = await searchParams;
+  const { error, status } = await searchParams;
 
   if (!user) {
     return (
@@ -27,6 +27,8 @@ export default async function ProfilePage({ searchParams }: Props) {
     );
   }
 
+  const showPasswordResetSuccess = status === "password_reset";
+
   const ordersCount = await prisma.order.count({
     where: { userId: user.id },
   });
@@ -35,6 +37,13 @@ export default async function ProfilePage({ searchParams }: Props) {
     <div className="min-h-screen bg-stone-50">
       <SiteHeader user={{ isAdmin: user.isAdmin }} />
       <main className="mx-auto max-w-3xl px-4 py-10">
+        {showPasswordResetSuccess && (
+          <div className="mb-6 rounded-xl bg-teal-50 px-4 py-3 text-sm text-teal-800">
+            <p className="font-medium">Password reset successful</p>
+            <p className="mt-1 text-teal-700">Your password has been updated and you&apos;re now signed in.</p>
+          </div>
+        )}
+
         <header className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="font-serif text-2xl font-semibold tracking-tight text-stone-900">
