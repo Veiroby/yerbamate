@@ -1,18 +1,109 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 type Props = {
   token: string;
 };
 
 export function ResetPasswordForm({ token }: Props) {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(3);
+
+  useEffect(() => {
+    if (success && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+    if (success && countdown === 0) {
+      router.push("/account/profile");
+    }
+  }, [success, countdown, router]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isSubmitting || success) return;
+
+    setError(null);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const password = formData.get("password")?.toString() || "";
+    const confirmPassword = (form.querySelector("#confirm-password") as HTMLInputElement)?.value || "";
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/auth/reset-password", {
+        method: "POST",
+        body: formData,
+      });
+
+      const url = new URL(response.url);
+      const errorParam = url.searchParams.get("error");
+      const statusParam = url.searchParams.get("status");
+
+      if (errorParam) {
+        const errorMessages: Record<string, string> = {
+          invalid_token: "This reset link has expired or is invalid. Please request a new one.",
+          missing_fields: "Please enter your new password.",
+          too_many_attempts: "Too many attempts. Please try again later.",
+          password_too_short: "Password must be at least 8 characters.",
+          password_needs_uppercase: "Password must contain an uppercase letter.",
+          password_needs_lowercase: "Password must contain a lowercase letter.",
+          password_needs_number: "Password must contain a number.",
+        };
+        setError(errorMessages[errorParam] || "Something went wrong. Please try again.");
+      } else if (statusParam === "password_reset" || url.pathname.includes("/account/profile")) {
+        setSuccess(true);
+      } else {
+        setSuccess(true);
+      }
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-xl bg-teal-50 px-4 py-3 text-sm text-teal-800">
+          <p className="font-medium">Password reset successful!</p>
+          <p className="mt-1 text-teal-700">
+            Your password has been changed. Redirecting to sign in page in {countdown} seconds...
+          </p>
+        </div>
+        <a
+          href="/account/profile"
+          className="block text-center rounded-2xl bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+        >
+          Sign in now
+        </a>
+      </div>
+    );
+  }
 
   return (
-    <form action="/api/auth/reset-password" method="post" className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <input type="hidden" name="token" value={token} />
+
+      {error && (
+        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+          {error}
+        </p>
+      )}
 
       <div className="space-y-1">
         <label htmlFor="password" className="block text-xs font-medium text-stone-600">
@@ -25,7 +116,8 @@ export function ResetPasswordForm({ token }: Props) {
             name="password"
             required
             minLength={8}
-            className="w-full rounded-xl border border-stone-300 px-3 py-2 pr-11 text-sm transition outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+            disabled={isSubmitting}
+            className="w-full rounded-xl border border-stone-300 px-3 py-2 pr-11 text-sm transition outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 disabled:bg-stone-100 disabled:cursor-not-allowed"
           />
           <button
             type="button"
@@ -59,7 +151,8 @@ export function ResetPasswordForm({ token }: Props) {
             type={showConfirmPassword ? "text" : "password"}
             required
             minLength={8}
-            className="w-full rounded-xl border border-stone-300 px-3 py-2 pr-11 text-sm transition outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+            disabled={isSubmitting}
+            className="w-full rounded-xl border border-stone-300 px-3 py-2 pr-11 text-sm transition outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 disabled:bg-stone-100 disabled:cursor-not-allowed"
           />
           <button
             type="button"
@@ -89,9 +182,20 @@ export function ResetPasswordForm({ token }: Props) {
 
       <button
         type="submit"
-        className="flex w-full items-center justify-center rounded-2xl bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+        disabled={isSubmitting}
+        className="flex w-full items-center justify-center rounded-2xl bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700 disabled:bg-teal-400 disabled:cursor-not-allowed"
       >
-        Reset password
+        {isSubmitting ? (
+          <>
+            <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+            Resetting...
+          </>
+        ) : (
+          "Reset password"
+        )}
       </button>
     </form>
   );

@@ -348,3 +348,27 @@ model Session {
 
   @@index([userId])
 }
+
+model EmailCampaign {
+  id          String   @id @default(cuid())
+  name        String
+  subject     String
+  htmlContent String   @db.Text
+  sentAt      DateTime?
+  sentCount   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sentAt])
+}
+
+model SiteSettings {
+  id                     String   @id @default("default")
+  popupEnabled           Boolean  @default(true)
+  popupDelaySeconds      Int      @default(10)
+  popupTitle             String   @default("Join YerbaTea Community")
+  popupDescription       String   @default("Subscribe to our newsletter and get an exclusive discount on your first order!")
+  popupDiscountCode      String?
+  popupDiscountPercent   Int      @default(10)
+  updatedAt              DateTime @updatedAt
+}

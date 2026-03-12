@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { CookieConsent } from "@/app/components/cookie-consent";
+import { NewsletterPopup } from "@/app/components/newsletter-popup";
 import { Toaster } from "sonner";
 import { Providers } from "./providers";
 
@@ -36,6 +37,7 @@ export default function RootLayout({
           {children}
         </Providers>
         <CookieConsent />
+        <NewsletterPopup />
         <Toaster 
           position="top-right"
           toastOptions={{
