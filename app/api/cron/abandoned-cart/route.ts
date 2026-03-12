@@ -12,7 +12,13 @@ const ABANDONED_HOURS = 24;
 export async function GET(request: Request) {
   const auth = request.headers.get("authorization");
   const secret = process.env.CRON_SECRET;
-  if (secret && auth !== `Bearer ${secret}`) {
+  
+  if (!secret) {
+    console.error("[cron] CRON_SECRET not configured - endpoint disabled for security");
+    return NextResponse.json({ error: "Cron not configured" }, { status: 500 });
+  }
+  
+  if (auth !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

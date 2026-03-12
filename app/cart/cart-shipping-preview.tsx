@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { DpdLogo } from "@/app/components/dpd-logo";
 import { DPD_PARCEL_MACHINE_METHOD_ID } from "@/lib/shipping/dpd";
+import { useLocale } from "@/lib/locale-context";
+import { EU_COUNTRIES, CountryCode } from "@/lib/locale-data";
 
 type ShippingMethod = {
   id: string;
@@ -11,27 +13,20 @@ type ShippingMethod = {
   estimatedDays?: number | null;
 };
 
-const COUNTRY_OPTIONS = [
-  { value: "LV", label: "Latvia" },
-  { value: "EE", label: "Estonia" },
-  { value: "LT", label: "Lithuania" },
-  { value: "US", label: "United States" },
-] as const;
-
 type Props = {
   subtotal: number;
   currency: string;
 };
 
 export function CartShippingPreview({ subtotal, currency }: Props) {
-  const [country, setCountry] = useState("LV");
+  const { country: globalCountry, setCountry: setGlobalCountry } = useLocale();
   const [methods, setMethods] = useState<ShippingMethod[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
-    const params = new URLSearchParams({ country });
+    const params = new URLSearchParams({ country: globalCountry });
     if (Number.isFinite(subtotal)) params.set("subtotal", String(subtotal));
     fetch(`/api/shipping/methods?${params.toString()}`)
       .then((res) => res.json())
@@ -43,19 +38,19 @@ export function CartShippingPreview({ subtotal, currency }: Props) {
         if (!cancelled) setLoading(false);
       });
     return () => { cancelled = true; };
-  }, [country, subtotal]);
+  }, [globalCountry, subtotal]);
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-zinc-700">Shipping</span>
         <select
-          value={country}
-          onChange={(e) => setCountry(e.target.value)}
+          value={globalCountry}
+          onChange={(e) => setGlobalCountry(e.target.value as CountryCode)}
           className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-700 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
           aria-label="Delivery country"
         >
-          {COUNTRY_OPTIONS.map((opt) => (
+          {EU_COUNTRIES.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
             </option>

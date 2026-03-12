@@ -1,13 +1,17 @@
 import { cookies } from "next/headers";
-import { randomUUID } from "node:crypto";
+import { randomUUID, createHash } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import type { OAuthProfile } from "@/lib/oauth";
 
 const SESSION_COOKIE_NAME = "auth_session_id";
 
+function hashSessionToken(token: string): string {
+  return createHash("sha256").update(token).digest("hex");
+}
+
 export async function hashPassword(password: string) {
-  const saltRounds = 10;
+  const saltRounds = 12; // EU compliant minimum
   return bcrypt.hash(password, saltRounds);
 }
 
@@ -17,12 +21,13 @@ export async function verifyPassword(password: string, hash: string) {
 
 export async function createSession(userId: string) {
   const token = randomUUID();
+  const hashedToken = hashSessionToken(token);
   const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24 * 30);
 
   await prisma.session.create({
     data: {
       userId,
-      sessionToken: token,
+      sessionToken: hashedToken,
       expiresAt,
     },
   });
@@ -30,6 +35,7 @@ export async function createSession(userId: string) {
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 30,
@@ -40,8 +46,9 @@ export async function getCurrentUser() {
   const token = (await cookies()).get(SESSION_COOKIE_NAME)?.value;
   if (!token) return null;
 
+  const hashedToken = hashSessionToken(token);
   const session = await prisma.session.findUnique({
-    where: { sessionToken: token },
+    where: { sessionToken: hashedToken },
     include: { user: true },
   });
 
@@ -57,12 +64,14 @@ export async function destroySession() {
   const token = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!token) return;
 
+  const hashedToken = hashSessionToken(token);
   await prisma.session.deleteMany({
-    where: { sessionToken: token },
+    where: { sessionToken: hashedToken },
   });
 
   cookieStore.set(SESSION_COOKIE_NAME, "", {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: 0,

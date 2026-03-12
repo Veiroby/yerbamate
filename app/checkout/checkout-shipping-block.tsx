@@ -2,13 +2,8 @@
 
 import { useState } from "react";
 import { ShippingMethodSelector } from "./shipping-method-selector";
-
-const COUNTRIES = [
-  { value: "US", label: "United States" },
-  { value: "LV", label: "Latvia" },
-  { value: "EE", label: "Estonia" },
-  { value: "LT", label: "Lithuania" },
-];
+import { useLocale } from "@/lib/locale-context";
+import { EU_COUNTRIES } from "@/lib/locale-data";
 
 type Props = {
   currency?: string;
@@ -23,7 +18,8 @@ export function CheckoutShippingBlock({
   errors,
   onShippingMethodChange,
 }: Props) {
-  const [country, setCountry] = useState("LV");
+  const { country: globalCountry } = useLocale();
+  const [country, setCountry] = useState(globalCountry);
 
   const inputClassName = (fieldName: string) =>
     `w-full rounded-xl border px-3 py-2 text-sm ${
@@ -100,10 +96,10 @@ export function CheckoutShippingBlock({
           <select
             name="country"
             value={country}
-            onChange={(e) => setCountry(e.target.value)}
+            onChange={(e) => setCountry(e.target.value as typeof country)}
             className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm"
           >
-            {COUNTRIES.map((c) => (
+            {EU_COUNTRIES.map((c) => (
               <option key={c.value} value={c.value}>
                 {c.label}
               </option>

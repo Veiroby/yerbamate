@@ -10,12 +10,17 @@ export function CookieConsent() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const accepted = localStorage.getItem(CONSENT_KEY);
-    if (!accepted) setVisible(true);
+    const consent = localStorage.getItem(CONSENT_KEY);
+    if (!consent) setVisible(true);
   }, []);
 
   const accept = () => {
     localStorage.setItem(CONSENT_KEY, "accepted");
+    setVisible(false);
+  };
+
+  const reject = () => {
+    localStorage.setItem(CONSENT_KEY, "rejected");
     setVisible(false);
   };
 
@@ -29,30 +34,32 @@ export function CookieConsent() {
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-stone-600">
-          We use cookies to run the store and improve your experience. By
-          clicking &quot;Accept&quot;, you confirm that you have read and agree to our{" "}
-          <Link
-            href="/terms"
-            className="font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-800"
-          >
-            Terms and conditions
-          </Link>{" "}
-          and our{" "}
+          We use essential cookies to run the store and optional cookies to improve your experience. 
+          See our{" "}
           <Link
             href="/privacy"
-            className="font-medium text-emerald-700 underline underline-offset-2 hover:text-emerald-800"
+            className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800"
           >
             Privacy policy
-          </Link>
-          .
+          </Link>{" "}
+          for details.
         </p>
-        <button
-          type="button"
-          onClick={accept}
-          className="shrink-0 rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
-        >
-          Accept
-        </button>
+        <div className="flex shrink-0 gap-3">
+          <button
+            type="button"
+            onClick={reject}
+            className="rounded-full border border-stone-300 px-5 py-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+          >
+            Essential only
+          </button>
+          <button
+            type="button"
+            onClick={accept}
+            className="rounded-full bg-teal-600 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
+          >
+            Accept all
+          </button>
+        </div>
       </div>
     </div>
   );

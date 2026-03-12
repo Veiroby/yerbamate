@@ -1,12 +1,15 @@
 "use client";
 
 import { CartProvider } from "@/lib/cart-context";
+import { LocaleProvider } from "@/lib/locale-context";
 import { ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
-    <CartProvider>
-      {children}
-    </CartProvider>
+    <LocaleProvider>
+      <CartProvider>
+        {children}
+      </CartProvider>
+    </LocaleProvider>
   );
 }

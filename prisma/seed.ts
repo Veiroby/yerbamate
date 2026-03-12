@@ -11,11 +11,16 @@ if (!connectionString) {
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
-const ADMIN_EMAIL = "admin@example.com";
-const ADMIN_PASSWORD = "admin123";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@example.com";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const BCRYPT_ROUNDS = 12;
 
 async function main() {
-  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 10);
+  if (!ADMIN_PASSWORD) {
+    throw new Error("ADMIN_PASSWORD environment variable is required for seeding. Set a strong password in your .env file.");
+  }
+
+  const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, BCRYPT_ROUNDS);
   await prisma.user.upsert({
     where: { email: ADMIN_EMAIL },
     update: { passwordHash, isAdmin: true, name: "Admin" },
@@ -26,7 +31,7 @@ async function main() {
       isAdmin: true,
     },
   });
-  console.log(`Admin user ready: ${ADMIN_EMAIL} / ${ADMIN_PASSWORD}`);
+  console.log(`Admin user ready: ${ADMIN_EMAIL}`);
 }
 
 main()

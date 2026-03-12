@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { recordEvent } from "@/lib/analytics";
+import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 async function getOrCreateSessionId() {
   const cookieStore = await cookies();
@@ -19,6 +20,19 @@ async function getOrCreateSessionId() {
 }
 
 export async function POST(request: Request) {
+  const rateLimitKey = getRateLimitKey(request, "cart-add");
+  const { allowed, retryAfterMs } = checkRateLimit(rateLimitKey, 30, 60 * 1000);
+  
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait before adding more items." },
+      { 
+        status: 429, 
+        headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } 
+      }
+    );
+  }
+
   const sessionId = await getOrCreateSessionId();
   const formData = await request.formData();
 
@@ -107,9 +121,9 @@ export async function POST(request: Request) {
   // For form submissions, redirect as before
   const url = new URL(request.url);
   const redirectTo = url.searchParams.get("redirect");
-  const allowed =
+  const isAllowedRedirect =
     redirectTo === "/checkout" || redirectTo === "/cart" || redirectTo === "";
-  const target = allowed && redirectTo ? redirectTo : "/cart";
+  const target = isAllowedRedirect && redirectTo ? redirectTo : "/cart";
 
   const origin =
     process.env.NEXT_PUBLIC_APP_ORIGIN ?? new URL(request.url).origin;

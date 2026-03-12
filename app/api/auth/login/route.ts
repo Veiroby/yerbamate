@@ -2,8 +2,22 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createSession, verifyPassword } from "@/lib/auth";
 import { getAuthRedirectUrl } from "@/lib/oauth";
+import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  const rateLimitKey = getRateLimitKey(request, "login");
+  const { allowed, retryAfterMs } = checkRateLimit(rateLimitKey, 5, 15 * 60 * 1000);
+  
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many login attempts. Please try again later." },
+      { 
+        status: 429, 
+        headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) } 
+      }
+    );
+  }
+
   const formData = await request.formData();
 
   const email = formData.get("email")?.toString().toLowerCase().trim();
