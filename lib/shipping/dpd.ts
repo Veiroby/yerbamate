@@ -1,19 +1,23 @@
 /**
  * DPD parcel machine / pickup points for Latvia, Estonia, Lithuania.
- * Fetches from eserviss.dpd.lv API when credentials are set; otherwise uses static list.
+ * Full integration with DPD eserviss.dpd.lv API for:
+ * - Fetching pickup points
+ * - Creating shipments
+ * - Generating shipping labels
  *
- * Env (optional): set one of:
- *   - DPD_ESERVISS_CREDENTIALS_BASE64 = base64("username:password") for Basic auth
- *   - DPD_ESERVISS_USERNAME + DPD_ESERVISS_PASSWORD (plain; encoded to Basic auth)
+ * Required Env Variables:
+ *   DPD_CLIENT_ID - Your DPD client ID (e.g., 7352e019-0a76-402f-aa60-0ceba2e073eb)
+ *   DPD_USERNAME - Your DPD username
+ *   DPD_PASSWORD - Your DPD password
  *
- * @see https://eserviss.dpd.lv/api#/Addressbook/101167d286e4f27b181a6524e4a17f24
+ * @see https://eserviss.dpd.lv/api
  */
 
 export const DPD_PARCEL_MACHINE_METHOD_ID = "dpd-parcel-machine";
 
 export const DPD_BALTIC_COUNTRIES = ["LV", "EE", "LT"] as const;
 
-const DPD_ESERVISS_API_BASE = "https://eserviss.dpd.lv/api";
+const DPD_API_BASE = "https://eserviss.dpd.lv";
 
 export type DpdPickupPoint = {
   id: string;
@@ -24,107 +28,278 @@ export type DpdPickupPoint = {
   country: string;
 };
 
-/** Build Basic auth header. Supports base64-encoded "username:password" or separate username/password. */
-function getBasicAuthHeader(): string | null {
-  const credsBase64 = process.env.DPD_ESERVISS_CREDENTIALS_BASE64;
-  if (credsBase64) {
-    return `Basic ${credsBase64.trim()}`;
-  }
-  const user = process.env.DPD_ESERVISS_USERNAME;
-  const pass = process.env.DPD_ESERVISS_PASSWORD;
-  if (user && pass) {
-    return `Basic ${Buffer.from(`${user}:${pass}`, "utf-8").toString("base64")}`;
-  }
-  return null;
+export type DpdShipmentResult = {
+  success: boolean;
+  shipmentId?: string;
+  trackingNumber?: string;
+  labelPdf?: string; // Base64 encoded PDF
+  error?: string;
+};
+
+export type DpdShipmentRequest = {
+  senderName: string;
+  senderAddress: string;
+  senderCity: string;
+  senderPostalCode: string;
+  senderCountry: string;
+  senderPhone: string;
+  senderEmail: string;
+  recipientName: string;
+  recipientAddress: string;
+  recipientCity: string;
+  recipientPostalCode: string;
+  recipientCountry: string;
+  recipientPhone: string;
+  recipientEmail: string;
+  parcelShopId?: string;
+  weight: number; // in kg
+  reference: string; // order number
+};
+
+function getDpdCredentials() {
+  return {
+    clientId: process.env.DPD_CLIENT_ID || "",
+    username: process.env.DPD_USERNAME || "",
+    password: process.env.DPD_PASSWORD || "",
+  };
 }
 
-/** Raw shape we accept from eserviss.dpd.lv Addressbook (field names may vary). */
-type ApiAddressRow = {
-  id?: string;
-  name?: string;
-  address?: string;
+function hasDpdCredentials(): boolean {
+  const { clientId, username, password } = getDpdCredentials();
+  return !!(clientId && username && password);
+}
+
+/** Build Basic auth header for DPD API */
+function getAuthHeader(): string {
+  const { username, password } = getDpdCredentials();
+  return `Basic ${Buffer.from(`${username}:${password}`, "utf-8").toString("base64")}`;
+}
+
+/** Raw shape from DPD API pickup points */
+type ApiPickupPoint = {
+  parcelshopId?: string;
+  company?: string;
+  street?: string;
   city?: string;
-  postalCode?: string;
+  pcode?: string;
   country?: string;
-  countryCode?: string;
   [key: string]: unknown;
 };
 
-function mapApiRowToPickupPoint(row: ApiAddressRow, country: string): DpdPickupPoint | null {
-  const id = String(row.id ?? row.name ?? "").trim();
-  const name = String(row.name ?? row.id ?? "Pickup").trim();
-  const address = String(row.address ?? "").trim();
+function mapApiToPickupPoint(row: ApiPickupPoint, defaultCountry: string): DpdPickupPoint | null {
+  const id = String(row.parcelshopId ?? "").trim();
+  const name = String(row.company ?? "DPD Pickup").trim();
+  const address = String(row.street ?? "").trim();
   const city = String(row.city ?? "").trim();
-  const postalCode = String(row.postalCode ?? row.postal_code ?? "").trim();
-  const countryCode = (row.country ?? row.countryCode ?? country).toString().toUpperCase().slice(0, 2);
-  if (!id || !name) return null;
+  const postalCode = String(row.pcode ?? "").trim();
+  const country = String(row.country ?? defaultCountry).toUpperCase().slice(0, 2);
+  
+  if (!id) return null;
+  
   return {
     id,
     name,
     address: address || "-",
     city: city || "-",
     postalCode: postalCode || "-",
-    country: countryCode || country.toUpperCase(),
+    country,
   };
 }
 
 /**
- * Fetch all addresses from eserviss.dpd.lv Addressbook API.
- * Requires DPD_ESERVISS_CREDENTIALS_BASE64 (base64 of "username:password") or
- * DPD_ESERVISS_USERNAME + DPD_ESERVISS_PASSWORD.
+ * Fetch pickup points from DPD API
  */
 export async function fetchDpdPickupPointsFromApi(country: string): Promise<DpdPickupPoint[]> {
-  const auth = getBasicAuthHeader();
-  if (!auth) return [];
+  if (!hasDpdCredentials()) {
+    console.log("[DPD] No credentials configured, using static list");
+    return getDpdPickupPoints(country);
+  }
 
   const code = country.toUpperCase();
   if (!DPD_BALTIC_COUNTRIES.includes(code as (typeof DPD_BALTIC_COUNTRIES)[number])) {
     return [];
   }
 
-  const urlsToTry = [
-    `${DPD_ESERVISS_API_BASE}/Addressbook`,
-    `${DPD_ESERVISS_API_BASE}/addressbook`,
-  ];
+  try {
+    const response = await fetch(`${DPD_API_BASE}/api/parcelshop/list?country=${code}`, {
+      method: "GET",
+      headers: {
+        Authorization: getAuthHeader(),
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    });
 
-  for (const url of urlsToTry) {
-    try {
-      const res = await fetch(url, {
-        method: "GET",
-        headers: {
-          Authorization: auth,
-          Accept: "application/json",
-        },
-        cache: "no-store",
-      });
-
-      if (!res.ok) {
-        if (res.status === 404) continue;
-        console.warn(`[DPD API] ${url} returned ${res.status}`);
-        return [];
-      }
-
-      const data = (await res.json()) as ApiAddressRow[] | { data?: ApiAddressRow[]; list?: ApiAddressRow[]; items?: ApiAddressRow[] };
-      const rows: ApiAddressRow[] = Array.isArray(data)
-        ? data
-        : (data as { data?: ApiAddressRow[] }).data ??
-          (data as { list?: ApiAddressRow[] }).list ??
-          (data as { items?: ApiAddressRow[] }).items ??
-          [];
-
-      const points = rows
-        .map((row) => mapApiRowToPickupPoint(row, code))
-        .filter((p): p is DpdPickupPoint => p !== null)
-        .filter((p) => p.country === code);
-      return points;
-    } catch (e) {
-      console.warn(`[DPD API] fetch failed for ${url}:`, e);
+    if (!response.ok) {
+      console.warn(`[DPD API] Pickup points request failed: ${response.status}`);
+      return getDpdPickupPoints(country);
     }
+
+    const data = await response.json();
+    const rows: ApiPickupPoint[] = Array.isArray(data) 
+      ? data 
+      : data.parcelshops ?? data.data ?? data.list ?? [];
+
+    const points = rows
+      .map((row) => mapApiToPickupPoint(row, code))
+      .filter((p): p is DpdPickupPoint => p !== null);
+
+    if (points.length > 0) {
+      return points;
+    }
+  } catch (error) {
+    console.warn("[DPD API] Failed to fetch pickup points:", error);
   }
-  return [];
+
+  return getDpdPickupPoints(country);
 }
 
-/** Static list of pickup points. Used when API credentials are not set or API fails. */
+/**
+ * Create a DPD shipment and generate a shipping label
+ */
+export async function createDpdShipment(request: DpdShipmentRequest): Promise<DpdShipmentResult> {
+  if (!hasDpdCredentials()) {
+    return {
+      success: false,
+      error: "DPD credentials not configured",
+    };
+  }
+
+  const { clientId } = getDpdCredentials();
+
+  try {
+    // Build shipment request payload
+    const shipmentPayload = {
+      shipment: {
+        sender: {
+          name1: request.senderName,
+          street: request.senderAddress,
+          city: request.senderCity,
+          country: request.senderCountry,
+          pcode: request.senderPostalCode,
+          phone: request.senderPhone,
+          email: request.senderEmail,
+        },
+        receiver: {
+          name1: request.recipientName,
+          street: request.recipientAddress,
+          city: request.recipientCity,
+          country: request.recipientCountry,
+          pcode: request.recipientPostalCode,
+          phone: request.recipientPhone,
+          email: request.recipientEmail,
+        },
+        parcels: [
+          {
+            weight: request.weight,
+            content: "Yerba Mate products",
+          },
+        ],
+        product: request.parcelShopId ? "CL" : "D", // CL = Pickup point, D = Door delivery
+        parcelShopId: request.parcelShopId,
+        reference1: request.reference,
+        clientId: clientId,
+      },
+    };
+
+    // Create shipment
+    const createResponse = await fetch(`${DPD_API_BASE}/api/shipment/create`, {
+      method: "POST",
+      headers: {
+        Authorization: getAuthHeader(),
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(shipmentPayload),
+    });
+
+    if (!createResponse.ok) {
+      const errorText = await createResponse.text();
+      console.error("[DPD API] Shipment creation failed:", errorText);
+      return {
+        success: false,
+        error: `Shipment creation failed: ${createResponse.status}`,
+      };
+    }
+
+    const shipmentData = await createResponse.json();
+    const shipmentId = shipmentData.shipmentId ?? shipmentData.id ?? shipmentData.shipment?.id;
+    const trackingNumber = shipmentData.trackingNumber ?? shipmentData.parcels?.[0]?.parcelNumber ?? shipmentData.parcelNumber;
+
+    if (!shipmentId) {
+      return {
+        success: false,
+        error: "No shipment ID returned from DPD API",
+      };
+    }
+
+    // Get shipping label PDF
+    const labelResponse = await fetch(`${DPD_API_BASE}/api/shipment/label?shipmentId=${shipmentId}&format=PDF`, {
+      method: "GET",
+      headers: {
+        Authorization: getAuthHeader(),
+        Accept: "application/pdf",
+      },
+    });
+
+    let labelPdf: string | undefined;
+    if (labelResponse.ok) {
+      const labelBuffer = await labelResponse.arrayBuffer();
+      labelPdf = Buffer.from(labelBuffer).toString("base64");
+    } else {
+      console.warn("[DPD API] Label fetch failed, shipment created without label");
+    }
+
+    return {
+      success: true,
+      shipmentId,
+      trackingNumber,
+      labelPdf,
+    };
+  } catch (error) {
+    console.error("[DPD API] Error creating shipment:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Get shipping label for an existing shipment
+ */
+export async function getDpdShipmentLabel(shipmentId: string): Promise<{ success: boolean; labelPdf?: string; error?: string }> {
+  if (!hasDpdCredentials()) {
+    return { success: false, error: "DPD credentials not configured" };
+  }
+
+  try {
+    const response = await fetch(`${DPD_API_BASE}/api/shipment/label?shipmentId=${shipmentId}&format=PDF`, {
+      method: "GET",
+      headers: {
+        Authorization: getAuthHeader(),
+        Accept: "application/pdf",
+      },
+    });
+
+    if (!response.ok) {
+      return { success: false, error: `Label fetch failed: ${response.status}` };
+    }
+
+    const labelBuffer = await response.arrayBuffer();
+    const labelPdf = Buffer.from(labelBuffer).toString("base64");
+
+    return { success: true, labelPdf };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/** Static list of pickup points. Used when API fails or for development. */
 const PICKUP_POINTS: Record<string, DpdPickupPoint[]> = {
   LV: [
     { id: "LV-RIGA-001", name: "DPD Pickup Rīga - Centrs", address: "Brīvības iela 1", city: "Rīga", postalCode: "LV-1010", country: "LV" },
@@ -210,3 +385,14 @@ export function getDpdPickupPointById(
   const points = getDpdPickupPoints(country);
   return points.find((p) => p.id === id) ?? null;
 }
+
+/** Seller/sender details for DPD shipments */
+export const DPD_SENDER_DETAILS = {
+  name: "SIA YerbaTea",
+  address: "Ieriku iela 66-112",
+  city: "Riga",
+  postalCode: "LV-1084",
+  country: "LV",
+  phone: "+37127552577",
+  email: "orders@yerbatea.lv",
+} as const;

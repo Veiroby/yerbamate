@@ -259,6 +259,10 @@ model Order {
   billingAddress        Json?         // optional billing address snapshot
   stripePaymentIntentId String?
   confirmationEmailSentAt DateTime?   // when order confirmation email was last sent
+  dpdShipmentId         String?       // DPD shipment ID
+  dpdTrackingNumber     String?       // DPD tracking number
+  dpdLabelPdf           String?       @db.Text // Base64 encoded PDF label
+  dpdLabelCreatedAt     DateTime?     // when DPD label was generated
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
