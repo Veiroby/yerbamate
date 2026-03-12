@@ -7,9 +7,10 @@ type Props = {
   orderNumber: string;
   hasLabel: boolean;
   trackingNumber?: string | null;
+  shipmentId?: string | null;
 };
 
-export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel, trackingNumber: initialTrackingNumber }: Props) {
+export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel, trackingNumber: initialTrackingNumber, shipmentId }: Props) {
   const [loading, setLoading] = useState(false);
   const [hasLabel, setHasLabel] = useState(initialHasLabel);
   const [trackingNumber, setTrackingNumber] = useState(initialTrackingNumber);
@@ -31,8 +32,12 @@ export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel
         return;
       }
 
-      setHasLabel(true);
+      setHasLabel(!!data.labelPdf);
       setTrackingNumber(data.trackingNumber);
+      
+      if (data.labelPdf) {
+        openLabel(data.labelPdf);
+      }
     } catch {
       setError("Failed to generate label");
     } finally {
@@ -40,22 +45,41 @@ export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel
     }
   };
 
-  const viewLabel = async () => {
+  const fetchLabel = async () => {
+    setLoading(true);
+    setError(null);
+
     try {
-      const res = await fetch(`/api/admin/orders/${orderId}/dpd-label`);
+      const res = await fetch(`/api/admin/orders/${orderId}/dpd-label?refetch=true`, {
+        method: "POST",
+      });
+
       const data = await res.json();
 
-      if (!res.ok || !data.labelPdf) {
-        alert("Label not available");
+      if (!res.ok) {
+        setError(data.error || "Failed to fetch label");
         return;
       }
 
-      // Check if it's a simple text label (placeholder) or actual PDF
-      const labelContent = atob(data.labelPdf);
+      if (data.labelPdf) {
+        setHasLabel(true);
+        openLabel(data.labelPdf);
+      } else {
+        setError("Label not available from DPD");
+      }
+    } catch {
+      setError("Failed to fetch label");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openLabel = (labelPdf: string) => {
+    try {
+      const labelContent = atob(labelPdf);
       const isTextLabel = labelContent.startsWith("DPD SHIPPING LABEL");
 
       if (isTextLabel) {
-        // Open text label in new window for printing
         const printWindow = window.open("", "_blank");
         if (printWindow) {
           printWindow.document.write(`
@@ -64,39 +88,11 @@ export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel
             <head>
               <title>DPD Label - ${orderNumber}</title>
               <style>
-                body {
-                  font-family: 'Courier New', monospace;
-                  padding: 20px;
-                  max-width: 400px;
-                  margin: 0 auto;
-                }
-                pre {
-                  white-space: pre-wrap;
-                  font-size: 12px;
-                  line-height: 1.5;
-                  border: 2px solid #000;
-                  padding: 20px;
-                  background: #fff;
-                }
-                .print-btn {
-                  display: block;
-                  width: 100%;
-                  padding: 10px;
-                  margin-bottom: 20px;
-                  background: #059669;
-                  color: white;
-                  border: none;
-                  border-radius: 8px;
-                  cursor: pointer;
-                  font-size: 14px;
-                }
-                .print-btn:hover {
-                  background: #047857;
-                }
-                @media print {
-                  .print-btn { display: none; }
-                  body { padding: 0; }
-                }
+                body { font-family: 'Courier New', monospace; padding: 20px; max-width: 400px; margin: 0 auto; }
+                pre { white-space: pre-wrap; font-size: 12px; line-height: 1.5; border: 2px solid #000; padding: 20px; background: #fff; }
+                .print-btn { display: block; width: 100%; padding: 10px; margin-bottom: 20px; background: #059669; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; }
+                .print-btn:hover { background: #047857; }
+                @media print { .print-btn { display: none; } body { padding: 0; } }
               </style>
             </head>
             <body>
@@ -108,18 +104,44 @@ export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel
           printWindow.document.close();
         }
       } else {
-        // Open actual PDF
-        const blob = new Blob([Uint8Array.from(atob(data.labelPdf), c => c.charCodeAt(0))], { type: "application/pdf" });
+        const blob = new Blob([Uint8Array.from(labelContent, c => c.charCodeAt(0))], { type: "application/pdf" });
         const url = URL.createObjectURL(blob);
         window.open(url, "_blank");
       }
+    } catch (err) {
+      console.error("Error opening label:", err);
+      alert("Failed to open label");
+    }
+  };
+
+  const viewLabel = async () => {
+    try {
+      const res = await fetch(`/api/admin/orders/${orderId}/dpd-label`);
+      const data = await res.json();
+
+      if (!res.ok || !data.labelPdf) {
+        // If no label stored but we have a shipment ID, offer to fetch it
+        if (shipmentId || trackingNumber) {
+          if (confirm("Label not stored. Try to fetch from DPD?")) {
+            fetchLabel();
+          }
+        } else {
+          alert("Label not available");
+        }
+        return;
+      }
+
+      openLabel(data.labelPdf);
     } catch {
       alert("Failed to load label");
     }
   };
 
+  // Has tracking number but no label - shipment was created but label fetch failed
+  const needsLabelFetch = !hasLabel && (shipmentId || trackingNumber);
+
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 flex-wrap">
       {hasLabel ? (
         <>
           <button
@@ -128,6 +150,22 @@ export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel
             className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-700 hover:bg-emerald-200"
           >
             View Label
+          </button>
+          {trackingNumber && (
+            <span className="text-xs text-zinc-500">
+              {trackingNumber}
+            </span>
+          )}
+        </>
+      ) : needsLabelFetch ? (
+        <>
+          <button
+            type="button"
+            onClick={fetchLabel}
+            disabled={loading}
+            className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 hover:bg-amber-200 disabled:opacity-50"
+          >
+            {loading ? "Fetching..." : "Fetch Label"}
           </button>
           {trackingNumber && (
             <span className="text-xs text-zinc-500">

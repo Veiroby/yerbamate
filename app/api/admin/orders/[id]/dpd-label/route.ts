@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
-import { createDpdShipment, DPD_SENDER_DETAILS } from "@/lib/shipping/dpd";
+import { createDpdShipment, getDpdShipmentLabel, DPD_SENDER_DETAILS } from "@/lib/shipping/dpd";
 
 type RouteParams = {
   params: Promise<{ id: string }>;
@@ -74,6 +74,39 @@ export async function POST(request: Request, { params }: RouteParams) {
       trackingNumber: order.dpdTrackingNumber,
       labelPdf: order.dpdLabelPdf,
     });
+  }
+
+  // Check URL params for refetch request
+  const url = new URL(request.url);
+  const refetch = url.searchParams.get("refetch") === "true";
+
+  // If we have a shipment ID but no label, try to fetch it from DPD
+  if (order.dpdShipmentId && !order.dpdLabelPdf) {
+    console.log("[DPD Label] Fetching label for existing shipment:", order.dpdShipmentId);
+    const labelResult = await getDpdShipmentLabel(order.dpdShipmentId);
+    
+    if (labelResult.success && labelResult.labelPdf) {
+      await prisma.order.update({
+        where: { id },
+        data: {
+          dpdLabelPdf: labelResult.labelPdf,
+          dpdLabelCreatedAt: new Date(),
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "Label fetched from DPD",
+        shipmentId: order.dpdShipmentId,
+        trackingNumber: order.dpdTrackingNumber,
+        labelPdf: labelResult.labelPdf,
+      });
+    } else if (refetch) {
+      return NextResponse.json({
+        success: false,
+        error: labelResult.error || "Failed to fetch label from DPD",
+      }, { status: 400 });
+    }
   }
 
   // Parse shipping address

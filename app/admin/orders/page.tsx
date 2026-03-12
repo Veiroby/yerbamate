@@ -157,6 +157,7 @@ export default async function AdminOrdersPage() {
                           orderNumber={order.orderNumber}
                           hasLabel={!!order.dpdLabelPdf}
                           trackingNumber={order.dpdTrackingNumber}
+                          shipmentId={order.dpdShipmentId}
                         />
                       )}
                     </div>
