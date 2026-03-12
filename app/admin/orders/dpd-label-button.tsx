@@ -76,17 +76,49 @@ export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel
 
   const openLabel = (labelPdf: string) => {
     try {
+      console.log("[DPD Label] Input length:", labelPdf.length);
+      console.log("[DPD Label] First 100 chars:", labelPdf.substring(0, 100));
+      
+      // Clean up base64 string
+      let cleanBase64 = labelPdf;
+      
+      // Remove data URL prefix if present
+      if (cleanBase64.startsWith("data:")) {
+        cleanBase64 = cleanBase64.replace(/^data:[^;]+;base64,/, "");
+      }
+      
+      // Remove all whitespace and newlines
+      cleanBase64 = cleanBase64.replace(/[\s\r\n]/g, "");
+      
+      // Remove any quotes that might have been added
+      cleanBase64 = cleanBase64.replace(/^["']|["']$/g, "");
+      
+      // Handle URL-safe base64 (replace - with + and _ with /)
+      cleanBase64 = cleanBase64.replace(/-/g, "+").replace(/_/g, "/");
+      
+      // Remove any invalid base64 characters
+      cleanBase64 = cleanBase64.replace(/[^A-Za-z0-9+/=]/g, "");
+      
+      // Pad if necessary
+      while (cleanBase64.length % 4 !== 0) {
+        cleanBase64 += "=";
+      }
+      
+      console.log("[DPD Label] Cleaned length:", cleanBase64.length);
+      console.log("[DPD Label] First 100 chars after clean:", cleanBase64.substring(0, 100));
+
       // Check if it's a text-based placeholder label
       let isTextLabel = false;
       try {
-        const decoded = atob(labelPdf.substring(0, 100));
+        const decoded = atob(cleanBase64.substring(0, 100));
         isTextLabel = decoded.startsWith("DPD SHIPPING LABEL");
-      } catch {
+      } catch (e) {
+        console.warn("[DPD Label] Error checking if text label:", e);
         isTextLabel = false;
       }
 
       if (isTextLabel) {
-        const labelContent = atob(labelPdf);
+        const labelContent = atob(cleanBase64);
         const printWindow = window.open("", "_blank");
         if (printWindow) {
           printWindow.document.write(`
@@ -112,12 +144,16 @@ export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel
         }
       } else {
         // It's a PDF - convert base64 to binary and download
-        const binaryString = atob(labelPdf);
+        console.log("[DPD Label] Decoding as PDF...");
+        const binaryString = atob(cleanBase64);
+        console.log("[DPD Label] Binary length:", binaryString.length);
+        
         const bytes = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
           bytes[i] = binaryString.charCodeAt(i);
         }
         const blob = new Blob([bytes], { type: "application/pdf" });
+        console.log("[DPD Label] Blob size:", blob.size);
         
         // Create download link and trigger it
         const url = URL.createObjectURL(blob);
@@ -132,7 +168,8 @@ export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel
         setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
     } catch (err) {
-      console.error("Error opening label:", err);
+      console.error("[DPD Label] Error opening label:", err);
+      console.error("[DPD Label] Input data (first 200):", labelPdf.substring(0, 200));
       alert("Failed to open label: " + (err instanceof Error ? err.message : "Unknown error"));
     }
   };

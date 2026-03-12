@@ -357,16 +357,21 @@ export async function createDpdShipment(request: DpdShipmentRequest): Promise<Dp
     console.log("[DPD API] shipmentLabels structure:", JSON.stringify(shipment?.shipmentLabels, null, 2));
     
     if (labelData) {
-      labelPdf = labelData;
-      console.log("[DPD API] Label extracted from shipment response, length:", labelData.length);
+      // Clean the label data - ensure it's valid base64
+      labelPdf = String(labelData).replace(/[\s\r\n]/g, "").replace(/[^A-Za-z0-9+/=]/g, "");
+      console.log("[DPD API] Label extracted from shipment response");
+      console.log("[DPD API] Original length:", String(labelData).length);
+      console.log("[DPD API] Cleaned length:", labelPdf.length);
+      console.log("[DPD API] First 100 chars:", labelPdf.substring(0, 100));
     } else {
       // Fetch label separately if not in response
       console.log("[DPD API] Fetching label separately for shipment:", shipmentId);
       const labelResult = await getDpdShipmentLabel(shipmentId, token);
       console.log("[DPD API] Separate label fetch result:", labelResult.success, labelResult.error);
       if (labelResult.success && labelResult.labelPdf) {
+        // Already cleaned in getDpdShipmentLabel
         labelPdf = labelResult.labelPdf;
-        console.log("[DPD API] Label fetched separately, length:", labelPdf.length);
+        console.log("[DPD API] Label fetched separately, cleaned length:", labelPdf.length);
       }
     }
 
@@ -420,13 +425,21 @@ export async function getDpdShipmentLabel(
     }
 
     const data = await response.json();
-    const labelPdf = data?.pages?.[0]?.binaryData;
+    console.log("[DPD API] Label response structure:", JSON.stringify(data, null, 2).substring(0, 500));
+    
+    const rawLabelPdf = data?.pages?.[0]?.binaryData;
 
-    if (!labelPdf) {
+    if (!rawLabelPdf) {
       return { success: false, error: "No label data in response" };
     }
 
-    return { success: true, labelPdf };
+    // Clean the label data - ensure it's valid base64
+    const labelPdf = String(rawLabelPdf).replace(/[\s\r\n]/g, "").replace(/[^A-Za-z0-9+/=]/g, "");
+    console.log("[DPD API] Label fetched, original length:", String(rawLabelPdf).length);
+    console.log("[DPD API] Label cleaned length:", labelPdf.length);
+    console.log("[DPD API] First 100 chars:", labelPdf.substring(0, 100));
+
+    return { success: true, labelPdf }
   } catch (error) {
     return {
       success: false,
