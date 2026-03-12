@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
-import { createDpdShipment, DPD_SENDER_DETAILS, DPD_PARCEL_MACHINE_METHOD_ID } from "@/lib/shipping/dpd";
+import { createDpdShipment, DPD_SENDER_DETAILS } from "@/lib/shipping/dpd";
 
 type RouteParams = {
   params: Promise<{ id: string }>;
@@ -95,23 +95,24 @@ export async function POST(request: Request, { params }: RouteParams) {
   // Calculate total weight (estimate 0.5kg per item)
   const totalWeight = order.items.reduce((sum, item) => sum + item.quantity * 0.5, 0);
 
-  // Create DPD shipment
+  // Create DPD shipment using new API format
   const result = await createDpdShipment({
     senderName: DPD_SENDER_DETAILS.name,
-    senderAddress: DPD_SENDER_DETAILS.address,
+    senderStreet: DPD_SENDER_DETAILS.street,
+    senderStreetNo: DPD_SENDER_DETAILS.streetNo,
     senderCity: DPD_SENDER_DETAILS.city,
     senderPostalCode: DPD_SENDER_DETAILS.postalCode,
     senderCountry: DPD_SENDER_DETAILS.country,
     senderPhone: DPD_SENDER_DETAILS.phone,
     senderEmail: DPD_SENDER_DETAILS.email,
     recipientName: shippingAddress.name || "Customer",
-    recipientAddress: shippingAddress.line1 || "",
+    recipientStreet: shippingAddress.line1 || "",
     recipientCity: shippingAddress.city || "",
     recipientPostalCode: shippingAddress.postalCode || "",
     recipientCountry: shippingAddress.country || "LV",
     recipientPhone: order.phone || "",
     recipientEmail: order.email,
-    parcelShopId: shippingAddress.dpdPickupPointId,
+    pudoId: shippingAddress.dpdPickupPointId,
     weight: Math.max(totalWeight, 0.5),
     reference: order.orderNumber,
   });
@@ -185,7 +186,7 @@ Date: ${new Date().toISOString().split('T')[0]}
 
 FROM:
 ${DPD_SENDER_DETAILS.name}
-${DPD_SENDER_DETAILS.address}
+${DPD_SENDER_DETAILS.street} ${DPD_SENDER_DETAILS.streetNo}
 ${DPD_SENDER_DETAILS.city}, ${DPD_SENDER_DETAILS.postalCode}
 ${DPD_SENDER_DETAILS.country}
 
