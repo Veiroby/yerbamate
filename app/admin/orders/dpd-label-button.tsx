@@ -76,10 +76,17 @@ export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel
 
   const openLabel = (labelPdf: string) => {
     try {
-      const labelContent = atob(labelPdf);
-      const isTextLabel = labelContent.startsWith("DPD SHIPPING LABEL");
+      // Check if it's a text-based placeholder label
+      let isTextLabel = false;
+      try {
+        const decoded = atob(labelPdf.substring(0, 100));
+        isTextLabel = decoded.startsWith("DPD SHIPPING LABEL");
+      } catch {
+        isTextLabel = false;
+      }
 
       if (isTextLabel) {
+        const labelContent = atob(labelPdf);
         const printWindow = window.open("", "_blank");
         if (printWindow) {
           printWindow.document.write(`
@@ -104,13 +111,25 @@ export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel
           printWindow.document.close();
         }
       } else {
-        const blob = new Blob([Uint8Array.from(labelContent, c => c.charCodeAt(0))], { type: "application/pdf" });
+        // It's a PDF - convert base64 to binary
+        const binaryString = atob(labelPdf);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        const blob = new Blob([bytes], { type: "application/pdf" });
         const url = URL.createObjectURL(blob);
         window.open(url, "_blank");
       }
     } catch (err) {
       console.error("Error opening label:", err);
-      alert("Failed to open label");
+      // Try opening as data URL as fallback
+      try {
+        const dataUrl = `data:application/pdf;base64,${labelPdf}`;
+        window.open(dataUrl, "_blank");
+      } catch {
+        alert("Failed to open label. The label may be too large for the browser.");
+      }
     }
   };
 
