@@ -111,25 +111,29 @@ export function DpdLabelButton({ orderId, orderNumber, hasLabel: initialHasLabel
           printWindow.document.close();
         }
       } else {
-        // It's a PDF - convert base64 to binary
+        // It's a PDF - convert base64 to binary and download
         const binaryString = atob(labelPdf);
         const bytes = new Uint8Array(binaryString.length);
         for (let i = 0; i < binaryString.length; i++) {
           bytes[i] = binaryString.charCodeAt(i);
         }
         const blob = new Blob([bytes], { type: "application/pdf" });
+        
+        // Create download link and trigger it
         const url = URL.createObjectURL(blob);
-        window.open(url, "_blank");
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `DPD-Label-${orderNumber}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Clean up the URL after a delay
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
     } catch (err) {
       console.error("Error opening label:", err);
-      // Try opening as data URL as fallback
-      try {
-        const dataUrl = `data:application/pdf;base64,${labelPdf}`;
-        window.open(dataUrl, "_blank");
-      } catch {
-        alert("Failed to open label. The label may be too large for the browser.");
-      }
+      alert("Failed to open label: " + (err instanceof Error ? err.message : "Unknown error"));
     }
   };
 
