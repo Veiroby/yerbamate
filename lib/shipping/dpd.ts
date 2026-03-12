@@ -345,15 +345,28 @@ export async function createDpdShipment(request: DpdShipmentRequest): Promise<Dp
 
     // Check if label was included in response
     let labelPdf: string | undefined;
-    const labelData = shipment?.shipmentLabels?.pages?.[0]?.binaryData;
+    
+    // Try different paths where label data might be
+    const labelData = 
+      shipment?.shipmentLabels?.pages?.[0]?.binaryData ||
+      shipment?.labels?.pages?.[0]?.binaryData ||
+      shipment?.label?.binaryData ||
+      shipment?.labelData;
+    
+    console.log("[DPD API] Label data found in response:", !!labelData);
+    console.log("[DPD API] shipmentLabels structure:", JSON.stringify(shipment?.shipmentLabels, null, 2));
     
     if (labelData) {
       labelPdf = labelData;
+      console.log("[DPD API] Label extracted from shipment response, length:", labelData.length);
     } else {
       // Fetch label separately if not in response
+      console.log("[DPD API] Fetching label separately for shipment:", shipmentId);
       const labelResult = await getDpdShipmentLabel(shipmentId, token);
+      console.log("[DPD API] Separate label fetch result:", labelResult.success, labelResult.error);
       if (labelResult.success && labelResult.labelPdf) {
         labelPdf = labelResult.labelPdf;
+        console.log("[DPD API] Label fetched separately, length:", labelPdf.length);
       }
     }
 
