@@ -37,7 +37,16 @@ async function updateFocalPointAction(formData: FormData) {
   const imageId = formData.get("imageId")?.toString();
   const focalX = Number.parseFloat(formData.get("focalX")?.toString() ?? "");
   const focalY = Number.parseFloat(formData.get("focalY")?.toString() ?? "");
-  if (!productId || !imageId || Number.isNaN(focalX) || Number.isNaN(focalY)) return;
+  const zoom = Number.parseFloat(formData.get("zoom")?.toString() ?? "");
+  if (
+    !productId ||
+    !imageId ||
+    Number.isNaN(focalX) ||
+    Number.isNaN(focalY) ||
+    Number.isNaN(zoom)
+  ) {
+    return;
+  }
 
   const user = await getCurrentUser();
   if (!user?.isAdmin) {
@@ -45,12 +54,15 @@ async function updateFocalPointAction(formData: FormData) {
   }
 
   const clamp = (value: number) => (value < 0 ? 0 : value > 1 ? 1 : value);
+  const clampZoom = (value: number) =>
+    value < 1 ? 1 : value > 2 ? 2 : value;
 
   await prisma.productImage.update({
     where: { id: imageId },
     data: {
       focalX: clamp(focalX),
       focalY: clamp(focalY),
+      zoom: clampZoom(zoom),
     },
   });
 
@@ -114,6 +126,8 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
                   initialY={img.focalY}
                   fieldNameX="focalX"
                   fieldNameY="focalY"
+                  initialZoom={img.zoom ?? 1}
+                  fieldNameZoom="zoom"
                 />
                 <form action={updateFocalPointAction} className="flex items-center gap-2 text-[11px]">
                   <input type="hidden" name="productId" value={product.id} />

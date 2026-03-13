@@ -165,6 +165,7 @@ model ProductImage {
   position  Int     @default(0)
   focalX    Float   @default(0.5)
   focalY    Float   @default(0.5)
+  zoom      Float   @default(1)
 
   @@index([productId])
 }

@@ -103,13 +103,27 @@ export function ProductCarousel({ products }: { products: ProductCard[] }) {
                       sizes="300px"
                       unoptimized
                       style={
-                        (product as any).focalX != null && (product as any).focalY != null
+                        (product as any).focalX != null &&
+                        (product as any).focalY != null
                           ? {
-                              objectPosition: `${Math.round((product as any).focalX * 100)}% ${Math.round(
+                              objectPosition: `${Math.round(
+                                (product as any).focalX * 100,
+                              )}% ${Math.round(
                                 (product as any).focalY * 100,
                               )}%`,
+                              transform:
+                                typeof (product as any).zoom === "number" &&
+                                (product as any).zoom !== 1
+                                  ? `scale(${(product as any).zoom})`
+                                  : undefined,
                             }
-                          : undefined
+                          : {
+                              transform:
+                                typeof (product as any).zoom === "number" &&
+                                (product as any).zoom !== 1
+                                  ? `scale(${(product as any).zoom})`
+                                  : undefined,
+                            }
                       }
                     />
                   ) : (

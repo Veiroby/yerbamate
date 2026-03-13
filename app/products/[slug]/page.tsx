@@ -85,6 +85,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     objectPosition: `${Math.round(primaryImage.focalX * 100)}% ${Math.round(
                       primaryImage.focalY * 100,
                     )}%`,
+                    transform:
+                      typeof (primaryImage as any).zoom === "number" &&
+                      (primaryImage as any).zoom !== 1
+                        ? `scale(${(primaryImage as any).zoom})`
+                        : undefined,
                   }}
                 />
               ) : (
@@ -118,6 +123,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                         objectPosition: `${Math.round(image.focalX * 100)}% ${Math.round(
                           image.focalY * 100,
                         )}%`,
+                        transform:
+                          typeof (image as any).zoom === "number" &&
+                          (image as any).zoom !== 1
+                            ? `scale(${(image as any).zoom})`
+                            : undefined,
                       }}
                     />
                   </div>
