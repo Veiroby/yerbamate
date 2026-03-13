@@ -11,6 +11,25 @@ type Props = {
   searchParams: Promise<{ saved?: string; error?: string }>;
 };
 
+async function deleteImageAction(formData: FormData) {
+  "use server";
+  const productId = formData.get("productId")?.toString();
+  const imageId = formData.get("imageId")?.toString();
+  if (!productId || !imageId) return;
+
+  const user = await getCurrentUser();
+  if (!user?.isAdmin) {
+    notFound();
+  }
+
+  await prisma.productImage.delete({
+    where: { id: imageId },
+  });
+
+  await revalidatePath(`/admin/products/${productId}/edit`);
+  await revalidatePath("/admin/products");
+}
+
 export default async function AdminProductEditPage({ params, searchParams }: Props) {
   const user = await getCurrentUser();
   if (!user?.isAdmin) notFound();
@@ -58,16 +77,28 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
             product.images.map((img) => (
               <div
                 key={img.id}
-                className="relative aspect-square w-24 overflow-hidden rounded-xl bg-zinc-100"
+                className="flex flex-col items-center gap-2"
               >
-                <Image
-                  src={img.url}
-                  alt={img.altText ?? product.name}
-                  fill
-                  className="object-cover"
-                  sizes="96px"
-                  unoptimized
-                />
+                <div className="relative aspect-square w-24 overflow-hidden rounded-xl bg-zinc-100">
+                  <Image
+                    src={img.url}
+                    alt={img.altText ?? product.name}
+                    fill
+                    className="object-cover"
+                    sizes="96px"
+                    unoptimized
+                  />
+                </div>
+                <form action={deleteImageAction} className="text-xs">
+                  <input type="hidden" name="productId" value={product.id} />
+                  <input type="hidden" name="imageId" value={img.id} />
+                  <button
+                    type="submit"
+                    className="rounded-full border border-red-200 px-2 py-1 text-[11px] font-medium text-red-600 hover:bg-red-50"
+                  >
+                    Delete
+                  </button>
+                </form>
               </div>
             ))
           )}
