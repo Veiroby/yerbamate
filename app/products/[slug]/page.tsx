@@ -120,9 +120,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <h1 className="text-2xl font-semibold tracking-tight text-stone-900 md:text-3xl">
                 {product.name}
               </h1>
+              {product.origin && (
+                <p className="mt-1 text-sm text-stone-600">
+                  Origin: <span className="font-medium">{product.origin}</span>
+                </p>
+              )}
               <div className="mt-2 flex flex-wrap items-center gap-3">
                 <p className="text-xl font-semibold text-stone-900">
-                  {product.currency} {price.toFixed(2)}
+                  €{price.toFixed(2)}
                 </p>
                 {!soldOut && (
                   <span className="rounded-full bg-teal-50 px-2.5 py-0.5 text-xs font-medium text-teal-700">
