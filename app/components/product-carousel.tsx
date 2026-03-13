@@ -102,6 +102,15 @@ export function ProductCarousel({ products }: { products: ProductCard[] }) {
                       className="object-cover"
                       sizes="300px"
                       unoptimized
+                      style={
+                        (product as any).focalX != null && (product as any).focalY != null
+                          ? {
+                              objectPosition: `${Math.round((product as any).focalX * 100)}% ${Math.round(
+                                (product as any).focalY * 100,
+                              )}%`,
+                            }
+                          : undefined
+                      }
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center text-stone-400">

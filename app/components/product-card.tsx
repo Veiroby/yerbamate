@@ -64,6 +64,15 @@ export function ProductCard({ product, showDescription }: Props) {
               className="object-cover transition duration-200 group-hover:scale-[1.02]"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
               unoptimized
+              style={
+                (product as any).focalX != null && (product as any).focalY != null
+                  ? {
+                      objectPosition: `${Math.round((product as any).focalX * 100)}% ${Math.round(
+                        (product as any).focalY * 100,
+                      )}%`,
+                    }
+                  : undefined
+              }
             />
           ) : (
             <div className="flex h-full items-center justify-center text-stone-400">

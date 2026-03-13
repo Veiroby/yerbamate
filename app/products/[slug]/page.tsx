@@ -81,6 +81,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   sizes="(max-width: 768px) 100vw, 60vw"
                   priority
                   unoptimized
+                  style={{
+                    objectPosition: `${Math.round(primaryImage.focalX * 100)}% ${Math.round(
+                      primaryImage.focalY * 100,
+                    )}%`,
+                  }}
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-stone-400">
@@ -109,6 +114,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                       className="object-cover"
                       sizes="80px"
                       unoptimized
+                      style={{
+                        objectPosition: `${Math.round(image.focalX * 100)}% ${Math.round(
+                          image.focalY * 100,
+                        )}%`,
+                      }}
                     />
                   </div>
                 ))}

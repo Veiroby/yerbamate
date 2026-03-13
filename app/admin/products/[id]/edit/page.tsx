@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { saveProductImage } from "@/lib/upload";
+import { FocalPointPicker } from "./focal-point-picker";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -24,6 +25,33 @@ async function deleteImageAction(formData: FormData) {
 
   await prisma.productImage.delete({
     where: { id: imageId },
+  });
+
+  await revalidatePath(`/admin/products/${productId}/edit`);
+  await revalidatePath("/admin/products");
+}
+
+async function updateFocalPointAction(formData: FormData) {
+  "use server";
+  const productId = formData.get("productId")?.toString();
+  const imageId = formData.get("imageId")?.toString();
+  const focalX = Number.parseFloat(formData.get("focalX")?.toString() ?? "");
+  const focalY = Number.parseFloat(formData.get("focalY")?.toString() ?? "");
+  if (!productId || !imageId || Number.isNaN(focalX) || Number.isNaN(focalY)) return;
+
+  const user = await getCurrentUser();
+  if (!user?.isAdmin) {
+    notFound();
+  }
+
+  const clamp = (value: number) => (value < 0 ? 0 : value > 1 ? 1 : value);
+
+  await prisma.productImage.update({
+    where: { id: imageId },
+    data: {
+      focalX: clamp(focalX),
+      focalY: clamp(focalY),
+    },
   });
 
   await revalidatePath(`/admin/products/${productId}/edit`);
@@ -77,18 +105,27 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
             product.images.map((img) => (
               <div
                 key={img.id}
-                className="flex flex-col items-center gap-2"
+                className="flex flex-col items-center gap-3 rounded-2xl border border-zinc-200 p-3"
               >
-                <div className="relative aspect-square w-24 overflow-hidden rounded-xl bg-zinc-100">
-                  <Image
-                    src={img.url}
-                    alt={img.altText ?? product.name}
-                    fill
-                    className="object-cover"
-                    sizes="96px"
-                    unoptimized
-                  />
-                </div>
+                <FocalPointPicker
+                  imageUrl={img.url}
+                  alt={img.altText ?? product.name}
+                  initialX={img.focalX}
+                  initialY={img.focalY}
+                  fieldNameX="focalX"
+                  fieldNameY="focalY"
+                />
+                <form action={updateFocalPointAction} className="flex items-center gap-2 text-[11px]">
+                  <input type="hidden" name="productId" value={product.id} />
+                  <input type="hidden" name="imageId" value={img.id} />
+                  {/* hidden focalX/focalY are controlled by FocalPointPicker */}
+                  <button
+                    type="submit"
+                    className="rounded-full border border-emerald-200 px-2 py-1 font-medium text-emerald-700 hover:bg-emerald-50"
+                  >
+                    Save focal point
+                  </button>
+                </form>
                 <form action={deleteImageAction} className="text-xs">
                   <input type="hidden" name="productId" value={product.id} />
                   <input type="hidden" name="imageId" value={img.id} />
