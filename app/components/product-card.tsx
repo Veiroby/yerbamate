@@ -63,6 +63,7 @@ export function ProductCard({ product, showDescription }: Props) {
               fill
               className="object-cover transition duration-200 group-hover:scale-[1.02]"
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              unoptimized
             />
           ) : (
             <div className="flex h-full items-center justify-center text-stone-400">

@@ -66,6 +66,7 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
                   fill
                   className="object-cover"
                   sizes="96px"
+                  unoptimized
                 />
               </div>
             ))

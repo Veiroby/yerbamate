@@ -101,6 +101,7 @@ export function ProductCarousel({ products }: { products: ProductCard[] }) {
                       fill
                       className="object-cover"
                       sizes="300px"
+                      unoptimized
                     />
                   ) : (
                     <div className="flex h-full items-center justify-center text-stone-400">

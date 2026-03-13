@@ -80,6 +80,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   className="object-cover"
                   sizes="(max-width: 768px) 100vw, 60vw"
                   priority
+                  unoptimized
                 />
               ) : (
                 <div className="flex h-full items-center justify-center text-stone-400">
@@ -107,6 +108,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                       fill
                       className="object-cover"
                       sizes="80px"
+                      unoptimized
                     />
                   </div>
                 ))}
