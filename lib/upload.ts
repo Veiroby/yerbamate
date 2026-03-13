@@ -1,7 +1,13 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "products");
+// Resolve public directory correctly in both local dev (cwd = frontend)
+// and server (cwd = project root) environments.
+const CWD = process.cwd();
+const PUBLIC_DIR = CWD.endsWith("frontend")
+  ? path.join(CWD, "public")
+  : path.join(CWD, "frontend", "public");
+const UPLOAD_DIR = path.join(PUBLIC_DIR, "uploads", "products");
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
