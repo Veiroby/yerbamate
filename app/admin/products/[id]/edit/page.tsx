@@ -122,6 +122,16 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
               revalidatePath("/admin/products");
               redirect(`/admin/products/${productId}/edit?saved=1`);
             } catch (err) {
+              // Allow Next.js redirects (NEXT_REDIRECT) to bubble up without being treated as errors
+              if (
+                err &&
+                typeof err === "object" &&
+                "digest" in err &&
+                typeof (err as { digest?: unknown }).digest === "string" &&
+                (err as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+              ) {
+                throw err;
+              }
               console.error("Upload error:", err);
               redirect(`/admin/products/${productId}/edit?error=upload`);
             }
