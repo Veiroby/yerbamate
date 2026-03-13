@@ -17,6 +17,7 @@ export function NewsletterPopup() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [receivedDiscountCode, setReceivedDiscountCode] = useState<string | null>(null);
 
   useEffect(() => {
     const dismissed = localStorage.getItem("newsletter-popup-dismissed");
@@ -56,9 +57,12 @@ export function NewsletterPopup() {
 
       if (res.ok) {
         setStatus("success");
-        setMessage(settings?.popupDiscountCode 
-          ? `Thanks for subscribing! Use code "${settings.popupDiscountCode}" for ${settings.popupDiscountPercent}% off!`
-          : "Thanks for subscribing!");
+        if (data.discountCode) {
+          setReceivedDiscountCode(data.discountCode);
+          setMessage(`Your unique discount code has been created and sent to your email!`);
+        } else {
+          setMessage(data.message || "Thanks for subscribing!");
+        }
         localStorage.setItem("newsletter-subscribed", "true");
       } else {
         setStatus("error");
@@ -94,15 +98,19 @@ export function NewsletterPopup() {
             </div>
             <h3 className="mb-2 text-xl font-semibold text-stone-900">You're In!</h3>
             <p className="text-sm text-stone-600">{message}</p>
-            {settings.popupDiscountCode && (
-              <div className="mt-4 rounded-xl bg-teal-50 px-4 py-3">
-                <p className="text-xs text-teal-700">Your discount code:</p>
-                <p className="mt-1 font-mono text-lg font-bold text-teal-800">{settings.popupDiscountCode}</p>
+            {receivedDiscountCode && (
+              <div className="mt-4 rounded-xl bg-teal-50 border-2 border-dashed border-teal-300 px-4 py-4">
+                <p className="text-xs text-teal-700 mb-1">Your unique 10% discount code:</p>
+                <p className="font-mono text-2xl font-bold text-teal-800 tracking-wider">{receivedDiscountCode}</p>
+                <p className="text-xs text-teal-600 mt-2">Valid for 30 days • One-time use</p>
               </div>
             )}
+            <p className="mt-4 text-xs text-stone-500">
+              We&apos;ve also sent this code to your email.
+            </p>
             <button
               onClick={handleClose}
-              className="mt-6 rounded-2xl bg-teal-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+              className="mt-4 rounded-2xl bg-teal-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
             >
               Start Shopping
             </button>
@@ -117,11 +125,9 @@ export function NewsletterPopup() {
 
             <h3 className="mb-2 text-xl font-semibold text-stone-900">{settings.popupTitle}</h3>
             <p className="mb-1 text-sm text-stone-600">{settings.popupDescription}</p>
-            {settings.popupDiscountCode && (
-              <p className="mb-4 text-sm font-medium text-teal-700">
-                Get {settings.popupDiscountPercent}% off your first order!
-              </p>
-            )}
+            <p className="mb-4 text-sm font-medium text-teal-700">
+              Get your unique 10% discount code!
+            </p>
 
             <form onSubmit={handleSubmit} className="mt-4 space-y-3">
               <input
@@ -147,10 +153,10 @@ export function NewsletterPopup() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                     </svg>
-                    Subscribing...
+                    Creating your code...
                   </>
                 ) : (
-                  "Subscribe & Get Discount"
+                  "Get My 10% Discount"
                 )}
               </button>
             </form>
