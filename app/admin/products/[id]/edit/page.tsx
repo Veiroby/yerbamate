@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { saveProductImage } from "@/lib/upload";
-import { FocalPointPicker } from "./focal-point-picker";
+import { FocalPointPicker } from "../focal-point-picker";
 
 type Props = {
   params: Promise<{ id: string }>;
