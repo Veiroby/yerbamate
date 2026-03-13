@@ -47,7 +47,9 @@ export async function saveProductImage(
   const dir = path.join(UPLOAD_DIR, productId);
   await mkdir(dir, { recursive: true });
   const ext = getExt(mime, file.name);
-  const filename = `${position}.${ext}`;
+  // include timestamp to avoid browser caching older image with same filename
+  const timestamp = Date.now();
+  const filename = `${position}-${timestamp}.${ext}`;
   const filepath = path.join(dir, filename);
   const buffer = Buffer.from(await file.arrayBuffer());
   await writeFile(filepath, buffer);
