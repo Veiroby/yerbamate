@@ -1,12 +1,16 @@
 import { mkdir, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import path from "node:path";
 
-// Resolve public directory correctly in both local dev (cwd = frontend)
-// and server (cwd = project root) environments.
+// Resolve public directory correctly in both local dev and production.
+// In production with `output: "standalone"`, Next serves from
+// `.next/standalone/public`, so we prefer that if it exists.
 const CWD = process.cwd();
-const PUBLIC_DIR = CWD.endsWith("frontend")
-  ? path.join(CWD, "public")
-  : path.join(CWD, "frontend", "public");
+const PROJECT_ROOT = CWD.endsWith("frontend") ? CWD : path.join(CWD, "frontend");
+const STANDALONE_PUBLIC = path.join(PROJECT_ROOT, ".next", "standalone", "public");
+const PUBLIC_DIR = existsSync(STANDALONE_PUBLIC)
+  ? STANDALONE_PUBLIC
+  : path.join(PROJECT_ROOT, "public");
 const UPLOAD_DIR = path.join(PUBLIC_DIR, "uploads", "products");
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
