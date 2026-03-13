@@ -31,7 +31,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${fraunces.variable} ${dmSans.variable} font-sans antialiased`}
+        className={`${fraunces.variable} ${dmSans.variable} font-sans antialiased bg-[#dad7cd] text-[#344e41]`}
       >
         <Providers>
           {children}

@@ -234,7 +234,7 @@ export function AuthForms({ error }: Props) {
           </div>
           <button
             type="submit"
-            className="flex w-full items-center justify-center rounded-2xl bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+            className="flex w-full items-center justify-center rounded-2xl bg-[#344e41] px-4 py-2 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b]"
           >
             Sign in
           </button>

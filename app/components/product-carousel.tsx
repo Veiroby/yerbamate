@@ -41,7 +41,7 @@ function CarouselAddToCartButtons({ productId, productName }: { productId: strin
         type="button"
         onClick={handleAddToCart}
         disabled={adding || isLoading}
-        className="flex-1 rounded-2xl border border-teal-600 py-2 text-xs font-medium text-teal-700 transition hover:bg-teal-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex-1 rounded-2xl border border-[#344e41] py-2 text-xs font-medium text-[#344e41] transition hover:bg-[#d1cec4] disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {adding ? (
           <span className="flex items-center justify-center gap-1">
@@ -59,7 +59,7 @@ function CarouselAddToCartButtons({ productId, productName }: { productId: strin
         type="button"
         onClick={handleBuyNow}
         disabled={adding || isLoading}
-        className="flex-1 rounded-2xl bg-teal-600 py-2 text-xs font-medium text-white transition hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="flex-1 rounded-2xl bg-[#344e41] py-2 text-xs font-medium text-[#dad7cd] transition hover:bg-[#24352b] disabled:opacity-50 disabled:cursor-not-allowed"
       >
         Buy now
       </button>

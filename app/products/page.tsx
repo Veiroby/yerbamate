@@ -205,10 +205,10 @@ export default async function ProductsPage({ searchParams }: Props) {
               <p className="mt-2 text-sm text-stone-500">
                 Try adjusting your filters or search terms.
               </p>
-              <Link
-                href="/products"
-                className="mt-4 inline-flex rounded-xl bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
-              >
+                <Link
+                  href="/products"
+                  className="mt-4 inline-flex rounded-xl bg-[#344e41] px-4 py-2 text-sm font-medium text-[#dad7cd] hover:bg-[#24352b]"
+                >
                 Clear all filters
               </Link>
             </div>

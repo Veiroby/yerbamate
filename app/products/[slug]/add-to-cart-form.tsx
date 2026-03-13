@@ -77,7 +77,7 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
             type="button"
             onClick={handleAddToCart}
             disabled={addingToCart || isLoading}
-            className="flex-1 rounded-full border border-teal-600 py-3 text-sm font-medium text-teal-700 transition hover:bg-teal-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 rounded-full border border-[#344e41] py-3 text-sm font-medium text-[#344e41] transition hover:bg-[#d1cec4] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {addingToCart ? (
               <span className="flex items-center justify-center gap-2">
@@ -95,7 +95,7 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
             type="button"
             onClick={handleBuyNow}
             disabled={addingToCart || isLoading}
-            className="flex-1 rounded-full bg-teal-600 py-3 text-sm font-medium text-white transition hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 rounded-full bg-[#344e41] py-3 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Buy now
           </button>
@@ -119,7 +119,7 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
             type="button"
             onClick={handleStickyAddToCart}
             disabled={addingToCart || isLoading}
-            className="flex-1 max-w-[200px] rounded-full bg-teal-600 py-3 text-sm font-medium text-white transition hover:bg-teal-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 max-w-[200px] rounded-full bg-[#344e41] py-3 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {addingToCart ? (
               <span className="flex items-center justify-center gap-2">

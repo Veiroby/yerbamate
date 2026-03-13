@@ -89,7 +89,7 @@ export function ProductFilters({ options, className = "" }: Props) {
           </svg>
           Filters & Search
           {hasActiveFilters && (
-            <span className="rounded-full bg-teal-600 px-2 py-0.5 text-xs text-white">
+            <span className="rounded-full bg-[#344e41] px-2 py-0.5 text-xs text-[#dad7cd]">
               Active
             </span>
           )}

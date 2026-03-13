@@ -87,7 +87,7 @@ export function ResetPasswordForm({ token }: Props) {
         </div>
         <a
           href="/account/profile"
-          className="block text-center rounded-2xl bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+          className="block text-center rounded-2xl bg-[#344e41] px-4 py-2 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b]"
         >
           Sign in now
         </a>
@@ -183,7 +183,7 @@ export function ResetPasswordForm({ token }: Props) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="flex w-full items-center justify-center rounded-2xl bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700 disabled:bg-teal-400 disabled:cursor-not-allowed"
+        className="flex w-full items-center justify-center rounded-2xl bg-[#344e41] px-4 py-2 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b] disabled:bg-[#4e6a5a] disabled:cursor-not-allowed"
       >
         {isSubmitting ? (
           <>

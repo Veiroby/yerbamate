@@ -53,7 +53,7 @@ export default async function ResetPasswordPage({ searchParams }: Props) {
               {error === "invalid_token" ? (
                 <Link
                   href="/account/forgot-password"
-                  className="block text-center rounded-2xl bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+                  className="block text-center rounded-2xl bg-[#344e41] px-4 py-2 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b]"
                 >
                   Request new reset link
                 </Link>

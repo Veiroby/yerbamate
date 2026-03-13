@@ -205,7 +205,7 @@ export function EmailCampaignForm({ subscribers, users, resendConfigured }: Prop
                   onClick={() => setRecipientType(opt.value as typeof recipientType)}
                   className={`rounded-full px-3 py-1.5 text-xs font-medium transition ${
                     recipientType === opt.value
-                      ? "bg-teal-600 text-white"
+                      ? "bg-[#344e41] text-[#dad7cd]"
                       : "bg-stone-100 text-stone-600 hover:bg-stone-200"
                   }`}
                 >
@@ -300,7 +300,7 @@ export function EmailCampaignForm({ subscribers, users, resendConfigured }: Prop
         <button
           type="submit"
           disabled={status === "sending"}
-          className="rounded-2xl bg-teal-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-teal-700 disabled:bg-teal-400"
+          className="rounded-2xl bg-[#344e41] px-6 py-2 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b] disabled:bg-[#4e6a5a]"
         >
           {status === "sending" ? "Sending..." : "Send Campaign"}
         </button>

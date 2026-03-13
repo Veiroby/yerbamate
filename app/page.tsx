@@ -48,7 +48,7 @@ export default async function Home() {
   });
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900">
+    <div className="min-h-screen bg-[#dad7cd] text-[#344e41]">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} />
 
       <main>
@@ -73,7 +73,7 @@ export default async function Home() {
               </p>
               <Link
                 href="/products"
-                className="inline-flex rounded-2xl bg-teal-600 px-6 py-3.5 text-base font-semibold text-white shadow-lg transition hover:bg-teal-700 hover:shadow-xl"
+                className="inline-flex rounded-2xl bg-[#344e41] px-6 py-3.5 text-base font-semibold text-[#dad7cd] shadow-lg transition hover:bg-[#24352b] hover:shadow-xl"
               >
                 Explore
               </Link>

@@ -104,7 +104,7 @@ export default async function ProfilePage({ searchParams }: Props) {
               </div>
               <button
                 type="submit"
-                className="rounded-2xl bg-teal-600 px-4 py-2 text-xs font-medium text-white transition hover:bg-teal-700"
+                className="rounded-2xl bg-[#344e41] px-4 py-2 text-xs font-medium text-[#dad7cd] transition hover:bg-[#24352b]"
               >
                 Save changes
               </button>

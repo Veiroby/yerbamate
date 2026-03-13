@@ -43,7 +43,7 @@ function CartBadge({ count }: { count: number }) {
 
   return (
     <span
-      className={`absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-600 px-1 text-xs font-bold text-white transition-transform ${
+      className={`absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#344e41] px-1 text-xs font-bold text-[#dad7cd] transition-transform ${
         animate ? "scale-125" : "scale-100"
       }`}
     >
@@ -154,7 +154,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                 </Link>
                 <Link
                   href="/account/profile"
-                  className="rounded-full bg-teal-600 px-4 py-1.5 text-sm font-medium text-white hover:bg-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  className="rounded-full bg-[#344e41] px-4 py-1.5 text-sm font-medium text-[#dad7cd] hover:bg-[#24352b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                 >
                   Sign up
                 </Link>

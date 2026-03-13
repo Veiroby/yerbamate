@@ -110,7 +110,7 @@ export function NewsletterPopup() {
             </p>
             <button
               onClick={handleClose}
-              className="mt-4 rounded-2xl bg-teal-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+              className="mt-4 rounded-2xl bg-[#344e41] px-6 py-2 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b]"
             >
               Start Shopping
             </button>
@@ -145,7 +145,7 @@ export function NewsletterPopup() {
               <button
                 type="submit"
                 disabled={status === "loading"}
-                className="flex w-full items-center justify-center rounded-2xl bg-teal-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-teal-700 disabled:bg-teal-400"
+                className="flex w-full items-center justify-center rounded-2xl bg-[#344e41] px-4 py-3 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b] disabled:bg-[#4e6a5a]"
               >
                 {status === "loading" ? (
                   <>
