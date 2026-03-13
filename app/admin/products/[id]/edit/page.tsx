@@ -94,13 +94,29 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
                 return;
               }
 
+              // Collect files first so we can detect if any new images were selected
+              const files: (File | null)[] = [];
+              for (let i = 0; i < 3; i++) {
+                const file = formData.get(`image${i + 1}`) as File | null;
+                files.push(file && file.size > 0 ? file : null);
+              }
+
+              const hasNewImages = files.some((file) => file !== null);
+
+              // If no new images were selected, keep existing ones and just return
+              if (!hasNewImages) {
+                redirect(`/admin/products/${productId}/edit`);
+                return;
+              }
+
+              // Replace existing images only when at least one new image is provided
               await prisma.productImage.deleteMany({
                 where: { productId },
               });
 
-              for (let i = 0; i < 3; i++) {
-                const file = formData.get(`image${i + 1}`) as File | null;
-                if (file && file.size > 0) {
+              for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file) {
                   try {
                     const url = await saveProductImage(productId, i, file);
                     await prisma.productImage.create({
