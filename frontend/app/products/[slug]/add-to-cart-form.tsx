@@ -73,12 +73,12 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
             </button>
           </div>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
           <button
             type="button"
             onClick={handleAddToCart}
             disabled={addingToCart || isLoading}
-            className="flex-1 rounded-md bg-black py-3.5 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-12 w-full min-h-[48px] rounded-md bg-black py-3.5 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed sm:flex-1 sm:w-auto"
           >
             {addingToCart ? (
               <span className="flex items-center justify-center gap-2">
@@ -96,7 +96,7 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
             type="button"
             onClick={handleBuyNow}
             disabled={addingToCart || isLoading}
-            className="rounded-md border-2 border-gray-900 py-3.5 px-6 text-sm font-semibold uppercase tracking-wide text-gray-900 transition hover:bg-gray-900 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="h-12 w-full min-h-[48px] rounded-md border-2 border-gray-900 py-3.5 px-6 text-sm font-semibold uppercase tracking-wide text-gray-900 transition hover:bg-gray-900 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
           >
             Buy now
           </button>

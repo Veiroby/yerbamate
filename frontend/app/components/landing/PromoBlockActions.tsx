@@ -40,12 +40,12 @@ export function PromoBlockActions({
   };
 
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
+    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
       <button
         type="button"
         onClick={handleAddToCart}
         disabled={busy}
-        className={`rounded px-3 py-2 text-xs font-semibold uppercase tracking-wide transition disabled:opacity-50 sm:px-4 sm:py-2.5 sm:text-sm ${outlineClass}`}
+        className={`h-11 w-full min-h-[44px] rounded px-3 py-2.5 text-xs font-semibold uppercase tracking-wide transition disabled:opacity-50 sm:h-auto sm:min-h-0 sm:w-auto sm:px-4 sm:py-2.5 sm:text-sm ${outlineClass}`}
       >
         {busy ? "…" : "Add to cart"}
       </button>
@@ -53,7 +53,7 @@ export function PromoBlockActions({
         type="button"
         onClick={handleBuyNow}
         disabled={busy}
-        className={`rounded px-3 py-2 text-xs font-semibold uppercase tracking-wide text-white transition disabled:opacity-50 sm:px-4 sm:py-2.5 sm:text-sm ${buttonClass}`}
+        className={`h-11 w-full min-h-[44px] rounded px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-white transition disabled:opacity-50 sm:h-auto sm:min-h-0 sm:w-auto sm:px-4 sm:py-2.5 sm:text-sm ${buttonClass}`}
       >
         Buy now
       </button>
