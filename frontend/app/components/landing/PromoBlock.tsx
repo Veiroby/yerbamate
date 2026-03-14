@@ -30,26 +30,26 @@ export function PromoBlock({
   const hasProductActions = productId != null && productSlug != null;
 
   return (
-    <div className={`flex min-h-[280px] flex-col md:min-h-[320px] md:flex-row md:items-stretch ${backgroundColor}`}>
-      {/* Image on the left - larger, link to product */}
+    <div className={`flex min-h-[280px] flex-col md:min-h-[400px] md:flex-row md:items-stretch ${backgroundColor}`}>
+      {/* Image on the left - ~3x larger, PNG with transparent background */}
       <Link
         href={href}
-        className="flex shrink-0 items-center justify-center p-6 sm:p-8 md:justify-start"
+        className="flex shrink-0 items-center justify-center p-4 sm:p-6 md:justify-start md:p-8"
       >
         {imageUrl ? (
-          <div className="relative h-44 w-44 sm:h-52 sm:w-52 md:h-56 md:w-56">
+          <div className="relative h-[528px] w-full max-w-[528px] sm:h-[624px] sm:max-w-[624px] md:h-[672px] md:w-[672px] md:max-w-none">
             <Image
               src={imageUrl}
               alt={imageAlt || title}
               fill
-              className="object-contain"
-              sizes="224px"
+              className="object-contain object-center"
+              sizes="(max-width: 640px) 528px, (max-width: 768px) 624px, 672px"
               unoptimized
             />
           </div>
         ) : (
-          <div className={`flex h-40 w-40 items-center justify-center rounded-lg sm:h-48 sm:w-48 md:h-56 md:w-56 ${textColor} opacity-20`}>
-            <svg className="h-20 w-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+          <div className={`flex h-[528px] w-full max-w-[528px] items-center justify-center rounded-lg sm:h-[624px] sm:max-w-[624px] md:h-[672px] md:w-[672px] md:max-w-none ${textColor} opacity-20`}>
+            <svg className="h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
             </svg>
           </div>
