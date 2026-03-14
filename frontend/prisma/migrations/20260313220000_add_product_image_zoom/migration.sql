@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "ProductImage"
+ADD COLUMN "zoom" DOUBLE PRECISION NOT NULL DEFAULT 1;
+

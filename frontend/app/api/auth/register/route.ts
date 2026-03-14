@@ -1,0 +1,101 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { createSession, hashPassword } from "@/lib/auth";
+import { getAuthRedirectUrl } from "@/lib/oauth";
+import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
+
+function validatePassword(password: string): { valid: boolean; error?: string } {
+  if (password.length < 8) {
+    return { valid: false, error: "Password must be at least 8 characters" };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, error: "Password must contain an uppercase letter" };
+  }
+  if (!/[a-z]/.test(password)) {
+    return { valid: false, error: "Password must contain a lowercase letter" };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, error: "Password must contain a number" };
+  }
+  return { valid: true };
+}
+
+export async function POST(request: Request) {
+  const rateLimitKey = getRateLimitKey(request, "register");
+  const { allowed, retryAfterMs } = checkRateLimit(rateLimitKey, 5, 60 * 60 * 1000);
+  
+  if (!allowed) {
+    return NextResponse.redirect(
+      getAuthRedirectUrl("/account/profile?error=too_many_attempts", request),
+      { status: 303 }
+    );
+  }
+
+  const formData = await request.formData();
+
+  const email = formData.get("email")?.toString().toLowerCase().trim();
+  const name = formData.get("name")?.toString().trim();
+  const password = formData.get("password")?.toString();
+
+  if (!email || !password) {
+    return NextResponse.redirect(
+      getAuthRedirectUrl("/account/profile?error=register_missing_fields", request),
+      { status: 303 }
+    );
+  }
+
+  const passwordCheck = validatePassword(password);
+  if (!passwordCheck.valid) {
+    const errorCode = password.length < 8 ? "password_too_short" :
+      !/[A-Z]/.test(password) ? "password_needs_uppercase" :
+      !/[a-z]/.test(password) ? "password_needs_lowercase" :
+      "password_needs_number";
+    return NextResponse.redirect(
+      getAuthRedirectUrl(`/account/profile?error=${errorCode}`, request),
+      { status: 303 }
+    );
+  }
+
+  const existing = await prisma.user.findUnique({
+    where: { email },
+  });
+
+  if (existing && existing.passwordHash) {
+    return NextResponse.redirect(
+      getAuthRedirectUrl("/account/profile?error=email_exists", request),
+      { status: 303 }
+    );
+  }
+
+  const passwordHash = await hashPassword(password);
+
+  const user = await prisma.user.upsert({
+    where: { email },
+    update: {
+      name: name || existing?.name,
+      passwordHash,
+    },
+    create: {
+      email,
+      name,
+      passwordHash,
+    },
+  });
+
+  await prisma.order.updateMany({
+    where: {
+      email: user.email,
+      userId: null,
+    },
+    data: {
+      userId: user.id,
+    },
+  });
+
+  await createSession(user.id);
+
+  return NextResponse.redirect(getAuthRedirectUrl("/account/profile", request), {
+    status: 303,
+  });
+}
+

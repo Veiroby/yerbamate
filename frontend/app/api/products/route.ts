@@ -1,0 +1,84 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+import { Prisma } from "@/app/generated/prisma/client";
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+
+  const q = searchParams.get("q");
+  const category = searchParams.get("category");
+  const brand = searchParams.get("brand");
+  const origin = searchParams.get("origin");
+  const minPrice = searchParams.get("minPrice");
+  const maxPrice = searchParams.get("maxPrice");
+  const sort = searchParams.get("sort");
+
+  const where: Prisma.ProductWhereInput = {
+    active: true,
+  };
+
+  if (q) {
+    where.OR = [
+      { name: { contains: q, mode: "insensitive" } },
+      { description: { contains: q, mode: "insensitive" } },
+      { brand: { contains: q, mode: "insensitive" } },
+      { origin: { contains: q, mode: "insensitive" } },
+    ];
+  }
+
+  if (category) {
+    where.category = { slug: category };
+  }
+
+  if (brand) {
+    where.brand = brand;
+  }
+
+  if (origin) {
+    where.origin = origin;
+  }
+
+  if (minPrice || maxPrice) {
+    where.price = {};
+    if (minPrice) {
+      where.price.gte = parseFloat(minPrice);
+    }
+    if (maxPrice) {
+      where.price.lte = parseFloat(maxPrice);
+    }
+  }
+
+  let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: "desc" };
+
+  switch (sort) {
+    case "price-asc":
+      orderBy = { price: "asc" };
+      break;
+    case "price-desc":
+      orderBy = { price: "desc" };
+      break;
+    case "name-asc":
+      orderBy = { name: "asc" };
+      break;
+    case "name-desc":
+      orderBy = { name: "desc" };
+      break;
+    case "newest":
+      orderBy = { createdAt: "desc" };
+      break;
+  }
+
+  const products = await prisma.product.findMany({
+    where,
+    orderBy,
+    include: {
+      category: true,
+      images: {
+        orderBy: { position: "asc" },
+        take: 1,
+      },
+    },
+  });
+
+  return NextResponse.json({ products });
+}
