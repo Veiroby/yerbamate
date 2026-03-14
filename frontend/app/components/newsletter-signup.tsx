@@ -45,20 +45,20 @@ export function NewsletterSignup() {
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Your email"
         disabled={status === "loading"}
-        className="min-w-0 flex-1 rounded-lg border border-stone-300 bg-white px-4 py-2.5 text-stone-900 placeholder:text-stone-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 disabled:opacity-60"
+        className="min-w-0 flex-1 rounded-lg border border-[#606C38]/40 bg-[#FEFAE0] px-4 py-2.5 text-[#283618] placeholder:text-[#606C38]/60 focus:border-[#BC6C25] focus:outline-none focus:ring-1 focus:ring-[#BC6C25] disabled:opacity-60"
         required
       />
       <button
         type="submit"
         disabled={status === "loading"}
-        className="shrink-0 rounded-lg bg-[#344e41] px-4 py-2.5 font-medium text-[#dad7cd] transition hover:bg-[#24352b] disabled:opacity-60"
+        className="shrink-0 rounded-lg bg-[#BC6C25] px-4 py-2.5 font-medium text-[#FEFAE0] transition hover:bg-[#a55a1f] disabled:opacity-60"
       >
         {status === "loading" ? "…" : "Subscribe"}
       </button>
       {message && (
         <p
           className={`w-full text-sm ${
-            status === "error" ? "text-red-600" : "text-stone-600"
+            status === "error" ? "text-red-600" : "text-[#283618]"
           }`}
         >
           {message}

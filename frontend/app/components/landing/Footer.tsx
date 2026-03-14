@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-const footerBg = "bg-[#0f172a]";
+const footerBg = "bg-[#283618]";
 const footerText = "text-white";
-const footerMuted = "text-gray-400";
+const footerMuted = "text-[#FEFAE0]/70";
 
 const customerService = [
   { href: "/contact", label: "Contact" },

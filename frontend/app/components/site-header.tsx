@@ -43,7 +43,7 @@ function CartBadge({ count }: { count: number }) {
 
   return (
     <span
-      className={`absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#344e41] px-1 text-xs font-bold text-[#dad7cd] transition-transform ${
+      className={`absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#BC6C25] px-1 text-xs font-bold text-[#FEFAE0] transition-transform ${
         animate ? "scale-125" : "scale-100"
       }`}
     >
@@ -75,12 +75,12 @@ export function SiteHeader({ user }: SiteHeaderProps) {
   };
 
   const linkClass = (href: string) =>
-    isActive(href) ? "text-teal-700" : "hover:text-teal-600";
+    isActive(href) ? "text-[#BC6C25]" : "hover:text-[#606C38]";
 
   return (
     <>
       <header
-        className={`sticky top-0 z-40 border-b border-stone-200 bg-stone-50/95 backdrop-blur-md transition-shadow duration-200 ${
+        className={`sticky top-0 z-40 border-b border-[#606C38]/20 bg-[#FEFAE0]/95 backdrop-blur-md transition-shadow duration-200 ${
           scrolled ? "shadow-sm" : ""
         }`}
       >
@@ -89,7 +89,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-stone-600 hover:bg-stone-200/80 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 lg:hidden"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[#283618] hover:bg-[#606C38]/15 hover:text-[#283618] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 lg:hidden"
             aria-label="Open menu"
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -99,7 +99,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
 
           <Link
             href="/"
-            className="font-serif absolute left-1/2 flex -translate-x-1/2 rounded-xl text-xl font-semibold tracking-tight text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 lg:static lg:translate-x-0"
+            className="font-serif absolute left-1/2 flex -translate-x-1/2 rounded-xl text-xl font-semibold tracking-tight text-[#283618] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 lg:static lg:translate-x-0"
           >
             YerbaTea
           </Link>
@@ -110,7 +110,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
               <Link
                 key={`${href}-${label}`}
                 href={href}
-                className={`whitespace-nowrap rounded-lg px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 ${linkClass(href)}`}
+                className={`whitespace-nowrap rounded-lg px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 ${linkClass(href)}`}
               >
                 {label}
               </Link>
@@ -121,7 +121,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           <div className="hidden items-center gap-3 lg:flex">
             <Link
               href="/cart"
-              className="relative flex h-10 w-10 items-center justify-center rounded-xl text-stone-800 transition-colors hover:bg-stone-200/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+              className="relative flex h-10 w-10 items-center justify-center rounded-xl text-[#283618] transition-colors hover:bg-[#606C38]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2"
               aria-label={`Shopping cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
             >
               <CartIcon className="h-6 w-6" />
@@ -132,7 +132,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                 {user.isAdmin && (
                   <Link
                     href="/admin"
-                    className="rounded-lg text-sm font-medium hover:text-teal-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                    className="rounded-lg text-sm font-medium hover:text-[#BC6C25] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2"
                   >
                     Admin
                   </Link>

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-const heroBg = "bg-amber-700"; // dark gold
+const heroBg = "bg-[#DDA15E]"; /* Light Caramel */
 
 export function Hero() {
   return (
@@ -34,7 +34,7 @@ export function Hero() {
           <p className="mt-4 text-2xl font-semibold text-white">From €9.99</p>
           <Link
             href="/products"
-            className="mt-6 inline-flex w-fit rounded border-2 border-white bg-transparent px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-white hover:text-amber-800"
+            className="mt-6 inline-flex w-fit rounded border-2 border-[#283618] bg-transparent px-6 py-2.5 text-sm font-semibold text-[#283618] transition hover:bg-[#283618] hover:text-[#FEFAE0]"
           >
             Shop now
           </Link>

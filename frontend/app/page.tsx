@@ -35,7 +35,7 @@ export default async function Home() {
   const secondProduct = products[1];
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
       <Navbar />
 
       <main>
@@ -49,7 +49,7 @@ export default async function Home() {
             href={firstProduct ? `/products/${encodeURIComponent(firstProduct.slug)}` : "/products?category=yerba-mate"}
             imageUrl={firstProduct?.images[0]?.url ?? null}
             imageAlt={firstProduct?.name}
-            backgroundColor="bg-violet-200"
+            backgroundColor="bg-[#606C38]/20"
             productId={firstProduct?.id}
             productSlug={firstProduct?.slug}
           />
@@ -59,7 +59,7 @@ export default async function Home() {
             href={secondProduct ? `/products/${encodeURIComponent(secondProduct.slug)}` : "/products"}
             imageUrl={secondProduct?.images[0]?.url ?? null}
             imageAlt={secondProduct?.name}
-            backgroundColor="bg-emerald-200"
+            backgroundColor="bg-[#DDA15E]/25"
             productId={secondProduct?.id}
             productSlug={secondProduct?.slug}
           />
@@ -77,7 +77,7 @@ export default async function Home() {
             href={products[2] ? `/products/${encodeURIComponent(products[2].slug)}` : "/products?category=mate-gourds"}
             imageUrl={products[2]?.images[0]?.url ?? null}
             imageAlt={products[2]?.name}
-            backgroundColor="bg-amber-600"
+            backgroundColor="bg-[#BC6C25]"
             textColor="text-white"
             productId={products[2]?.id}
             productSlug={products[2]?.slug}
@@ -88,7 +88,7 @@ export default async function Home() {
             href={products[3] ? `/products/${encodeURIComponent(products[3].slug)}` : "/products"}
             imageUrl={products[3]?.images[0]?.url ?? null}
             imageAlt={products[3]?.name}
-            backgroundColor="bg-pink-200"
+            backgroundColor="bg-[#606C38]/15"
             productId={products[3]?.id}
             productSlug={products[3]?.slug}
           />

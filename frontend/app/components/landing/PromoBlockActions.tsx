@@ -17,9 +17,9 @@ export function PromoBlockActions({
   productId,
   productName,
   productHref,
-  textColor = "text-gray-900",
-  buttonClass = "bg-gray-900 text-white hover:bg-gray-800",
-  outlineClass = "border-2 border-gray-900 text-gray-900 hover:bg-gray-100",
+  textColor = "text-[#283618]",
+  buttonClass = "bg-[#BC6C25] text-[#FEFAE0] hover:bg-[#a55a1f]",
+  outlineClass = "border-2 border-[#606C38] text-[#606C38] hover:bg-[#606C38]/10",
 }: Props) {
   const router = useRouter();
   const { addToCart, isLoading } = useCart();

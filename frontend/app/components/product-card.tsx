@@ -46,7 +46,7 @@ export function ProductCard({ product, showDescription }: Props) {
 
   return (
     <div
-      className={`group flex flex-col overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm transition duration-200 hover:shadow-md ${
+      className={`group flex flex-col overflow-hidden rounded-lg border border-[#606C38]/20 bg-[#FEFAE0] shadow-sm transition duration-200 hover:shadow-md ${
         soldOut ? "opacity-70" : "hover:-translate-y-0.5"
       }`}
     >
@@ -55,7 +55,7 @@ export function ProductCard({ product, showDescription }: Props) {
         className={`block flex-1 min-h-0 ${soldOut ? "pointer-events-none" : "cursor-pointer"}`}
         aria-label={`View ${product.name}`}
       >
-        <div className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-gray-50">
+        <div className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-[#606C38]/10">
           {product.imageUrl ? (
             <Image
               src={product.imageUrl}
@@ -89,13 +89,13 @@ export function ProductCard({ product, showDescription }: Props) {
               }
             />
           ) : (
-            <div className="flex h-full items-center justify-center text-gray-300">
-              <span className="text-xs font-medium text-gray-400">Product image</span>
+            <div className="flex h-full items-center justify-center text-[#606C38]/50">
+              <span className="text-xs font-medium text-[#606C38]/60">Product image</span>
             </div>
           )}
           {soldOut && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-900/50">
-              <span className="rounded-full bg-[#0f172a] px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white">
+            <div className="absolute inset-0 flex items-center justify-center bg-[#283618]/50">
+              <span className="rounded-full bg-[#283618] px-4 py-2 text-sm font-semibold uppercase tracking-wide text-[#FEFAE0]">
                 Sold out
               </span>
             </div>
@@ -105,27 +105,27 @@ export function ProductCard({ product, showDescription }: Props) {
           {(product.brand || product.origin) && (
             <div className="mb-1 flex flex-wrap gap-1">
               {product.brand && (
-                <span className="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-600">
+                <span className="rounded bg-[#606C38]/15 px-1.5 py-0.5 text-[10px] font-medium text-[#606C38]">
                   {product.brand}
                 </span>
               )}
               {product.origin && (
-                <span className="rounded bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
+                <span className="rounded bg-[#DDA15E]/30 px-1.5 py-0.5 text-[10px] font-medium text-[#BC6C25]">
                   {product.origin}
                 </span>
               )}
             </div>
           )}
-          <h2 className="mb-1 line-clamp-2 text-sm font-medium text-gray-900 transition group-hover:text-amber-800">
+          <h2 className="mb-1 line-clamp-2 text-sm font-medium text-[#283618] transition group-hover:text-[#BC6C25]">
             {product.name}
           </h2>
           {showDescription && product.description ? (
-            <p className="line-clamp-2 text-xs text-gray-500">
+            <p className="line-clamp-2 text-xs text-[#606C38]">
               {product.description}
             </p>
           ) : null}
           <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-            <p className="text-sm font-semibold text-gray-900">
+            <p className="text-sm font-semibold text-[#283618]">
               {product.currency} {product.price.toFixed(2)}
             </p>
             {!soldOut && (
@@ -142,7 +142,7 @@ export function ProductCard({ product, showDescription }: Props) {
             type="button"
             onClick={handleAddToCart}
             disabled={addingToCart || isLoading}
-            className="flex-1 rounded border-2 border-amber-700 py-2.5 text-xs font-semibold uppercase tracking-wide text-amber-800 transition hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 rounded border-2 border-[#606C38] py-2.5 text-xs font-semibold uppercase tracking-wide text-[#606C38] transition hover:bg-[#606C38]/10 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {addingToCart ? (
               <span className="flex items-center justify-center gap-1">
@@ -160,7 +160,7 @@ export function ProductCard({ product, showDescription }: Props) {
             type="button"
             onClick={handleBuyNow}
             disabled={addingToCart || isLoading}
-            className="flex-1 rounded bg-amber-700 py-2.5 text-xs font-semibold uppercase tracking-wide text-white transition hover:bg-amber-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 rounded bg-[#BC6C25] py-2.5 text-xs font-semibold uppercase tracking-wide text-[#FEFAE0] transition hover:bg-[#a55a1f] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Buy now
           </button>

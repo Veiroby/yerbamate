@@ -49,11 +49,11 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
   return (
     <>
       {/* Main form */}
-      <div className="space-y-4 rounded-lg border border-gray-100 bg-white p-5 shadow-sm">
+      <div className="space-y-4 rounded-lg border border-[#606C38]/20 bg-[#FEFAE0] p-5 shadow-sm">
         <div className="space-y-2">
           <label
             htmlFor="quantity"
-            className="block text-xs font-semibold uppercase tracking-wider text-gray-700"
+            className="block text-xs font-semibold uppercase tracking-wider text-[#283618]"
           >
             Quantity
           </label>
@@ -64,10 +64,10 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
             max={quantityLeft}
             value={quantity}
             onChange={(e) => setQuantity(Math.max(1, Math.min(quantityLeft, parseInt(e.target.value) || 1)))}
-            className="w-24 rounded border border-gray-200 px-3 py-2.5 text-sm font-medium text-gray-900 focus:border-amber-600 focus:outline-none focus:ring-1 focus:ring-amber-500"
+            className="w-24 rounded border border-[#606C38]/40 px-3 py-2.5 text-sm font-medium text-[#283618] focus:border-[#BC6C25] focus:outline-none focus:ring-1 focus:ring-[#BC6C25]"
           />
           {quantityLeft < 10 && (
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-[#606C38]">
               Only {quantityLeft} left in stock
             </p>
           )}
@@ -77,7 +77,7 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
             type="button"
             onClick={handleAddToCart}
             disabled={addingToCart || isLoading}
-            className="flex-1 rounded border-2 border-amber-700 py-3 text-sm font-semibold uppercase tracking-wide text-amber-800 transition hover:bg-amber-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 rounded border-2 border-[#606C38] py-3 text-sm font-semibold uppercase tracking-wide text-[#606C38] transition hover:bg-[#606C38]/10 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {addingToCart ? (
               <span className="flex items-center justify-center gap-2">
@@ -95,7 +95,7 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
             type="button"
             onClick={handleBuyNow}
             disabled={addingToCart || isLoading}
-            className="flex-1 rounded bg-amber-700 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-amber-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 rounded bg-[#BC6C25] py-3 text-sm font-semibold uppercase tracking-wide text-[#FEFAE0] transition hover:bg-[#a55a1f] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Buy now
           </button>
@@ -104,22 +104,22 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
 
       {/* Mobile sticky bar */}
       <div
-        className={`fixed bottom-0 left-0 right-0 z-40 border-t border-gray-100 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-md transition-transform duration-300 md:hidden ${
+        className={`fixed bottom-0 left-0 right-0 z-40 border-t border-[#606C38]/20 bg-[#FEFAE0]/95 px-4 py-3 shadow-lg backdrop-blur-md transition-transform duration-300 md:hidden ${
           showStickyBar ? "translate-y-0" : "translate-y-full"
         }`}
       >
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-lg font-semibold text-gray-900">
+            <p className="text-lg font-semibold text-[#283618]">
               {currency} {price.toFixed(2)}
             </p>
-            <p className="text-xs text-gray-500">{quantityLeft} in stock</p>
+            <p className="text-xs text-[#606C38]">{quantityLeft} in stock</p>
           </div>
           <button
             type="button"
             onClick={handleStickyAddToCart}
             disabled={addingToCart || isLoading}
-            className="max-w-[200px] flex-1 rounded bg-amber-700 py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-amber-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="max-w-[200px] flex-1 rounded bg-[#BC6C25] py-3 text-sm font-semibold uppercase tracking-wide text-[#FEFAE0] transition hover:bg-[#a55a1f] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {addingToCart ? (
               <span className="flex items-center justify-center gap-2">

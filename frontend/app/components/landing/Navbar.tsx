@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
-const navBg = "bg-[#0f172a]"; // dark blue/charcoal
+const navBg = "bg-[#283618]"; /* Black Forest */
 const navText = "text-white";
 
 export function Navbar() {

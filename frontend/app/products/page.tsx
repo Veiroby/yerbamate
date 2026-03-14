@@ -159,21 +159,21 @@ export default async function ProductsPage({ searchParams }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} />
       <main className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
         <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold uppercase tracking-wide text-gray-900 sm:text-2xl">
+            <h1 className="text-xl font-bold uppercase tracking-wide text-[#283618] sm:text-2xl">
               {getPageTitle()}
             </h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-[#606C38]">
               {getPageDescription()}
             </p>
           </div>
           <Link
             href="/cart"
-            className="inline-flex rounded border-2 border-amber-700 px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-amber-800 transition hover:bg-amber-50"
+            className="inline-flex rounded border-2 border-[#BC6C25] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-[#BC6C25] transition hover:bg-[#BC6C25]/10"
           >
             View cart
           </Link>
@@ -185,7 +185,7 @@ export default async function ProductsPage({ searchParams }: Props) {
 
         <div>
           {productCards.length === 0 ? (
-            <div className="rounded-lg border border-gray-100 bg-white p-12 text-center shadow-sm">
+            <div className="rounded-lg border border-[#606C38]/20 bg-[#FEFAE0] p-12 text-center shadow-sm">
               <svg
                 className="mx-auto h-12 w-12 text-gray-300"
                 fill="none"
@@ -202,19 +202,19 @@ export default async function ProductsPage({ searchParams }: Props) {
               <h3 className="mt-4 text-lg font-bold uppercase tracking-wide text-gray-900">
                 No products found
               </h3>
-              <p className="mt-2 text-sm text-gray-500">
+              <p className="mt-2 text-sm text-[#606C38]">
                 Try adjusting your filters or search terms.
               </p>
               <Link
                 href="/products"
-                className="mt-6 inline-flex rounded border-2 border-amber-700 px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-amber-800 transition hover:bg-amber-50"
+                className="mt-6 inline-flex rounded border-2 border-[#BC6C25] px-6 py-2.5 text-sm font-semibold uppercase tracking-wide text-[#BC6C25] transition hover:bg-[#BC6C25]/10"
               >
                 Clear all filters
               </Link>
             </div>
           ) : (
             <>
-              <p className="mb-4 text-sm text-gray-500">
+              <p className="mb-4 text-sm text-[#606C38]">
                 Showing {productCards.length} product{productCards.length !== 1 ? "s" : ""}
               </p>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
