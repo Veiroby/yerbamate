@@ -1,11 +1,11 @@
 ---
-description: After updating code, always provide git and Hetzner server commands
+description: On every code update, always include git commands (and Hetzner deploy when relevant)
 alwaysApply: true
 ---
 
 # Git and Hetzner Commands After Code Updates
 
-Whenever you make code changes (edits, new files, or configuration updates), end your response with the relevant **git** and **Hetzner server** commands so the user can commit, push, and deploy.
+**Always include git commands on all updates.** Whenever you make code changes (edits, new files, or configuration updates), end your response with copy-paste ready **git** commands. When deployment is relevant, also include **Hetzner server** commands so the user can commit, push, and deploy.
 
 ## What to Provide
 
