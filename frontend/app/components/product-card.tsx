@@ -14,6 +14,9 @@ export type ProductCardData = {
   imageUrl: string | null;
   imageAlt: string | null;
   quantityLeft: number;
+  /** "in_stock" | "get_in_5_7_days" for display */
+  stockStatus?: string;
+  stockLocation?: string | null;
   description?: string | null;
   brand?: string | null;
   origin?: string | null;
@@ -26,7 +29,8 @@ type Props = {
 };
 
 export function ProductCard({ product, showDescription }: Props) {
-  const soldOut = product.quantityLeft <= 0;
+  const stockStatus = product.stockStatus ?? (product.quantityLeft > 0 ? "in_stock" : "get_in_5_7_days");
+  const soldOut = product.stockLocation !== "warehouse" && product.quantityLeft <= 0;
   const { addToCart, isLoading } = useCart();
   const [addingToCart, setAddingToCart] = useState(false);
 
@@ -105,6 +109,13 @@ export function ProductCard({ product, showDescription }: Props) {
           </p>
           <p className="mt-1 text-lg font-semibold text-black">
             {product.currency} {product.price.toFixed(2)}
+          </p>
+          <p className="mt-1 text-xs font-medium text-gray-600">
+            {stockStatus === "in_stock" ? (
+              <>In stock{product.quantityLeft > 0 && product.quantityLeft <= 20 ? ` (${product.quantityLeft})` : ""}</>
+            ) : (
+              <>Get in 5–7 days</>
+            )}
           </p>
           {showDescription && product.description ? (
             <p className="mt-2 line-clamp-2 text-xs text-gray-500">

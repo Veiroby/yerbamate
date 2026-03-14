@@ -3,7 +3,7 @@ import Image from "next/image";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { saveProductImage } from "@/lib/upload";
-import { setProductQuantity } from "./product-quantity";
+import { setProductQuantity, setProductQuantityWithLocation } from "./product-quantity";
 import { DeleteProductButton } from "./delete-product-button";
 
 function totalStock(
@@ -157,6 +157,7 @@ export default async function AdminProductsPage() {
             }
 
             const categoryId = formData.get("categoryId")?.toString().trim() || null;
+            const stockLocation = (formData.get("stockLocation")?.toString() || "instock") as "instock" | "warehouse";
             const product = await prisma.product.create({
               data: {
                 name,
@@ -166,6 +167,7 @@ export default async function AdminProductsPage() {
                 barcode: barcode || undefined,
                 weight: weight || undefined,
                 categoryId: categoryId || undefined,
+                stockLocation: stockLocation === "warehouse" ? "warehouse" : "instock",
               },
             });
 
@@ -189,7 +191,11 @@ export default async function AdminProductsPage() {
             }
 
             if (quantity !== null) {
-              await setProductQuantity(product.id, quantity);
+              await setProductQuantityWithLocation(
+                product.id,
+                quantity,
+                stockLocation === "warehouse" ? "warehouse" : undefined,
+              );
             }
             revalidatePath("/admin/products");
             revalidatePath("/admin/inventory");
@@ -232,6 +238,16 @@ export default async function AdminProductsPage() {
             placeholder="Weight (e.g. 500g)"
             className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
           />
+          <label className="flex flex-col gap-1 text-xs text-zinc-600">
+            Stock location
+            <select
+              name="stockLocation"
+              className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+            >
+              <option value="instock">In stock (quantity)</option>
+              <option value="warehouse">In warehouse (get in 5–7 days)</option>
+            </select>
+          </label>
           <input
             name="quantity"
             placeholder="Quantity (stock)"
@@ -336,7 +352,12 @@ export default async function AdminProductsPage() {
                         Number(formData.get("quantity")?.toString() ?? "0"),
                       ),
                     );
-                    await setProductQuantity(product.id, quantity);
+                    const loc = formData.get("stockLocation")?.toString() || "instock";
+                    await setProductQuantityWithLocation(
+                      product.id,
+                      quantity,
+                      loc === "warehouse" ? "warehouse" : undefined,
+                    );
                     revalidatePath("/admin/products");
                     revalidatePath("/admin/inventory");
                   }}
@@ -344,12 +365,46 @@ export default async function AdminProductsPage() {
                 >
                   <label className="text-xs text-zinc-500">Qty</label>
                   <input
+                    type="hidden"
+                    name="stockLocation"
+                    value={product.stockLocation ?? "instock"}
+                  />
+                  <input
                     type="number"
                     name="quantity"
                     min={0}
                     defaultValue={totalStock(product.variants)}
                     className="w-16 rounded-lg border border-zinc-300 px-2 py-1 text-xs"
                   />
+                  <button
+                    type="submit"
+                    className="text-xs font-medium text-emerald-700 hover:text-emerald-800"
+                  >
+                    Save
+                  </button>
+                </form>
+                <form
+                  action={async (formData) => {
+                    "use server";
+                    const stockLocation = (formData.get("stockLocation")?.toString() || "instock") as "instock" | "warehouse";
+                    await prisma.product.update({
+                      where: { id: product.id },
+                      data: { stockLocation: stockLocation === "warehouse" ? "warehouse" : "instock" },
+                    });
+                    revalidatePath("/admin/products");
+                    revalidatePath("/admin/inventory");
+                  }}
+                  className="flex items-center gap-1"
+                >
+                  <label className="text-xs text-zinc-500">Location</label>
+                  <select
+                    name="stockLocation"
+                    defaultValue={product.stockLocation ?? "instock"}
+                    className="rounded-lg border border-zinc-300 px-2 py-1 text-xs"
+                  >
+                    <option value="instock">In stock</option>
+                    <option value="warehouse">Warehouse</option>
+                  </select>
                   <button
                     type="submit"
                     className="text-xs font-medium text-emerald-700 hover:text-emerald-800"

@@ -137,6 +137,8 @@ model Product {
   brand         String?
   origin        String?
   weight        String?
+  /// "instock" = use quantity, show "In stock" or "Get in 5-7 days"; "warehouse" = show "Get in 5-7 days"
+  stockLocation String?        @default("instock")
   active        Boolean        @default(true)
   categoryId    String?
   createdAt     DateTime       @default(now())

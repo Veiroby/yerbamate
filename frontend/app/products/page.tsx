@@ -130,6 +130,13 @@ export default async function ProductsPage({ searchParams }: Props) {
         sum + v.inventoryItems.reduce((s, i) => s + i.quantity, 0),
       0,
     );
+    const location = p.stockLocation ?? "instock";
+    const stockStatus =
+      location === "warehouse"
+        ? "get_in_5_7_days"
+        : quantityLeft > 0
+          ? "in_stock"
+          : "get_in_5_7_days";
     const img = p.images[0];
     return {
       id: p.id,
@@ -140,6 +147,8 @@ export default async function ProductsPage({ searchParams }: Props) {
       imageUrl: img?.url ?? null,
       imageAlt: img?.altText ?? null,
       quantityLeft,
+      stockStatus,
+      stockLocation: location,
       description: p.description,
       brand: p.brand,
       origin: p.origin,

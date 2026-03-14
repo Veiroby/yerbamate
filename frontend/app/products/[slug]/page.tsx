@@ -44,7 +44,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
       sum + v.inventoryItems.reduce((s, i) => s + i.quantity, 0),
     0,
   );
-  const soldOut = quantityLeft <= 0;
+  const stockLocation = product.stockLocation ?? "instock";
+  const soldOut = stockLocation !== "warehouse" && quantityLeft <= 0;
+  const stockLabel =
+    stockLocation === "warehouse"
+      ? "Get in 5–7 days"
+      : quantityLeft > 0
+        ? "In stock"
+        : "Get in 5–7 days";
   const primaryImage = product.images[0];
   const price = Number(product.price);
 
@@ -125,7 +132,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <p className="text-xl font-semibold text-black">{product.currency} {price.toFixed(2)}</p>
               {!soldOut && (
                 <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-                  {quantityLeft} in stock
+                  {stockLabel}
+                  {stockLabel === "In stock" && quantityLeft > 0 && quantityLeft <= 20 && ` (${quantityLeft})`}
                 </span>
               )}
             </div>
