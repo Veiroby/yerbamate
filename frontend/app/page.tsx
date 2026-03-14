@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
-import { Navbar } from "@/app/components/landing/Navbar";
+import { getCurrentUser } from "@/lib/auth";
+import { SiteHeader } from "@/app/components/site-header";
 import { Hero } from "@/app/components/landing/Hero";
 import { PromoBlock } from "@/app/components/landing/PromoBlock";
 import { TrendingSection } from "@/app/components/landing/TrendingSection";
@@ -14,6 +15,7 @@ import { Footer } from "@/app/components/landing/Footer";
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  const user = await getCurrentUser();
   const products = await prisma.product.findMany({
     where: { active: true },
     orderBy: { createdAt: "desc" },
@@ -36,7 +38,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
-      <Navbar />
+      <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} />
 
       <main>
         <Hero />

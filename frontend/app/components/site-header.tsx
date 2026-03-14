@@ -139,7 +139,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                 )}
                 <Link
                   href="/account/profile"
-                  className="rounded-full border border-stone-300 px-4 py-1.5 text-sm font-medium hover:border-teal-500 hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  className="rounded-full border border-[#606C38]/40 px-4 py-1.5 text-sm font-medium text-[#283618] hover:border-[#606C38] hover:text-[#BC6C25] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FEFAE0]"
                 >
                   Account
                 </Link>
@@ -148,13 +148,13 @@ export function SiteHeader({ user }: SiteHeaderProps) {
               <>
                 <Link
                   href="/account/profile"
-                  className="rounded-full border border-stone-300 px-4 py-1.5 text-sm font-medium hover:border-teal-500 hover:text-teal-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+                  className="rounded-full border border-[#606C38]/40 px-4 py-1.5 text-sm font-medium text-[#283618] hover:border-[#606C38] hover:text-[#BC6C25] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FEFAE0]"
                 >
                   Log in
                 </Link>
                 <Link
                   href="/account/profile"
-                  className="rounded-full bg-[#344e41] px-4 py-1.5 text-sm font-medium text-[#dad7cd] hover:bg-[#24352b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                  className="rounded-full bg-[#283618] px-4 py-1.5 text-sm font-medium text-[#FEFAE0] hover:bg-[#283618]/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FEFAE0]"
                 >
                   Sign up
                 </Link>
@@ -165,7 +165,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           {/* Mobile: cart icon (right) so logo stays centered */}
           <Link
             href="/cart"
-            className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-stone-800 hover:bg-stone-200/80 lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+            className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[#283618] hover:bg-[#606C38]/15 lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FEFAE0]"
             aria-label={`Shopping cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
           >
             <CartIcon className="h-6 w-6" />
@@ -177,7 +177,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-50 bg-stone-900/50 lg:hidden"
+          className="fixed inset-0 z-50 bg-[#283618]/40 lg:hidden"
           aria-hidden
           onClick={() => setSidebarOpen(false)}
         />
@@ -185,18 +185,18 @@ export function SiteHeader({ user }: SiteHeaderProps) {
 
       {/* Mobile sidebar panel */}
       <aside
-        className={`fixed left-0 top-0 z-50 h-full w-72 max-w-[85vw] border-r border-stone-200 bg-stone-50 shadow-xl transition-transform duration-200 ease-out lg:hidden ${
+        className={`fixed left-0 top-0 z-50 h-full w-72 max-w-[85vw] border-r border-[#606C38]/20 bg-[#FEFAE0] shadow-xl transition-transform duration-200 ease-out lg:hidden ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
         }`}
         aria-hidden={!sidebarOpen}
         aria-label="Navigation menu"
       >
-        <div className="flex h-14 items-center justify-between border-b border-stone-200 px-4">
-          <span className="font-serif text-lg font-semibold tracking-tight text-stone-900">Menu</span>
+        <div className="flex h-14 items-center justify-between border-b border-[#606C38]/20 px-4">
+          <span className="font-serif text-lg font-semibold tracking-tight text-[#283618]">Menu</span>
           <button
             type="button"
             onClick={() => setSidebarOpen(false)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-stone-600 hover:bg-stone-200/80 hover:text-stone-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2"
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-[#606C38] hover:bg-[#606C38]/15 hover:text-[#283618] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FEFAE0]"
             aria-label="Close menu"
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -209,19 +209,19 @@ export function SiteHeader({ user }: SiteHeaderProps) {
             <Link
               key={`${href}-${label}`}
               href={href}
-              className={`rounded-xl px-4 py-3 text-sm font-medium ${linkClass(href)} hover:bg-stone-200/80`}
+              className={`rounded-xl px-4 py-3 text-sm font-medium ${linkClass(href)} hover:bg-[#606C38]/15`}
               onClick={() => setSidebarOpen(false)}
             >
               {label}
             </Link>
           ))}
-          <div className="my-2 border-t border-stone-200 pt-4">
+          <div className="my-2 border-t border-[#606C38]/20 pt-4">
             {user ? (
               <>
                 {user.isAdmin && (
                   <Link
                     href="/admin"
-                    className="block rounded-xl px-4 py-3 text-sm font-medium hover:bg-stone-200/80 hover:text-teal-700"
+                    className="block rounded-xl px-4 py-3 text-sm font-medium text-[#283618] hover:bg-[#606C38]/15 hover:text-[#BC6C25]"
                     onClick={() => setSidebarOpen(false)}
                   >
                     Admin
@@ -229,7 +229,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                 )}
                 <Link
                   href="/account/profile"
-                  className="block rounded-xl px-4 py-3 text-sm font-medium hover:bg-stone-200/80 hover:text-teal-700"
+                  className="block rounded-xl px-4 py-3 text-sm font-medium text-[#283618] hover:bg-[#606C38]/15 hover:text-[#BC6C25]"
                   onClick={() => setSidebarOpen(false)}
                 >
                   Account
@@ -239,14 +239,14 @@ export function SiteHeader({ user }: SiteHeaderProps) {
               <>
                 <Link
                   href="/account/profile"
-                  className="block rounded-xl px-4 py-3 text-sm font-medium hover:bg-stone-200/80 hover:text-teal-700"
+                  className="block rounded-xl px-4 py-3 text-sm font-medium text-[#283618] hover:bg-[#606C38]/15 hover:text-[#BC6C25]"
                   onClick={() => setSidebarOpen(false)}
                 >
                   Log in
                 </Link>
                 <Link
                   href="/account/profile"
-                  className="mx-4 mt-2 block rounded-2xl bg-teal-600 py-3 text-center text-sm font-medium text-white hover:bg-teal-700"
+                  className="mx-4 mt-2 block rounded-2xl bg-[#283618] py-3 text-center text-sm font-medium text-[#FEFAE0] hover:bg-[#283618]/90"
                   onClick={() => setSidebarOpen(false)}
                 >
                   Sign up
