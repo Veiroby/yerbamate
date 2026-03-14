@@ -102,7 +102,7 @@ export function ProductCard({ product, showDescription }: Props) {
             </div>
           )}
         </div>
-        <div className="flex flex-1 flex-col px-4 py-3">
+        <div className="flex flex-1 flex-col px-4 pt-1 pb-3">
           {(product.brand || product.origin) && (
             <div className="mb-1 flex flex-wrap gap-1">
               {product.brand && (
