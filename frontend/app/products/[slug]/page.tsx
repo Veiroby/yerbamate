@@ -115,14 +115,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   ))}
                 </div>
               )}
-              <div className="relative aspect-square w-full max-h-[320px] max-w-[320px] overflow-hidden rounded-lg bg-transparent sm:max-h-[380px] sm:max-w-[380px] md:max-h-[420px] md:max-w-[420px]">
+              <div className="relative aspect-square w-full max-h-[380px] max-w-[380px] overflow-hidden rounded-lg bg-transparent sm:max-h-[450px] sm:max-w-[450px] md:max-h-[520px] md:max-w-[520px] lg:max-h-[550px] lg:max-w-[550px]">
                 {primaryImage ? (
                   <Image
                     src={primaryImage.url}
                     alt={primaryImage.altText ?? product.name}
                     fill
                     className="object-contain"
-                    sizes="(max-width: 640px) 320px, (max-width: 768px) 380px, 420px"
+                    sizes="(max-width: 640px) 380px, (max-width: 768px) 450px, (max-width: 1024px) 520px, 550px"
                     priority
                     unoptimized
                     style={{
@@ -155,16 +155,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
           {/* Info & purchase – text sizes balanced with image column */}
           <div className="space-y-5">
             <div>
-              <h1 className="text-xl font-bold uppercase tracking-wide text-[#283618] sm:text-2xl md:text-[1.75rem]">
+              <h1 className="text-2xl font-bold uppercase tracking-wide text-[#283618] sm:text-3xl md:text-4xl">
                 {product.name}
               </h1>
               {product.origin && (
-                <p className="mt-1 text-sm text-[#606C38]">
+                <p className="mt-1 text-sm text-[#606C38] sm:text-base">
                   Origin: <span className="font-medium">{product.origin}</span>
                 </p>
               )}
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <p className="text-lg font-semibold text-[#283618] sm:text-xl">
+                <p className="text-xl font-semibold text-[#283618] sm:text-2xl">
                   €{price.toFixed(2)}
                 </p>
                 {!soldOut && (

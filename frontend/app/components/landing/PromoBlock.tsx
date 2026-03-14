@@ -30,26 +30,26 @@ export function PromoBlock({
   const hasProductActions = productId != null && productSlug != null;
 
   return (
-    <div className={`flex min-h-[180px] flex-row md:min-h-[220px] md:flex-row md:items-stretch ${backgroundColor}`}>
+    <div className={`flex min-h-[220px] flex-row md:min-h-[340px] lg:min-h-[380px] md:flex-row md:items-stretch ${backgroundColor}`}>
       {/* Image on the left – tighter layout, less padding */}
       <Link
         href={href}
         className="flex shrink-0 items-center justify-center pl-4 pr-2 py-4 sm:pl-6 sm:pr-3 sm:py-4 md:pl-8 md:pr-4 md:py-5"
       >
         {imageUrl ? (
-          <div className="relative h-36 w-32 sm:h-44 sm:w-40 md:h-52 md:w-48">
+          <div className="relative h-48 w-48 sm:h-64 sm:w-64 md:h-[280px] md:w-[280px] lg:h-[326px] lg:w-[326px]">
             <Image
               src={imageUrl}
               alt={imageAlt || title}
               fill
               className="object-contain object-center"
-              sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 208px"
+              sizes="(max-width: 640px) 192px, (max-width: 768px) 256px, (max-width: 1024px) 280px, 326px"
               unoptimized
             />
           </div>
         ) : (
           <div
-            className={`flex h-36 w-32 items-center justify-center rounded-lg sm:h-44 sm:w-40 md:h-52 md:w-48 ${textColor} opacity-20`}
+            className={`flex h-48 w-48 items-center justify-center rounded-lg sm:h-64 sm:w-64 md:h-[280px] md:w-[280px] lg:h-[326px] lg:w-[326px] ${textColor} opacity-20`}
           >
             <svg
               className="h-12 w-12"
@@ -68,12 +68,12 @@ export function PromoBlock({
         )}
       </Link>
 
-      {/* Content on the right: title (product name), price, buttons */}
+      {/* Content on the right: title (product name), price, buttons – Figma title ~99px, price ~37px */}
       <div className="flex flex-1 flex-col justify-center px-6 pb-6 sm:px-8 sm:pb-8 md:py-8 md:pr-8 md:pl-4">
-        <h3 className={`text-lg font-bold uppercase tracking-wide ${textColor} sm:text-xl`}>
+        <h3 className={`text-xl font-bold uppercase tracking-wide ${textColor} sm:text-2xl md:text-3xl`}>
           {title}
         </h3>
-        <p className={`mt-2 text-lg font-semibold ${textColor}`}>{price}</p>
+        <p className={`mt-2 text-lg font-semibold ${textColor} sm:text-xl`}>{price}</p>
         {hasProductActions ? (
           <PromoBlockActions
             productId={productId}
