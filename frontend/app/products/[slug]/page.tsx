@@ -115,14 +115,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   ))}
                 </div>
               )}
-              <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-transparent">
+              <div className="relative aspect-square w-full max-h-[320px] max-w-[320px] overflow-hidden rounded-lg bg-transparent sm:max-h-[380px] sm:max-w-[380px] md:max-h-[420px] md:max-w-[420px]">
                 {primaryImage ? (
                   <Image
                     src={primaryImage.url}
                     alt={primaryImage.altText ?? product.name}
                     fill
                     className="object-contain"
-                    sizes="(max-width: 768px) 100vw, 60vw"
+                    sizes="(max-width: 640px) 320px, (max-width: 768px) 380px, 420px"
                     priority
                     unoptimized
                     style={{
@@ -152,10 +152,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
           </div>
 
-          {/* Info & purchase */}
-          <div className="space-y-6">
+          {/* Info & purchase – text sizes balanced with image column */}
+          <div className="space-y-5">
             <div>
-              <h1 className="text-2xl font-bold uppercase tracking-wide text-[#283618] md:text-3xl">
+              <h1 className="text-xl font-bold uppercase tracking-wide text-[#283618] sm:text-2xl md:text-[1.75rem]">
                 {product.name}
               </h1>
               {product.origin && (
@@ -164,7 +164,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </p>
               )}
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <p className="text-xl font-semibold text-[#283618]">
+                <p className="text-lg font-semibold text-[#283618] sm:text-xl">
                   €{price.toFixed(2)}
                 </p>
                 {!soldOut && (
@@ -193,16 +193,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
               )}
             </div>
 
-            {product.description && (
-              <section className="rounded-lg border border-[#606C38]/20 bg-[#FEFAE0] p-5 shadow-sm">
-                <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-[#606C38]">
-                  Description
-                </h2>
-                <p className="whitespace-pre-line text-sm leading-relaxed text-[#283618]">
-                  {product.description}
-                </p>
-              </section>
-            )}
+            {/* Product description from product.description */}
+            <section className="rounded-lg border border-[#606C38]/20 bg-[#FEFAE0] p-4 shadow-sm">
+              <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-[#606C38]">
+                Description
+              </h2>
+              <p className="whitespace-pre-line text-base leading-relaxed text-[#283618]">
+                {product.description ?? "No description available."}
+              </p>
+            </section>
 
             {!soldOut && (
               <AddToCartForm 
