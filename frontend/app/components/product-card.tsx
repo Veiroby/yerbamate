@@ -47,7 +47,7 @@ export function ProductCard({ product, showDescription }: Props) {
 
   return (
     <div
-      className={`group flex flex-col overflow-hidden rounded-lg bg-transparent transition duration-200 hover:opacity-95 ${
+      className={`group flex flex-col overflow-hidden rounded-2xl bg-transparent transition duration-200 hover:opacity-95 ${
         soldOut ? "opacity-70" : "hover:-translate-y-0.5"
       }`}
     >
@@ -56,7 +56,7 @@ export function ProductCard({ product, showDescription }: Props) {
         className={`block flex-1 min-h-0 ${soldOut ? "pointer-events-none" : "cursor-pointer"}`}
         aria-label={`View ${product.name}`}
         >
-          <div className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-transparent">
+          <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-transparent">
           {product.imageUrl ? (
               <Image
                 src={product.imageUrl}
@@ -102,7 +102,7 @@ export function ProductCard({ product, showDescription }: Props) {
             </div>
           )}
         </div>
-        <div className="flex flex-1 flex-col px-4 pt-1 pb-3">
+        <div className="flex flex-1 flex-col px-4 pt-0 pb-3">
           {(product.brand || product.origin) && (
             <div className="mb-1 flex flex-wrap gap-1">
               {product.brand && (
@@ -117,11 +117,11 @@ export function ProductCard({ product, showDescription }: Props) {
               )}
             </div>
           )}
-          <h2 className="mb-1 line-clamp-2 text-sm font-medium text-[#283618] transition group-hover:text-[#BC6C25]">
+          <h2 className="mb-1 line-clamp-2 text-base font-semibold text-[#283618] transition group-hover:text-[#BC6C25] sm:text-lg">
             {product.name}
           </h2>
           {product.weight ? (
-            <p className="mb-1 text-xs text-[#606C38]">{product.weight}</p>
+            <p className="mb-1 text-sm text-[#606C38]">{product.weight}</p>
           ) : null}
           {showDescription && product.description ? (
             <p className="line-clamp-2 text-xs text-[#606C38]">
@@ -129,7 +129,7 @@ export function ProductCard({ product, showDescription }: Props) {
             </p>
           ) : null}
           <div className="mt-auto flex items-center justify-between gap-2 pt-2">
-            <p className="text-sm font-semibold text-[#283618]">
+            <p className="text-base font-semibold text-[#283618] sm:text-lg">
               {product.currency} {product.price.toFixed(2)}
             </p>
             {!soldOut && (
