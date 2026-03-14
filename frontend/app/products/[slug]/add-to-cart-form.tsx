@@ -48,36 +48,31 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
 
   return (
     <>
-      {/* Main form */}
-      <div className="space-y-4 rounded-lg border border-[#606C38]/20 bg-[#FEFAE0] p-5 shadow-sm">
-        <div className="space-y-2">
-          <label
-            htmlFor="quantity"
-            className="block text-xs font-semibold uppercase tracking-wider text-[#283618]"
-          >
-            Quantity
-          </label>
-          <input
-            id="quantity"
-            type="number"
-            min={1}
-            max={quantityLeft}
-            value={quantity}
-            onChange={(e) => setQuantity(Math.max(1, Math.min(quantityLeft, parseInt(e.target.value) || 1)))}
-            className="w-24 rounded border border-[#606C38]/40 px-3 py-2.5 text-sm font-medium text-[#283618] focus:border-[#BC6C25] focus:outline-none focus:ring-1 focus:ring-[#BC6C25]"
-          />
-          {quantityLeft < 10 && (
-            <p className="text-xs text-[#606C38]">
-              Only {quantityLeft} left in stock
-            </p>
-          )}
-        </div>
-        <div className="flex gap-3">
+      {/* Main form – Figma-style: quantity + Add to cart row */}
+      <div className="mt-6 space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="quantity"
+              className="text-[10px] font-medium uppercase tracking-wider text-[#606C38]"
+            >
+              Quantity
+            </label>
+            <input
+              id="quantity"
+              type="number"
+              min={1}
+              max={quantityLeft}
+              value={quantity}
+              onChange={(e) => setQuantity(Math.max(1, Math.min(quantityLeft, parseInt(e.target.value) || 1)))}
+              className="h-10 w-14 rounded border-2 border-[#606C38]/30 bg-[#FEFAE0] px-2 text-center text-sm font-semibold text-[#283618] focus:border-[#BC6C25] focus:outline-none focus:ring-1 focus:ring-[#BC6C25]"
+            />
+          </div>
           <button
             type="button"
             onClick={handleAddToCart}
             disabled={addingToCart || isLoading}
-            className="flex-1 rounded border-2 border-[#606C38] py-3 text-sm font-semibold uppercase tracking-wide text-[#606C38] transition hover:bg-[#606C38]/10 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 min-w-[180px] rounded-full bg-[#BC6C25] py-3 text-xs font-semibold uppercase tracking-wide text-[#FEFAE0] transition hover:bg-[#a55a1f] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {addingToCart ? (
               <span className="flex items-center justify-center gap-2">
@@ -95,11 +90,16 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
             type="button"
             onClick={handleBuyNow}
             disabled={addingToCart || isLoading}
-            className="flex-1 rounded bg-[#BC6C25] py-3 text-sm font-semibold uppercase tracking-wide text-[#FEFAE0] transition hover:bg-[#a55a1f] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-full border-2 border-[#606C38] px-5 py-3 text-xs font-semibold uppercase tracking-wide text-[#606C38] transition hover:bg-[#606C38]/10 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Buy now
           </button>
         </div>
+        {quantityLeft < 10 && (
+          <p className="text-xs text-[#606C38]">
+            Only {quantityLeft} left in stock
+          </p>
+        )}
       </div>
 
       {/* Mobile sticky bar */}

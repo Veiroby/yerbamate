@@ -60,16 +60,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} />
 
-      <main className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <Link
           href="/products"
-          className="inline-flex text-sm font-medium text-[#606C38] transition hover:text-[#BC6C25]"
+          className="inline-flex text-base font-medium text-[#606C38] transition hover:text-[#BC6C25]"
         >
           ← Back to products
         </Link>
         <nav
           aria-label="Breadcrumb"
-          className="mb-8 mt-2 text-xs font-medium uppercase tracking-wide text-[#606C38]"
+          className="mb-8 mt-2 text-sm font-medium uppercase tracking-wide text-[#606C38]"
         >
           <Link href="/" className="hover:text-[#BC6C25]">
             Home
@@ -82,130 +82,132 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <span className="text-[#283618]">{product.name}</span>
         </nav>
 
-        <div className="grid gap-10 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-          {/* Images: thumbnails on the left, large image on the right (Figma-style) */}
-          <div className="space-y-4">
-            <div className="flex flex-col gap-4 md:flex-row md:items-start">
-              {product.images.length > 1 && (
-                <div className="flex gap-2 overflow-x-auto pb-2 md:flex-col md:gap-3 md:overflow-visible md:pb-0">
-                  {product.images.map((image) => (
-                    <div
-                      key={image.id}
-                      className="relative aspect-square h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-[#606C38]/20 bg-transparent md:h-20 md:w-20"
-                    >
-                      <Image
-                        src={image.url}
-                        alt={image.altText ?? product.name}
-                        fill
-                        className="object-contain"
-                        sizes="80px"
-                        unoptimized
-                        style={{
-                          objectPosition: `${Math.round(image.focalX * 100)}% ${Math.round(
-                            image.focalY * 100,
-                          )}%`,
-                          transform:
-                            typeof (image as any).zoom === "number" &&
-                            (image as any).zoom !== 1
-                              ? `scale(${(image as any).zoom})`
-                              : undefined,
-                        }}
-                      />
-                    </div>
-                  ))}
+        {/* Figma-style: two columns – image gallery (thumbnails + main), product shop */}
+        <div className="flex flex-col gap-8 md:flex-row md:items-start md:gap-10">
+          {/* Left: product images – thumbnails then main image */}
+          <div className="flex flex-1 flex-col gap-4 md:flex-row md:gap-6">
+            {product.images.length > 1 && (
+              <div className="flex shrink-0 gap-4 overflow-x-auto pb-2 md:flex-col md:overflow-visible md:pb-0">
+                {product.images.map((image) => (
+                  <div
+                    key={image.id}
+                    className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full bg-[#606C38]/10 md:h-14 md:w-14"
+                  >
+                    <Image
+                      src={image.url}
+                      alt={image.altText ?? product.name}
+                      fill
+                      className="object-contain"
+                      sizes="56px"
+                      unoptimized
+                      style={{
+                        objectPosition: `${Math.round(image.focalX * 100)}% ${Math.round(
+                          image.focalY * 100,
+                        )}%`,
+                        transform:
+                          typeof (image as any).zoom === "number" &&
+                          (image as any).zoom !== 1
+                            ? `scale(${(image as any).zoom})`
+                            : undefined,
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="relative aspect-square w-full max-h-[380px] max-w-[380px] overflow-hidden rounded-2xl bg-transparent sm:max-h-[450px] sm:max-w-[450px] md:max-h-[520px] md:max-w-[520px] lg:max-h-[550px] lg:max-w-[550px]">
+              {primaryImage ? (
+                <Image
+                  src={primaryImage.url}
+                  alt={primaryImage.altText ?? product.name}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 640px) 380px, (max-width: 768px) 450px, (max-width: 1024px) 520px, 550px"
+                  priority
+                  unoptimized
+                  style={{
+                    objectPosition: `${Math.round(primaryImage.focalX * 100)}% ${Math.round(
+                      primaryImage.focalY * 100,
+                    )}%`,
+                    transform:
+                      typeof (primaryImage as any).zoom === "number" &&
+                      (primaryImage as any).zoom !== 1
+                        ? `scale(${(primaryImage as any).zoom})`
+                        : undefined,
+                  }}
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center text-[#606C38]/60">
+                  Product image
                 </div>
               )}
-              <div className="relative aspect-square w-full max-h-[380px] max-w-[380px] overflow-hidden rounded-lg bg-transparent sm:max-h-[450px] sm:max-w-[450px] md:max-h-[520px] md:max-w-[520px] lg:max-h-[550px] lg:max-w-[550px]">
-                {primaryImage ? (
-                  <Image
-                    src={primaryImage.url}
-                    alt={primaryImage.altText ?? product.name}
-                    fill
-                    className="object-contain"
-                    sizes="(max-width: 640px) 380px, (max-width: 768px) 450px, (max-width: 1024px) 520px, 550px"
-                    priority
-                    unoptimized
-                    style={{
-                      objectPosition: `${Math.round(primaryImage.focalX * 100)}% ${Math.round(
-                        primaryImage.focalY * 100,
-                      )}%`,
-                      transform:
-                        typeof (primaryImage as any).zoom === "number" &&
-                        (primaryImage as any).zoom !== 1
-                          ? `scale(${(primaryImage as any).zoom})`
-                          : undefined,
-                    }}
-                  />
-                ) : (
-                  <div className="flex h-full items-center justify-center text-[#606C38]/60">
-                    Product image
-                  </div>
-                )}
-                {soldOut && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-[#283618]/50">
-                    <span className="rounded-full bg-[#283618] px-6 py-3 text-base font-semibold uppercase tracking-wide text-[#FEFAE0]">
-                      Sold out
-                    </span>
-                  </div>
-                )}
-              </div>
+              {soldOut && (
+                <div className="absolute inset-0 flex items-center justify-center bg-[#283618]/50">
+                  <span className="rounded-full bg-[#283618] px-6 py-3 text-base font-semibold uppercase tracking-wide text-[#FEFAE0]">
+                    Sold out
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Info & purchase – text sizes balanced with image column */}
-          <div className="space-y-5">
-            <div>
-              <h1 className="text-2xl font-bold uppercase tracking-wide text-[#283618] sm:text-3xl md:text-4xl">
-                {product.name}
-              </h1>
-              {product.origin && (
-                <p className="mt-1 text-sm text-[#606C38] sm:text-base">
-                  Origin: <span className="font-medium">{product.origin}</span>
-                </p>
-              )}
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <p className="text-xl font-semibold text-[#283618] sm:text-2xl">
-                  €{price.toFixed(2)}
-                </p>
-                {!soldOut && (
-                  <span className="rounded-full bg-[#DDA15E]/30 px-2.5 py-0.5 text-xs font-medium text-[#BC6C25]">
-                    {quantityLeft} in stock
-                  </span>
-                )}
-              </div>
-              {productBundles.length > 0 && (
-                <div className="mt-3 space-y-2">
-                  {productBundles.map((bundle) => (
-                    <div
-                      key={bundle.id}
-                      className="flex items-center gap-2 rounded-lg border border-[#DDA15E]/50 bg-[#DDA15E]/20 px-3 py-2 text-sm"
-                    >
-                      <span className="text-[#BC6C25]">🏷️</span>
-                      <span className="font-medium text-[#283618]">
-                        Buy {bundle.minQuantity}+ and save {Number(bundle.discountPercent)}%!
-                      </span>
-                      {bundle.description && (
-                        <span className="text-[#606C38]">— {bundle.description}</span>
-                      )}
-                    </div>
-                  ))}
-                </div>
+          {/* Right: product shop – brand, name, short description, price, add to cart (Figma-style) */}
+          <div className="flex min-w-0 flex-1 flex-col md:max-w-[420px] md:pl-2">
+            {product.brand && (
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#606C38]">
+                {product.brand}
+              </p>
+            )}
+            <h1 className="mt-1.5 text-[28px] font-black leading-tight tracking-wide text-[#283618] sm:text-[32px]">
+              {product.name}
+            </h1>
+            {product.description && (
+              <p className="mt-3 line-clamp-3 text-[13.5px] leading-[1.5] text-[#283618]">
+                {product.description}
+              </p>
+            )}
+            {product.weight && (
+              <p className="mt-1 text-sm font-medium text-[#606C38]">
+                {product.weight}
+              </p>
+            )}
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              <p className="text-xl font-semibold text-[#BC6C25] sm:text-2xl">
+                {product.currency} {price.toFixed(2)}
+              </p>
+              {!soldOut && (
+                <span className="rounded-full bg-[#DDA15E]/30 px-2.5 py-0.5 text-xs font-medium text-[#BC6C25]">
+                  {quantityLeft} in stock
+                </span>
               )}
             </div>
-
-            {/* Product description from product.description */}
-            <section className="rounded-lg border border-[#606C38]/20 bg-[#FEFAE0] p-4 shadow-sm">
-              <h2 className="mb-2 text-sm font-bold uppercase tracking-wide text-[#606C38]">
-                Description
-              </h2>
-              <p className="whitespace-pre-line text-base leading-relaxed text-[#283618]">
-                {product.description ?? "No description available."}
+            {product.origin && (
+              <p className="mt-1 text-xs font-medium text-[#606C38]">
+                Origin: {product.origin}
               </p>
-            </section>
+            )}
+            {productBundles.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {productBundles.map((bundle) => (
+                  <div
+                    key={bundle.id}
+                    className="flex items-center gap-2 rounded-lg border border-[#DDA15E]/50 bg-[#DDA15E]/20 px-3 py-2 text-sm"
+                  >
+                    <span className="text-[#BC6C25]">🏷️</span>
+                    <span className="font-medium text-[#283618]">
+                      Buy {bundle.minQuantity}+ and save {Number(bundle.discountPercent)}%!
+                    </span>
+                    {bundle.description && (
+                      <span className="text-[#606C38]">— {bundle.description}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {!soldOut && (
-              <AddToCartForm 
-                productId={product.id} 
+              <AddToCartForm
+                productId={product.id}
                 productName={product.name}
                 quantityLeft={quantityLeft}
                 price={price}
@@ -213,12 +215,29 @@ export default async function ProductPage({ params }: ProductPageProps) {
               />
             )}
 
-            <p className="text-xs text-[#606C38]">
+            <p className="mt-4 text-xs text-[#606C38]">
               Ships in 1–2 business days. Secure checkout with Stripe. Guest
               checkout supported.
             </p>
           </div>
         </div>
+
+        {/* Description section – Figma-style grey block with brand, title, body */}
+        <section className="mt-12 rounded-2xl bg-[#606C38]/[0.06] px-6 py-8 sm:px-8 md:mt-16">
+          {product.brand && (
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#606C38]">
+              {product.brand}
+            </p>
+          )}
+          <h2 className="mt-2 text-3xl font-black tracking-wide text-[#283618] sm:text-4xl">
+            {product.name}
+          </h2>
+          <div className="mt-6 max-w-2xl">
+            <p className="whitespace-pre-line text-[15px] leading-[1.9] text-[#283618]">
+              {product.description ?? "No description available."}
+            </p>
+          </div>
+        </section>
       </main>
       <SiteFooter />
     </div>
