@@ -136,6 +136,7 @@ model Product {
   barcode       String?        @unique
   brand         String?
   origin        String?
+  weight        String?
   active        Boolean        @default(true)
   categoryId    String?
   createdAt     DateTime       @default(now())

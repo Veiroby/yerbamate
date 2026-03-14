@@ -31,6 +31,7 @@ export default async function Home() {
     href: `/products/${encodeURIComponent(p.slug)}`,
     imageUrl: p.images[0]?.url ?? null,
     imageAlt: p.images[0]?.altText ?? p.name,
+    weight: p.weight ?? null,
   }));
 
   const firstProduct = products[0];

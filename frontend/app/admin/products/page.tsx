@@ -145,6 +145,8 @@ export default async function AdminProductsPage() {
               formData.get("description")?.toString().trim() || null;
             const barcode =
               formData.get("barcode")?.toString().trim() || null;
+            const weight =
+              formData.get("weight")?.toString().trim() || null;
             const quantityRaw = formData.get("quantity")?.toString();
             const quantity = quantityRaw
               ? Math.max(0, Math.floor(Number(quantityRaw)))
@@ -162,6 +164,7 @@ export default async function AdminProductsPage() {
                 price,
                 description,
                 barcode: barcode || undefined,
+                weight: weight || undefined,
                 categoryId: categoryId || undefined,
               },
             });
@@ -222,6 +225,11 @@ export default async function AdminProductsPage() {
           <input
             name="barcode"
             placeholder="Barcode (optional, for scanning)"
+            className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+          />
+          <input
+            name="weight"
+            placeholder="Weight (e.g. 500g)"
             className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
           />
           <input
@@ -306,6 +314,9 @@ export default async function AdminProductsPage() {
                   <p className="text-xs text-zinc-500">
                     /products/{product.slug} – {product.currency}{" "}
                     {(product.price as unknown as number).toFixed(2)}
+                    {product.weight && (
+                      <> · {product.weight}</>
+                    )}
                     {product.category && (
                       <> · {product.category.name}</>
                     )}
@@ -403,6 +414,34 @@ export default async function AdminProductsPage() {
                     defaultValue={product.barcode ?? ""}
                     placeholder="Barcode"
                     className="w-28 rounded-lg border border-zinc-300 px-2 py-1 text-xs"
+                  />
+                  <button
+                    type="submit"
+                    className="text-xs font-medium text-emerald-700 hover:text-emerald-800"
+                  >
+                    Save
+                  </button>
+                </form>
+                <form
+                  action={async (formData) => {
+                    "use server";
+                    const weight =
+                      formData.get("weight")?.toString().trim() || null;
+                    await prisma.product.update({
+                      where: { id: product.id },
+                      data: { weight: weight || undefined },
+                    });
+                    revalidatePath("/admin/products");
+                    revalidatePath("/admin/inventory");
+                  }}
+                  className="flex items-center gap-1"
+                >
+                  <input
+                    type="text"
+                    name="weight"
+                    defaultValue={product.weight ?? ""}
+                    placeholder="Weight"
+                    className="w-20 rounded-lg border border-zinc-300 px-2 py-1 text-xs"
                   />
                   <button
                     type="submit"

@@ -9,6 +9,7 @@ export type CarouselProduct = {
   href: string;
   imageUrl?: string | null;
   imageAlt?: string;
+  weight?: string | null;
 };
 
 type Props = {
@@ -54,6 +55,9 @@ export function ProductCarouselSection({ title, products }: Props) {
                 )}
               </div>
               <p className="mt-4 line-clamp-2 text-base font-medium text-[#283618] sm:text-lg md:text-xl">{p.title}</p>
+              {p.weight ? (
+                <p className="mt-1 text-sm text-[#606C38]">{p.weight}</p>
+              ) : null}
               <p className="mt-1 text-base font-semibold text-[#283618] sm:text-lg">{p.price}</p>
             </Link>
           ))}

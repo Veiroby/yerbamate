@@ -143,6 +143,7 @@ export default async function ProductsPage({ searchParams }: Props) {
       description: p.description,
       brand: p.brand,
       origin: p.origin,
+      weight: p.weight ?? null,
     };
   });
 

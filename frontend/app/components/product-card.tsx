@@ -17,6 +17,7 @@ export type ProductCardData = {
   description?: string | null;
   brand?: string | null;
   origin?: string | null;
+  weight?: string | null;
 };
 
 type Props = {
@@ -119,6 +120,9 @@ export function ProductCard({ product, showDescription }: Props) {
           <h2 className="mb-1 line-clamp-2 text-sm font-medium text-[#283618] transition group-hover:text-[#BC6C25]">
             {product.name}
           </h2>
+          {product.weight ? (
+            <p className="mb-1 text-xs text-[#606C38]">{product.weight}</p>
+          ) : null}
           {showDescription && product.description ? (
             <p className="line-clamp-2 text-xs text-[#606C38]">
               {product.description}
