@@ -13,10 +13,13 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/products", label: "All Products" },
   { href: "/products?category=yerba-mate", label: "Yerba Mate" },
-  { href: "/products?category=mate-gourds", label: "Mate gourds" },
+  { href: "/products?category=mate-gourds", label: "Mate Gourds" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
+
+const navBg = "bg-[#283618]";
+const navText = "text-[#FEFAE0]";
 
 function CartIcon({ className }: { className?: string }) {
   return (
@@ -55,16 +58,8 @@ function CartBadge({ count }: { count: number }) {
 export function SiteHeader({ user }: SiteHeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const { itemCount } = useCart();
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const isActive = (href: string) => {
     if (pathname !== href.split("?")[0]) return false;
@@ -74,57 +69,46 @@ export function SiteHeader({ user }: SiteHeaderProps) {
     return linkCategory === currentCategory;
   };
 
-  const linkClass = (href: string) =>
-    isActive(href) ? "text-[#BC6C25]" : "hover:text-[#606C38]";
+  const navLinkClass = (href: string) =>
+    isActive(href)
+      ? "text-[#DDA15E] font-semibold"
+      : `${navText} hover:opacity-90`;
 
   return (
     <>
-      <header
-        className={`sticky top-0 z-40 border-b border-[#606C38]/20 bg-[#FEFAE0]/95 backdrop-blur-md transition-shadow duration-200 ${
-          scrolled ? "shadow-sm" : ""
-        }`}
-      >
-        <div className="relative mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:py-4">
-          {/* Mobile: hamburger (left), logo (center), spacer (right) */}
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(true)}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[#283618] hover:bg-[#606C38]/15 hover:text-[#283618] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 lg:hidden"
-            aria-label="Open menu"
-          >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-
+      <header className={`sticky top-0 z-40 w-full ${navBg}`}>
+        <nav
+          className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4"
+          aria-label="Main navigation"
+        >
           <Link
             href="/"
-            className="font-serif absolute left-1/2 flex -translate-x-1/2 rounded-xl text-xl font-semibold tracking-tight text-[#283618] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 lg:static lg:translate-x-0"
+            className={`text-lg font-semibold ${navText} transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618]`}
           >
             YerbaTea
           </Link>
 
-          {/* Desktop: center nav (hidden on mobile) */}
-          <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-1 text-sm font-medium lg:flex" aria-label="Main navigation">
+          {/* Desktop: center nav links – Figma-style uppercase tracking */}
+          <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 lg:flex">
             {navLinks.map(({ href, label }) => (
               <Link
                 key={`${href}-${label}`}
                 href={href}
-                className={`whitespace-nowrap rounded-lg px-3 py-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 ${linkClass(href)}`}
+                className={`text-sm font-medium uppercase tracking-wide transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618] ${navLinkClass(href)}`}
               >
                 {label}
               </Link>
             ))}
-          </nav>
+          </div>
 
-          {/* Desktop: cart + auth (hidden on mobile) */}
-          <div className="hidden items-center gap-3 lg:flex">
+          {/* Right: cart + account (desktop) */}
+          <div className="flex items-center gap-2 sm:gap-4">
             <Link
               href="/cart"
-              className="relative flex h-10 w-10 items-center justify-center rounded-xl text-[#283618] transition-colors hover:bg-[#606C38]/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2"
-              aria-label={`Shopping cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
+              className={`relative flex h-10 w-10 items-center justify-center ${navText} transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618]`}
+              aria-label={`Cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
             >
-              <CartIcon className="h-6 w-6" />
+              <CartIcon className="h-5 w-5" />
               <CartBadge count={itemCount} />
             </Link>
             {user ? (
@@ -132,14 +116,14 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                 {user.isAdmin && (
                   <Link
                     href="/admin"
-                    className="rounded-lg text-sm font-medium hover:text-[#BC6C25] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2"
+                    className={`hidden text-sm font-medium uppercase tracking-wide ${navText} hover:opacity-90 sm:block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618]`}
                   >
                     Admin
                   </Link>
                 )}
                 <Link
                   href="/account/profile"
-                  className="rounded-full border border-[#606C38]/40 px-4 py-1.5 text-sm font-medium text-[#283618] hover:border-[#606C38] hover:text-[#BC6C25] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FEFAE0]"
+                  className={`hidden text-sm font-medium uppercase tracking-wide ${navText} hover:opacity-90 sm:block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618]`}
                 >
                   Account
                 </Link>
@@ -148,114 +132,99 @@ export function SiteHeader({ user }: SiteHeaderProps) {
               <>
                 <Link
                   href="/account/profile"
-                  className="rounded-full border border-[#606C38]/40 px-4 py-1.5 text-sm font-medium text-[#283618] hover:border-[#606C38] hover:text-[#BC6C25] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FEFAE0]"
+                  className={`hidden text-sm font-medium uppercase tracking-wide ${navText} hover:opacity-90 sm:block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618]`}
                 >
                   Log in
                 </Link>
                 <Link
                   href="/account/profile"
-                  className="rounded-full bg-[#283618] px-4 py-1.5 text-sm font-medium text-[#FEFAE0] hover:bg-[#283618]/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FEFAE0]"
+                  className={`hidden rounded border border-[#FEFAE0]/60 px-4 py-2 text-sm font-medium uppercase tracking-wide ${navText} hover:bg-[#FEFAE0]/10 sm:inline-block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618]`}
                 >
                   Sign up
                 </Link>
               </>
             )}
-          </div>
 
-          {/* Mobile: cart icon (right) so logo stays centered */}
-          <Link
-            href="/cart"
-            className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[#283618] hover:bg-[#606C38]/15 lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FEFAE0]"
-            aria-label={`Shopping cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
-          >
-            <CartIcon className="h-6 w-6" />
-            <CartBadge count={itemCount} />
-          </Link>
-        </div>
-      </header>
-
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-[#283618]/40 lg:hidden"
-          aria-hidden
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Mobile sidebar panel */}
-      <aside
-        className={`fixed left-0 top-0 z-50 h-full w-72 max-w-[85vw] border-r border-[#606C38]/20 bg-[#FEFAE0] shadow-xl transition-transform duration-200 ease-out lg:hidden ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full pointer-events-none"
-        }`}
-        aria-hidden={!sidebarOpen}
-        aria-label="Navigation menu"
-      >
-        <div className="flex h-14 items-center justify-between border-b border-[#606C38]/20 px-4">
-          <span className="font-serif text-lg font-semibold tracking-tight text-[#283618]">Menu</span>
-          <button
-            type="button"
-            onClick={() => setSidebarOpen(false)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-[#606C38] hover:bg-[#606C38]/15 hover:text-[#283618] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#BC6C25] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FEFAE0]"
-            aria-label="Close menu"
-          >
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-        <nav className="flex flex-col gap-1 p-4">
-          {navLinks.map(({ href, label }) => (
-            <Link
-              key={`${href}-${label}`}
-              href={href}
-              className={`rounded-xl px-4 py-3 text-sm font-medium ${linkClass(href)} hover:bg-[#606C38]/15`}
-              onClick={() => setSidebarOpen(false)}
+            {/* Mobile menu button */}
+            <button
+              type="button"
+              className={`flex h-10 w-10 items-center justify-center ${navText} hover:opacity-80 lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618]`}
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-nav"
             >
-              {label}
-            </Link>
-          ))}
-          <div className="my-2 border-t border-[#606C38]/20 pt-4">
-            {user ? (
-              <>
-                {user.isAdmin && (
-                  <Link
-                    href="/admin"
-                    className="block rounded-xl px-4 py-3 text-sm font-medium text-[#283618] hover:bg-[#606C38]/15 hover:text-[#BC6C25]"
-                    onClick={() => setSidebarOpen(false)}
-                  >
-                    Admin
-                  </Link>
-                )}
-                <Link
-                  href="/account/profile"
-                  className="block rounded-xl px-4 py-3 text-sm font-medium text-[#283618] hover:bg-[#606C38]/15 hover:text-[#BC6C25]"
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  Account
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/account/profile"
-                  className="block rounded-xl px-4 py-3 text-sm font-medium text-[#283618] hover:bg-[#606C38]/15 hover:text-[#BC6C25]"
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  Log in
-                </Link>
-                <Link
-                  href="/account/profile"
-                  className="mx-4 mt-2 block rounded-2xl bg-[#283618] py-3 text-center text-sm font-medium text-[#FEFAE0] hover:bg-[#283618]/90"
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  Sign up
-                </Link>
-              </>
-            )}
+              <span className="sr-only">{menuOpen ? "Close menu" : "Open menu"}</span>
+              {menuOpen ? (
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
         </nav>
-      </aside>
+
+        {/* Mobile dropdown menu – same dark style */}
+        <div
+          id="mobile-nav"
+          className={`border-t border-[#FEFAE0]/10 ${navBg} px-4 py-4 lg:hidden ${menuOpen ? "block" : "hidden"}`}
+        >
+          <div className="flex flex-col gap-1">
+            {navLinks.map(({ href, label }) => (
+              <Link
+                key={`${href}-${label}`}
+                href={href}
+                className={`rounded-lg px-4 py-3 text-sm font-medium uppercase tracking-wide ${navLinkClass(href)} hover:bg-[#FEFAE0]/10`}
+                onClick={() => setMenuOpen(false)}
+              >
+                {label}
+              </Link>
+            ))}
+            <div className="mt-2 border-t border-[#FEFAE0]/10 pt-3">
+              {user ? (
+                <>
+                  {user.isAdmin && (
+                    <Link
+                      href="/admin"
+                      className={`block rounded-lg px-4 py-3 text-sm font-medium uppercase tracking-wide ${navText} hover:bg-[#FEFAE0]/10`}
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      Admin
+                    </Link>
+                  )}
+                  <Link
+                    href="/account/profile"
+                    className={`block rounded-lg px-4 py-3 text-sm font-medium uppercase tracking-wide ${navText} hover:bg-[#FEFAE0]/10`}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Account
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/account/profile"
+                    className={`block rounded-lg px-4 py-3 text-sm font-medium uppercase tracking-wide ${navText} hover:bg-[#FEFAE0]/10`}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href="/account/profile"
+                    className="mt-2 block rounded-lg border border-[#FEFAE0]/60 py-3 text-center text-sm font-medium uppercase tracking-wide text-[#FEFAE0] hover:bg-[#FEFAE0]/10"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Sign up
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
     </>
   );
 }

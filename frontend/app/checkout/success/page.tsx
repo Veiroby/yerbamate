@@ -49,24 +49,22 @@ export default async function CheckoutSuccessPage({ searchParams }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} />
       <main className="mx-auto max-w-3xl px-4 py-12">
-        <div className="rounded-2xl border bg-white p-6 shadow-sm">
-          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
-            Checkout complete
-          </h1>
-          <p className="mt-2 text-sm text-zinc-600">{message}</p>
+        <div className="rounded-2xl border border-[#606C38]/20 bg-[#FEFAE0] p-6 shadow-sm">
+          <h1 className="heading-page">Checkout complete</h1>
+          <p className="mt-2 text-sm text-[#606C38]">{message}</p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href="/products"
-              className="rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
+              className="rounded-full bg-[#283618] px-5 py-2.5 text-sm font-medium uppercase tracking-wide text-[#FEFAE0] hover:bg-[#283618]/90"
             >
               Continue shopping
             </Link>
             <Link
               href="/"
-              className="rounded-full border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-800 hover:bg-zinc-50"
+              className="rounded-full border border-[#606C38]/40 px-5 py-2.5 text-sm font-medium uppercase tracking-wide text-[#283618] hover:bg-[#606C38]/10"
             >
               Home
             </Link>

@@ -25,28 +25,26 @@ export default async function OrdersPage() {
   });
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
       <SiteHeader user={{ isAdmin: user.isAdmin }} />
       <main className="mx-auto max-w-3xl px-4 py-10">
         <header className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Order history
-            </h1>
-            <p className="mt-1 text-sm text-zinc-500">
+            <h1 className="heading-page">Order history</h1>
+            <p className="mt-1 text-sm text-[#606C38]">
               Orders placed with {user.email}.
             </p>
           </div>
           <Link
             href="/account/profile"
-            className="text-sm font-medium text-zinc-600 hover:text-emerald-700"
+            className="text-sm font-medium uppercase tracking-wide text-[#606C38] hover:text-[#BC6C25]"
           >
             Account
           </Link>
         </header>
 
         {orders.length === 0 ? (
-          <div className="rounded-2xl border bg-white p-8 text-center text-sm text-zinc-500">
+          <div className="rounded-2xl border border-[#606C38]/20 bg-[#FEFAE0] p-8 text-center text-sm text-[#606C38]">
             No orders yet. Orders placed as a guest with this email will appear
             here automatically.
           </div>

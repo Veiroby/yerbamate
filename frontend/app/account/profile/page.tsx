@@ -13,12 +13,10 @@ export default async function ProfilePage({ searchParams }: Props) {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-stone-50">
+      <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
         <SiteHeader user={null} />
         <main className="mx-auto max-w-md px-4 py-10">
-          <h1 className="font-serif mb-4 text-2xl font-semibold tracking-tight text-stone-900">
-            Sign in or create an account
-          </h1>
+          <h1 className="heading-page mb-4">Sign in or create an account</h1>
 
           <AuthForms error={error} />
         </main>
@@ -34,22 +32,22 @@ export default async function ProfilePage({ searchParams }: Props) {
   });
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
       <SiteHeader user={{ isAdmin: user.isAdmin }} />
       <main className="mx-auto max-w-3xl px-4 py-10">
         {showPasswordResetSuccess && (
-          <div className="mb-6 rounded-xl bg-teal-50 px-4 py-3 text-sm text-teal-800">
+          <div className="mb-6 rounded-xl bg-[#606C38]/15 px-4 py-3 text-sm text-[#283618]">
             <p className="font-medium">Password reset successful</p>
-            <p className="mt-1 text-teal-700">Your password has been updated and you&apos;re now signed in.</p>
+            <p className="mt-1 text-[#606C38]">Your password has been updated and you&apos;re now signed in.</p>
           </div>
         )}
 
         <header className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="font-serif text-2xl font-semibold tracking-tight text-stone-900">
+            <h1 className="heading-page">
               Account profile
             </h1>
-            <p className="mt-1 text-sm text-stone-500">
+            <p className="mt-1 text-sm text-[#606C38]">
               Signed in as {user.email}
             </p>
           </div>

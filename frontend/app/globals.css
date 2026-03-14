@@ -61,3 +61,17 @@ button, a {
   --normal-border: var(--olive);
   --normal-text: var(--foreground);
 }
+
+/* Figma-style section titles: uppercase, tracking-wide, bold */
+.heading-page {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--foreground);
+}
+@media (min-width: 640px) {
+  .heading-page {
+    font-size: 1.875rem;
+  }
+}

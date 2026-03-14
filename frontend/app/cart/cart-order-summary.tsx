@@ -25,7 +25,7 @@ export function CartOrderSummary({ subtotal, currency, showReminder, bundleSavin
 
   return (
     <div className="space-y-3 rounded-2xl border border-stone-200 bg-white p-4">
-      <h2 className="text-sm font-semibold text-stone-900">Order summary</h2>
+      <h2 className="text-sm font-bold uppercase tracking-wide text-[#283618]">Order summary</h2>
       <dl className="space-y-1 text-sm">
         <div className="flex justify-between">
           <dt className="text-stone-500">Subtotal</dt>

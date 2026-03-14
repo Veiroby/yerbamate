@@ -111,23 +111,23 @@ export default async function CartPage() {
   );
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} />
       <main className="mx-auto max-w-4xl px-4 py-10">
         <header className="mb-6 flex items-center justify-between">
-          <h1 className="text-2xl font-semibold tracking-tight text-stone-900">Your cart</h1>
+          <h1 className="heading-page">Your cart</h1>
           <Link
             href="/products"
-            className="text-sm font-medium text-teal-700 hover:text-teal-800 transition"
+            className="text-sm font-medium uppercase tracking-wide text-[#606C38] transition hover:text-[#BC6C25]"
           >
             Continue shopping
           </Link>
         </header>
 
         {items.length === 0 ? (
-          <div className="rounded-2xl border border-stone-200 bg-white p-8 text-center text-sm text-stone-500">
+          <div className="rounded-2xl border border-[#606C38]/20 bg-[#FEFAE0] p-8 text-center text-sm text-[#606C38]">
             Your cart is empty. Start by adding some products from the{" "}
-            <Link href="/products" className="text-teal-700 underline hover:text-teal-800">
+            <Link href="/products" className="text-[#BC6C25] underline hover:text-[#BC6C25]/90">
               shop
             </Link>
             .
@@ -136,9 +136,9 @@ export default async function CartPage() {
           <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
             <div className="space-y-3">
               {bundleSavings > 0 && (
-                <div className="flex items-center gap-2 rounded-xl bg-teal-50 px-4 py-3 text-sm">
-                  <span className="text-teal-600">🎉</span>
-                  <span className="font-medium text-teal-800">
+                <div className="flex items-center gap-2 rounded-xl bg-[#606C38]/15 px-4 py-3 text-sm text-[#283618]">
+                  <span className="text-[#BC6C25]">🎉</span>
+                  <span className="font-medium">
                     You&apos;re saving {currency} {bundleSavings.toFixed(2)} with bundle discounts!
                   </span>
                 </div>

@@ -11,22 +11,20 @@ export default async function ResetPasswordPage({ searchParams }: Props) {
   const { token, error } = await searchParams;
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
       <SiteHeader user={null} />
       <main className="mx-auto max-w-md px-4 py-10">
-        <h1 className="font-serif mb-4 text-2xl font-semibold tracking-tight text-stone-900">
-          Reset your password
-        </h1>
+        <h1 className="heading-page mb-4">Reset your password</h1>
 
-        <div className="space-y-4 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+        <div className="space-y-4 rounded-2xl border border-[#606C38]/20 bg-[#FEFAE0] p-6 shadow-sm">
           {!token ? (
             <>
-              <p className="text-sm text-stone-600">
+              <p className="text-sm text-[#606C38]">
                 Invalid or missing reset link. Please request a new password reset.
               </p>
               <Link
                 href="/account/forgot-password"
-                className="block text-center rounded-2xl bg-teal-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-teal-700"
+                className="block text-center rounded-2xl bg-[#283618] px-4 py-2 text-sm font-medium text-[#FEFAE0] transition hover:bg-[#283618]/90"
               >
                 Request new reset link
               </Link>
@@ -53,13 +51,13 @@ export default async function ResetPasswordPage({ searchParams }: Props) {
               {error === "invalid_token" ? (
                 <Link
                   href="/account/forgot-password"
-                  className="block text-center rounded-2xl bg-[#344e41] px-4 py-2 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b]"
+                  className="block text-center rounded-2xl bg-[#283618] px-4 py-2 text-sm font-medium text-[#FEFAE0] transition hover:bg-[#283618]/90"
                 >
                   Request new reset link
                 </Link>
               ) : (
                 <>
-                  <p className="text-sm text-stone-600">
+                  <p className="text-sm text-[#606C38]">
                     Enter your new password below. It must be at least 8 characters with uppercase, lowercase, and a number.
                   </p>
                   <ResetPasswordForm token={token} />

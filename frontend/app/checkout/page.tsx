@@ -79,30 +79,28 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const currency = items[0]?.product?.currency ?? "EUR";
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} />
       <main className="mx-auto max-w-4xl px-4 py-10">
         <header className="mb-6 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Checkout
-            </h1>
-            <p className="mt-1 text-sm text-zinc-500">
+            <h1 className="heading-page">Checkout</h1>
+            <p className="mt-1 text-sm text-[#606C38]">
               Guest checkout is supported. You can create an account later.
             </p>
           </div>
           <Link
             href="/cart"
-            className="text-sm font-medium text-zinc-600 hover:text-emerald-700"
+            className="text-sm font-medium uppercase tracking-wide text-[#606C38] hover:text-[#BC6C25]"
           >
             Back to cart
           </Link>
         </header>
 
         {items.length === 0 ? (
-          <div className="rounded-2xl border bg-white p-8 text-center text-sm text-zinc-500">
+          <div className="rounded-2xl border border-[#606C38]/20 bg-[#FEFAE0] p-8 text-center text-sm text-[#606C38]">
             Your cart is empty. Add items from the{" "}
-            <Link href="/products" className="text-emerald-700 underline">
+            <Link href="/products" className="text-[#BC6C25] underline hover:text-[#BC6C25]/90">
               shop
             </Link>{" "}
             before checking out.
@@ -115,8 +113,8 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
               discountCode={appliedDiscountCode}
             />
 
-            <section className="space-y-3 rounded-2xl border bg-white p-5 shadow-sm">
-              <h2 className="text-sm font-semibold text-zinc-900">
+            <section className="space-y-3 rounded-2xl border border-[#606C38]/20 bg-[#FEFAE0] p-5 shadow-sm">
+              <h2 className="text-sm font-bold uppercase tracking-wide text-[#283618]">
                 Order summary
               </h2>
               <div className="space-y-3 max-h-[260px] overflow-y-auto pr-1">
@@ -126,7 +124,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
                     className="flex items-center justify-between gap-3"
                   >
                     <div className="flex flex-1 items-center gap-3">
-                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-zinc-100 aspect-square">
+                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl bg-[#606C38]/10 aspect-square">
                         {item.product?.images?.[0] ? (
                           <Image
                             src={item.product.images[0].url}
@@ -138,15 +136,15 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
                         ) : null}
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-zinc-900">
+                        <p className="text-xs font-medium text-[#283618]">
                           {item.product?.name ?? "Product"}
                         </p>
-                        <p className="text-[11px] text-zinc-500">
+                        <p className="text-[11px] text-[#606C38]">
                           Qty {item.quantity}
                         </p>
                       </div>
                     </div>
-                    <div className="text-xs font-medium text-zinc-900">
+                    <div className="text-xs font-medium text-[#283618]">
                       {(item.unitPrice as unknown as number).toFixed(2)}
                     </div>
                   </div>
@@ -154,13 +152,13 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
               </div>
               <dl className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <dt className="text-zinc-500">Subtotal</dt>
-                  <dd className="font-medium">
+                  <dt className="text-[#606C38]">Subtotal</dt>
+                  <dd className="font-medium text-[#283618]">
                     {currency} {subtotal.toFixed(2)}
                   </dd>
                 </div>
                 {appliedDiscountCode && discountAmount > 0 && (
-                  <div className="flex justify-between text-emerald-700">
+                  <div className="flex justify-between text-[#BC6C25]">
                     <dt>Discount ({appliedDiscountCode})</dt>
                     <dd className="font-medium">
                       -{currency} {discountAmount.toFixed(2)}
@@ -168,14 +166,14 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <dt className="text-zinc-500">Shipping</dt>
-                  <dd className="font-medium">
+                  <dt className="text-[#606C38]">Shipping</dt>
+                  <dd className="font-medium text-[#283618]">
                     {currency} {(shipping.amount ?? 0).toFixed(2)}
                   </dd>
                 </div>
-                <div className="flex justify-between border-t pt-2">
-                  <dt className="text-zinc-800">Estimated total</dt>
-                  <dd className="text-base font-semibold text-zinc-900">
+                <div className="flex justify-between border-t border-[#606C38]/20 pt-2">
+                  <dt className="text-[#283618] font-medium">Estimated total</dt>
+                  <dd className="text-base font-semibold text-[#283618]">
                     {currency} {estimatedTotal.toFixed(2)}
                   </dd>
                 </div>

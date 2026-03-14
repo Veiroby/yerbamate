@@ -243,7 +243,7 @@ export function ProductFilters({ options, className = "" }: Props) {
           />
           <div className="fixed inset-y-0 right-0 z-50 w-full max-w-sm border-l border-stone-200 bg-white p-6 shadow-xl lg:hidden overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-semibold text-stone-900">Filters</h2>
+              <h2 className="text-lg font-bold uppercase tracking-wide text-[#283618]">Filters</h2>
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
