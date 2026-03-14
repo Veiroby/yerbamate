@@ -95,17 +95,17 @@ export function ProductCard({ product, showDescription }: Props) {
           )}
         </div>
 
-        {/* Centered content: name, then weight | price row */}
-        <div className="flex flex-col items-center px-4 pt-6 text-center">
+        {/* Left-aligned: title, weight, price (stacked) */}
+        <div className="flex flex-col items-start px-4 pt-0 text-left">
           <h2 className="line-clamp-2 text-lg font-semibold text-[#283618] transition group-hover:text-[#BC6C25]">
             {product.name}
           </h2>
-          <div className="mt-3 flex w-full items-center justify-between gap-4 px-0 text-base font-medium text-[#283618]">
-            <span className="text-[#606C38]">{product.weight ?? "—"}</span>
-            <span className="font-semibold">
-              {product.currency} {product.price.toFixed(2)}
-            </span>
-          </div>
+          <p className="mt-1.5 text-sm text-[#606C38]">
+            {product.weight ?? "—"}
+          </p>
+          <p className="mt-1 text-lg font-semibold text-[#283618]">
+            {product.currency} {product.price.toFixed(2)}
+          </p>
           {showDescription && product.description ? (
             <p className="mt-2 line-clamp-2 text-xs text-[#606C38]">
               {product.description}
@@ -114,7 +114,7 @@ export function ProductCard({ product, showDescription }: Props) {
         </div>
       </Link>
 
-      {/* Single centered Add to cart button */}
+      {/* Add to cart button */}
       {!soldOut && (
         <div className="mt-4 px-4 pb-4">
           <button
