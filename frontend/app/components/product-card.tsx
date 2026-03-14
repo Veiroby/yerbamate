@@ -46,7 +46,7 @@ export function ProductCard({ product, showDescription }: Props) {
 
   return (
     <div
-      className={`group flex flex-col overflow-hidden rounded-lg border border-[#606C38]/20 bg-transparent shadow-sm transition duration-200 hover:shadow-md ${
+      className={`group flex flex-col overflow-hidden rounded-lg bg-transparent transition duration-200 hover:opacity-95 ${
         soldOut ? "opacity-70" : "hover:-translate-y-0.5"
       }`}
     >
