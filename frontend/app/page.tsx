@@ -29,18 +29,29 @@ function toCarouselProduct(p: { name: string; price: unknown; slug: string; imag
 
 export default async function Home() {
   const user = await getCurrentUser();
-  const settings = await prisma.siteSettings.findUnique({
-    where: { id: "default" },
-  });
-
-  const latestProducts = await prisma.product.findMany({
+  const [settings, latestProducts, heroStats] = await Promise.all([
+    prisma.siteSettings.findUnique({
+      where: { id: "default" },
+    }),
+    prisma.product.findMany({
     where: { active: true },
     orderBy: { createdAt: "desc" },
     take: 12,
     include: {
       images: { orderBy: { position: "asc" }, take: 1 },
     },
-  });
+  }),
+    (async () => {
+      const [productCount, brands, customerEmails] = await Promise.all([
+        prisma.product.count({ where: { active: true } }),
+        prisma.product.findMany({ where: { active: true, brand: { not: null } }, select: { brand: true } }),
+        prisma.order.findMany({ select: { email: true } }),
+      ]);
+      const brandCount = new Set(brands.map((b) => b.brand).filter(Boolean)).size;
+      const customerCount = new Set(customerEmails.map((o) => o.email)).size;
+      return { productCount, brandCount, customerCount };
+    })(),
+  ]);
 
   const newArrivalsCollectionId = settings?.homeNewArrivalsCollectionId ?? null;
   const topSellingCollectionId = settings?.homeTopSellingCollectionId ?? null;
@@ -101,7 +112,11 @@ export default async function Home() {
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} />
 
       <main>
-        <Hero />
+        <Hero
+          productCount={heroStats.productCount}
+          brandCount={heroStats.brandCount}
+          customerCount={heroStats.customerCount}
+        />
 
         {/* Two promo blocks - row 1: product name as title, image left, Add to cart + Buy now */}
         <section className="grid md:grid-cols-2" aria-label="Featured products">

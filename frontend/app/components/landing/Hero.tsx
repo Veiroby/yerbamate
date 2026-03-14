@@ -1,7 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
 
-export function Hero() {
+type HeroProps = {
+  productCount: number;
+  brandCount: number;
+  customerCount: number;
+};
+
+function formatStat(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}k`;
+  return n.toString();
+}
+
+export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
   return (
     <section
       className="relative overflow-hidden bg-white px-4 py-12 sm:py-16 md:py-20 lg:py-24"
@@ -26,20 +38,20 @@ export function Hero() {
           </Link>
           <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
             <div>
-              <p className="text-2xl font-bold text-black">200+</p>
+              <p className="text-2xl font-bold text-black">{formatStat(brandCount)}</p>
               <p className="mt-1 text-sm text-gray-600">International brands</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-black">2,000+</p>
+              <p className="text-2xl font-bold text-black">{formatStat(productCount)}</p>
               <p className="mt-1 text-sm text-gray-600">High quality products</p>
             </div>
             <div>
-              <p className="text-2xl font-bold text-black">30,000+</p>
+              <p className="text-2xl font-bold text-black">{formatStat(customerCount)}</p>
               <p className="mt-1 text-sm text-gray-600">Happy customers</p>
             </div>
           </div>
         </div>
-        <div className="relative flex-1">
+        <div className="relative hidden flex-1 md:block">
           <div className="relative aspect-square max-w-md overflow-hidden rounded-2xl">
             <Image
               src="/hero-mate.png"
