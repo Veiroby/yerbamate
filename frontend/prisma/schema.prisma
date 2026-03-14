@@ -150,6 +150,7 @@ model Product {
   orderItems   OrderItem[]
   cartItems    CartItem[]
   bundleOffers BundleOffer[]
+  collections  ProductInCollection[]
 
   @@index([slug])
   @@index([active])
@@ -157,6 +158,33 @@ model Product {
   @@index([categoryId])
   @@index([brand])
   @@index([origin])
+}
+
+model Collection {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products ProductInCollection[]
+
+  @@index([slug])
+}
+
+model ProductInCollection {
+  id           String     @id @default(cuid())
+  collectionId String
+  productId    String
+  position     Int        @default(0)
+  createdAt    DateTime   @default(now())
+
+  collection Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([collectionId, productId])
+  @@index([collectionId])
+  @@index([productId])
 }
 
 model ProductImage {
@@ -369,12 +397,15 @@ model EmailCampaign {
 }
 
 model SiteSettings {
-  id                     String   @id @default("default")
-  popupEnabled           Boolean  @default(true)
-  popupDelaySeconds      Int      @default(10)
-  popupTitle             String   @default("Join YerbaTea Community")
-  popupDescription       String   @default("Subscribe to our newsletter and get an exclusive discount on your first order!")
-  popupDiscountCode      String?
-  popupDiscountPercent   Int      @default(10)
-  updatedAt              DateTime @updatedAt
+  id                           String   @id @default("default")
+  popupEnabled                 Boolean  @default(true)
+  popupDelaySeconds            Int      @default(10)
+  popupTitle                   String   @default("Join YerbaTea Community")
+  popupDescription             String   @default("Subscribe to our newsletter and get an exclusive discount on your first order!")
+  popupDiscountCode            String?
+  popupDiscountPercent         Int      @default(10)
+  homeNewArrivalsCollectionId  String?
+  homeTopSellingCollectionId   String?
+  homePromoProductIds          String[]  @default([])
+  updatedAt                    DateTime @updatedAt
 }

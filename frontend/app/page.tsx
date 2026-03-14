@@ -16,9 +16,24 @@ import { TestimonialsSection } from "@/app/components/landing/TestimonialsSectio
 
 export const dynamic = "force-dynamic";
 
+function toCarouselProduct(p: { name: string; price: unknown; slug: string; images: { url: string; altText: string | null }[]; weight: string | null }) {
+  return {
+    title: p.name,
+    price: `€${Number(p.price).toFixed(2)}`,
+    href: `/products/${encodeURIComponent(p.slug)}`,
+    imageUrl: p.images[0]?.url ?? null,
+    imageAlt: p.images[0]?.altText ?? p.name,
+    weight: p.weight ?? null,
+  };
+}
+
 export default async function Home() {
   const user = await getCurrentUser();
-  const products = await prisma.product.findMany({
+  const settings = await prisma.siteSettings.findUnique({
+    where: { id: "default" },
+  });
+
+  const latestProducts = await prisma.product.findMany({
     where: { active: true },
     orderBy: { createdAt: "desc" },
     take: 12,
@@ -27,17 +42,59 @@ export default async function Home() {
     },
   });
 
-  const carouselProducts: CarouselProduct[] = products.map((p) => ({
-    title: p.name,
-    price: `€${Number(p.price).toFixed(2)}`,
-    href: `/products/${encodeURIComponent(p.slug)}`,
-    imageUrl: p.images[0]?.url ?? null,
-    imageAlt: p.images[0]?.altText ?? p.name,
-    weight: p.weight ?? null,
-  }));
+  const newArrivalsCollectionId = settings?.homeNewArrivalsCollectionId ?? null;
+  const topSellingCollectionId = settings?.homeTopSellingCollectionId ?? null;
+  const promoIds = settings?.homePromoProductIds ?? [];
 
-  const firstProduct = products[0];
-  const secondProduct = products[1];
+  const [newArrivalsProducts, topSellingProducts, promoProducts] = await Promise.all([
+    newArrivalsCollectionId
+      ? prisma.productInCollection.findMany({
+          where: { collectionId: newArrivalsCollectionId },
+          orderBy: { position: "asc" },
+          take: 8,
+          include: {
+            product: {
+              include: { images: { orderBy: { position: "asc" }, take: 1 } },
+            },
+          },
+        }).then((rows) => rows.map((r) => r.product))
+      : Promise.resolve(latestProducts.slice(0, 8)),
+    topSellingCollectionId
+      ? prisma.productInCollection.findMany({
+          where: { collectionId: topSellingCollectionId },
+          orderBy: { position: "asc" },
+          take: 8,
+          include: {
+            product: {
+              include: { images: { orderBy: { position: "asc" }, take: 1 } },
+            },
+          },
+        }).then((rows) => rows.map((r) => r.product))
+      : Promise.resolve(latestProducts.slice(0, 8)),
+    promoIds.length > 0
+      ? prisma.product.findMany({
+          where: { id: { in: promoIds }, active: true },
+          include: { images: { orderBy: { position: "asc" }, take: 1 } },
+        }).then((list) => {
+          const byId = new Map(list.map((p) => [p.id, p]));
+          return promoIds.map((id) => byId.get(id)).filter(Boolean) as typeof list;
+        })
+      : Promise.resolve([]),
+  ]);
+
+  const newArrivalsCarousel: CarouselProduct[] = newArrivalsProducts.map(toCarouselProduct);
+  const topSellingCarousel: CarouselProduct[] = topSellingProducts.map(toCarouselProduct);
+
+  const promoBlocks = [
+    promoProducts[0] ?? latestProducts[0],
+    promoProducts[1] ?? latestProducts[1],
+    promoProducts[2] ?? latestProducts[2],
+    promoProducts[3] ?? latestProducts[3],
+  ];
+  const firstProduct = promoBlocks[0];
+  const secondProduct = promoBlocks[1];
+  const thirdProduct = promoBlocks[2];
+  const fourthProduct = promoBlocks[3];
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -74,35 +131,35 @@ export default async function Home() {
 
         <TrendingSection />
 
-        <ProductCarouselSection title="New arrivals" products={carouselProducts.slice(0, 8)} />
+        <ProductCarouselSection title="New arrivals" products={newArrivalsCarousel} />
 
         {/* Two promo blocks - row 2: use 3rd and 4th product if available */}
         <section className="grid md:grid-cols-2" aria-label="More products">
           <PromoBlock
-            title={products[2]?.name ?? "Classic mate"}
-            price={products[2] ? `€${Number(products[2].price).toFixed(2)}` : "€2.32"}
-            href={products[2] ? `/products/${encodeURIComponent(products[2].slug)}` : "/products?category=mate-gourds"}
-            imageUrl={products[2]?.images[0]?.url ?? null}
-            imageAlt={products[2]?.name}
-            description={products[2]?.description ?? null}
+            title={thirdProduct?.name ?? "Classic mate"}
+            price={thirdProduct ? `€${Number(thirdProduct.price).toFixed(2)}` : "€2.32"}
+            href={thirdProduct ? `/products/${encodeURIComponent(thirdProduct.slug)}` : "/products?category=mate-gourds"}
+            imageUrl={thirdProduct?.images[0]?.url ?? null}
+            imageAlt={thirdProduct?.name}
+            description={thirdProduct?.description ?? null}
             backgroundColor="bg-gray-200"
-            productId={products[2]?.id}
-            productSlug={products[2]?.slug}
+            productId={thirdProduct?.id}
+            productSlug={thirdProduct?.slug}
           />
           <PromoBlock
-            title={products[3]?.name ?? "Herbal blends"}
-            price={products[3] ? `€${Number(products[3].price).toFixed(2)}` : "€19.99"}
-            href={products[3] ? `/products/${encodeURIComponent(products[3].slug)}` : "/products"}
-            imageUrl={products[3]?.images[0]?.url ?? null}
-            imageAlt={products[3]?.name}
-            description={products[3]?.description ?? null}
+            title={fourthProduct?.name ?? "Herbal blends"}
+            price={fourthProduct ? `€${Number(fourthProduct.price).toFixed(2)}` : "€19.99"}
+            href={fourthProduct ? `/products/${encodeURIComponent(fourthProduct.slug)}` : "/products"}
+            imageUrl={fourthProduct?.images[0]?.url ?? null}
+            imageAlt={fourthProduct?.name}
+            description={fourthProduct?.description ?? null}
             backgroundColor="bg-gray-100"
-            productId={products[3]?.id}
-            productSlug={products[3]?.slug}
+            productId={fourthProduct?.id}
+            productSlug={fourthProduct?.slug}
           />
         </section>
 
-        <ProductCarouselSection title="Top selling" products={carouselProducts.slice(0, 8)} />
+        <ProductCarouselSection title="Top selling" products={topSellingCarousel} />
 
         <BrowseByCategory />
 

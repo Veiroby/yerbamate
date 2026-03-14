@@ -52,6 +52,20 @@ function IconTag({ className }: { className?: string }) {
     </svg>
   );
 }
+function IconFolder({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a2.25 2.25 0 00-1.591-.659H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a2.25 2.25 0 01-1.591-.659l-2.12-2.12" />
+    </svg>
+  );
+}
+function IconHome({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M20.25 12v7.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V12m13.5-7.5v7.5" />
+    </svg>
+  );
+}
 function IconDocument({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -94,6 +108,7 @@ const navGroups = [
     label: "Commerce",
     items: [
       { href: "/admin/products", label: "Products", icon: IconPackage },
+      { href: "/admin/collections", label: "Collections", icon: IconFolder },
       { href: "/admin/orders", label: "Orders", icon: IconShoppingCart },
       { href: "/admin/inventory", label: "Inventory", icon: IconCube },
       { href: "/admin/shipping", label: "Shipping", icon: IconTruck },
@@ -105,6 +120,7 @@ const navGroups = [
       { href: "/admin/customers", label: "Customers", icon: IconUsers },
       { href: "/admin/email", label: "Email marketing", icon: IconMail },
       { href: "/admin/discounts", label: "Discounts & Bundles", icon: IconTag },
+      { href: "/admin/main-page", label: "Main page", icon: IconHome },
       { href: "/admin/privacy", label: "Privacy policy", icon: IconDocument },
     ],
   },
