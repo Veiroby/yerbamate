@@ -30,26 +30,26 @@ export function PromoBlock({
   const hasProductActions = productId != null && productSlug != null;
 
   return (
-    <div className={`flex min-h-[280px] flex-col md:min-h-[400px] md:flex-row md:items-stretch ${backgroundColor}`}>
-      {/* Image on the left - ~3x larger, PNG with transparent background */}
+    <div className={`flex min-h-[220px] flex-row md:min-h-[260px] md:flex-row md:items-stretch ${backgroundColor}`}>
+      {/* Image on the left – match reference: medium size, PNG with transparent background */}
       <Link
         href={href}
         className="flex shrink-0 items-center justify-center p-4 sm:p-6 md:justify-start md:p-8"
       >
         {imageUrl ? (
-          <div className="relative h-[528px] w-full max-w-[528px] sm:h-[624px] sm:max-w-[624px] md:h-[672px] md:w-[672px] md:max-w-none">
+          <div className="relative h-40 w-40 sm:h-48 sm:w-48 md:h-56 md:w-56">
             <Image
               src={imageUrl}
               alt={imageAlt || title}
               fill
               className="object-contain object-center"
-              sizes="(max-width: 640px) 528px, (max-width: 768px) 624px, 672px"
+              sizes="(max-width: 640px) 160px, (max-width: 768px) 192px, 224px"
               unoptimized
             />
           </div>
         ) : (
-          <div className={`flex h-[528px] w-full max-w-[528px] items-center justify-center rounded-lg sm:h-[624px] sm:max-w-[624px] md:h-[672px] md:w-[672px] md:max-w-none ${textColor} opacity-20`}>
-            <svg className="h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+          <div className={`flex h-40 w-40 items-center justify-center rounded-lg sm:h-48 sm:w-48 md:h-56 md:w-56 ${textColor} opacity-20`}>
+            <svg className="h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
             </svg>
           </div>
