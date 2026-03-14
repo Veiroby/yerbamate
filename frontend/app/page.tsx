@@ -41,23 +41,27 @@ export default async function Home() {
       <main>
         <Hero />
 
-        {/* Two promo blocks - row 1 */}
-        <section className="grid md:grid-cols-2" aria-label="Featured categories">
+        {/* Two promo blocks - row 1: product name as title, image left, Add to cart + Buy now */}
+        <section className="grid md:grid-cols-2" aria-label="Featured products">
           <PromoBlock
-            title="Pure yerba mate"
-            price="€19.99"
-            href="/products?category=yerba-mate"
+            title={firstProduct?.name ?? "Pure yerba mate"}
+            price={firstProduct ? `€${Number(firstProduct.price).toFixed(2)}` : "€19.99"}
+            href={firstProduct ? `/products/${encodeURIComponent(firstProduct.slug)}` : "/products?category=yerba-mate"}
             imageUrl={firstProduct?.images[0]?.url ?? null}
             imageAlt={firstProduct?.name}
             backgroundColor="bg-violet-200"
+            productId={firstProduct?.id}
+            productSlug={firstProduct?.slug}
           />
           <PromoBlock
-            title="Best blends"
-            price="€19.99"
-            href="/products"
+            title={secondProduct?.name ?? "Best blends"}
+            price={secondProduct ? `€${Number(secondProduct.price).toFixed(2)}` : "€19.99"}
+            href={secondProduct ? `/products/${encodeURIComponent(secondProduct.slug)}` : "/products"}
             imageUrl={secondProduct?.images[0]?.url ?? null}
             imageAlt={secondProduct?.name}
             backgroundColor="bg-emerald-200"
+            productId={secondProduct?.id}
+            productSlug={secondProduct?.slug}
           />
         </section>
 
@@ -65,20 +69,28 @@ export default async function Home() {
 
         <ProductCarouselSection title="New arrivals" products={carouselProducts.slice(0, 8)} />
 
-        {/* Two promo blocks - row 2 */}
-        <section className="grid md:grid-cols-2" aria-label="More categories">
+        {/* Two promo blocks - row 2: use 3rd and 4th product if available */}
+        <section className="grid md:grid-cols-2" aria-label="More products">
           <PromoBlock
-            title="Classic mate"
-            price="€2.32"
-            href="/products?category=mate-gourds"
+            title={products[2]?.name ?? "Classic mate"}
+            price={products[2] ? `€${Number(products[2].price).toFixed(2)}` : "€2.32"}
+            href={products[2] ? `/products/${encodeURIComponent(products[2].slug)}` : "/products?category=mate-gourds"}
+            imageUrl={products[2]?.images[0]?.url ?? null}
+            imageAlt={products[2]?.name}
             backgroundColor="bg-amber-600"
             textColor="text-white"
+            productId={products[2]?.id}
+            productSlug={products[2]?.slug}
           />
           <PromoBlock
-            title="Herbal blends"
-            price="€19.99"
-            href="/products"
+            title={products[3]?.name ?? "Herbal blends"}
+            price={products[3] ? `€${Number(products[3].price).toFixed(2)}` : "€19.99"}
+            href={products[3] ? `/products/${encodeURIComponent(products[3].slug)}` : "/products"}
+            imageUrl={products[3]?.images[0]?.url ?? null}
+            imageAlt={products[3]?.name}
             backgroundColor="bg-pink-200"
+            productId={products[3]?.id}
+            productSlug={products[3]?.slug}
           />
         </section>
 
