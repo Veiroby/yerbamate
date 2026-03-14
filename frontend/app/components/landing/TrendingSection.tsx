@@ -1,3 +1,5 @@
+import { BenefitsAccordion } from "./BenefitsAccordion";
+
 const benefits = [
   {
     title: "Smooth, clean energy",
@@ -26,16 +28,8 @@ export function TrendingSection() {
         >
           Why yerba mate is so good for you
         </h2>
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
-          {benefits.map(({ title, body }) => (
-            <div
-              key={title}
-              className="flex max-w-3xl flex-col gap-3 sm:mx-0 sm:max-w-none"
-            >
-              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-              <p className="leading-relaxed text-gray-600">{body}</p>
-            </div>
-          ))}
+        <div className="mt-8">
+          <BenefitsAccordion benefits={benefits} />
         </div>
       </div>
     </section>
