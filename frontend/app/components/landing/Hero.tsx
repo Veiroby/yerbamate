@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export function Hero() {
@@ -39,7 +40,16 @@ export function Hero() {
           </div>
         </div>
         <div className="relative flex-1">
-          <div className="aspect-square max-w-md rounded-2xl bg-gray-100" />
+          <div className="relative aspect-square max-w-md overflow-hidden rounded-2xl">
+            <Image
+              src="/hero-mate.png"
+              alt="Pouring hot water from a thermos into a yerba mate gourd"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 28rem"
+              priority
+            />
+          </div>
         </div>
       </div>
     </section>
