@@ -51,6 +51,7 @@ export default async function Home() {
             href={firstProduct ? `/products/${encodeURIComponent(firstProduct.slug)}` : "/products?category=yerba-mate"}
             imageUrl={firstProduct?.images[0]?.url ?? null}
             imageAlt={firstProduct?.name}
+            description={firstProduct?.description ?? null}
             backgroundColor="bg-[#606C38]/20"
             productId={firstProduct?.id}
             productSlug={firstProduct?.slug}
@@ -61,6 +62,7 @@ export default async function Home() {
             href={secondProduct ? `/products/${encodeURIComponent(secondProduct.slug)}` : "/products"}
             imageUrl={secondProduct?.images[0]?.url ?? null}
             imageAlt={secondProduct?.name}
+            description={secondProduct?.description ?? null}
             backgroundColor="bg-[#DDA15E]/25"
             productId={secondProduct?.id}
             productSlug={secondProduct?.slug}
@@ -79,6 +81,7 @@ export default async function Home() {
             href={products[2] ? `/products/${encodeURIComponent(products[2].slug)}` : "/products?category=mate-gourds"}
             imageUrl={products[2]?.images[0]?.url ?? null}
             imageAlt={products[2]?.name}
+            description={products[2]?.description ?? null}
             backgroundColor="bg-[#BC6C25]"
             textColor="text-white"
             productId={products[2]?.id}
@@ -90,6 +93,7 @@ export default async function Home() {
             href={products[3] ? `/products/${encodeURIComponent(products[3].slug)}` : "/products"}
             imageUrl={products[3]?.images[0]?.url ?? null}
             imageAlt={products[3]?.name}
+            description={products[3]?.description ?? null}
             backgroundColor="bg-[#606C38]/15"
             productId={products[3]?.id}
             productSlug={products[3]?.slug}
