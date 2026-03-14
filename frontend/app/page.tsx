@@ -9,8 +9,10 @@ import {
   type CarouselProduct,
 } from "@/app/components/landing/ProductCarouselSection";
 import { BrandPartners } from "@/app/components/landing/BrandPartners";
+import { BrowseByCategory } from "@/app/components/landing/BrowseByCategory";
 import { FollowSubscribe } from "@/app/components/landing/FollowSubscribe";
 import { Footer } from "@/app/components/landing/Footer";
+import { TestimonialsSection } from "@/app/components/landing/TestimonialsSection";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +40,7 @@ export default async function Home() {
   const secondProduct = products[1];
 
   return (
-    <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
+    <div className="min-h-screen bg-white text-gray-900">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} />
 
       <main>
@@ -53,7 +55,7 @@ export default async function Home() {
             imageUrl={firstProduct?.images[0]?.url ?? null}
             imageAlt={firstProduct?.name}
             description={firstProduct?.description ?? null}
-            backgroundColor="bg-[#606C38]/20"
+            backgroundColor="bg-gray-100"
             productId={firstProduct?.id}
             productSlug={firstProduct?.slug}
           />
@@ -64,7 +66,7 @@ export default async function Home() {
             imageUrl={secondProduct?.images[0]?.url ?? null}
             imageAlt={secondProduct?.name}
             description={secondProduct?.description ?? null}
-            backgroundColor="bg-[#DDA15E]/25"
+            backgroundColor="bg-gray-50"
             productId={secondProduct?.id}
             productSlug={secondProduct?.slug}
           />
@@ -83,8 +85,7 @@ export default async function Home() {
             imageUrl={products[2]?.images[0]?.url ?? null}
             imageAlt={products[2]?.name}
             description={products[2]?.description ?? null}
-            backgroundColor="bg-[#BC6C25]"
-            textColor="text-white"
+            backgroundColor="bg-gray-200"
             productId={products[2]?.id}
             productSlug={products[2]?.slug}
           />
@@ -95,15 +96,20 @@ export default async function Home() {
             imageUrl={products[3]?.images[0]?.url ?? null}
             imageAlt={products[3]?.name}
             description={products[3]?.description ?? null}
-            backgroundColor="bg-[#606C38]/15"
+            backgroundColor="bg-gray-100"
             productId={products[3]?.id}
             productSlug={products[3]?.slug}
           />
         </section>
 
-        <ProductCarouselSection title="Deals" products={carouselProducts.slice(0, 8)} />
+        <ProductCarouselSection title="Top selling" products={carouselProducts.slice(0, 8)} />
+
+        <BrowseByCategory />
+
+        <TestimonialsSection />
 
         <BrandPartners />
+
         <FollowSubscribe />
       </main>
 

@@ -26,7 +26,7 @@ export function PromoBlock({
   imageAlt = "",
   description = null,
   backgroundColor,
-  textColor = "text-[#283618]",
+  textColor = "text-gray-900",
   productId,
   productSlug,
 }: PromoBlockProps) {
@@ -88,13 +88,13 @@ export function PromoBlock({
             productId={productId}
             productName={title}
             productHref={href}
-            buttonClass={textColor === "text-white" ? "bg-[#FEFAE0] text-[#283618] hover:bg-[#FEFAE0]/90" : "bg-[#283618] text-[#FEFAE0] hover:bg-[#283618]/90"}
-            outlineClass={textColor === "text-white" ? "border-2 border-[#FEFAE0] text-[#FEFAE0] hover:bg-[#FEFAE0]/10" : "border-2 border-[#283618] text-[#283618] hover:bg-[#283618]/5"}
+            buttonClass={textColor === "text-white" ? "bg-white text-black hover:bg-gray-100" : "bg-gray-900 text-white hover:bg-gray-800"}
+            outlineClass={textColor === "text-white" ? "border-2 border-white text-white hover:bg-white/10" : "border-2 border-gray-900 text-gray-900 hover:bg-gray-100"}
           />
         ) : (
           <Link
             href={href}
-            className={`mt-3 inline-flex w-fit rounded border-2 px-3 py-2 text-xs font-semibold uppercase tracking-wide transition sm:px-4 sm:py-2.5 sm:text-sm ${textColor === "text-white" ? "border-[#FEFAE0] hover:bg-[#FEFAE0] hover:text-[#283618]" : "border-[#283618] hover:bg-[#283618] hover:text-[#FEFAE0]"}`}
+            className={`mt-3 inline-flex w-fit rounded border-2 px-3 py-2 text-xs font-semibold uppercase tracking-wide transition sm:px-4 sm:py-2.5 sm:text-sm ${textColor === "text-white" ? "border-white hover:bg-white hover:text-black" : "border-gray-900 hover:bg-gray-900 hover:text-white"}`}
           >
             Shop now
           </Link>

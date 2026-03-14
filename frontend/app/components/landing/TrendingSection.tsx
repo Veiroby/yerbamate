@@ -16,15 +16,15 @@ const benefits = [
 export function TrendingSection() {
   return (
     <section
-      className="bg-[#FEFAE0] px-4 py-12 sm:py-16"
+      className="bg-white px-4 py-12 sm:py-16"
       aria-labelledby="why-yerba-heading"
     >
       <div className="mx-auto max-w-6xl">
         <h2
           id="why-yerba-heading"
-          className="text-center text-xl font-bold uppercase tracking-wide text-[#283618] sm:text-2xl"
+          className="text-center text-xl font-bold uppercase tracking-wide text-black sm:text-2xl"
         >
-          Why Yerba Mate is so good for you...
+          Why yerba mate is so good for you
         </h2>
         <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
           {benefits.map(({ title, body }) => (
@@ -32,8 +32,8 @@ export function TrendingSection() {
               key={title}
               className="flex max-w-3xl flex-col gap-3 sm:mx-0 sm:max-w-none"
             >
-              <h3 className="text-lg font-semibold text-[#283618]">{title}</h3>
-              <p className="leading-relaxed text-[#606C38]">{body}</p>
+              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+              <p className="leading-relaxed text-gray-600">{body}</p>
             </div>
           ))}
         </div>

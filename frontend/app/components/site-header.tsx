@@ -10,21 +10,24 @@ type SiteHeaderProps = {
 };
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/products", label: "All Products" },
-  { href: "/products?category=yerba-mate", label: "Yerba Mate" },
-  { href: "/products?category=mate-gourds", label: "Mate Gourds" },
-  { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+  { href: "/products", label: "Shop" },
+  { href: "/products?sort=price-asc", label: "On Sale" },
+  { href: "/products?sort=newest", label: "New Arrivals" },
+  { href: "/products", label: "Brands" },
 ];
-
-const navBg = "bg-[#283618]";
-const navText = "text-[#FEFAE0]";
 
 function CartIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+    </svg>
+  );
+}
+
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
     </svg>
   );
 }
@@ -46,7 +49,7 @@ function CartBadge({ count }: { count: number }) {
 
   return (
     <span
-      className={`absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#BC6C25] px-1 text-xs font-bold text-[#FEFAE0] transition-transform ${
+      className={`absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-black px-1 text-xs font-bold text-white transition-transform ${
         animate ? "scale-125" : "scale-100"
       }`}
     >
@@ -55,11 +58,27 @@ function CartBadge({ count }: { count: number }) {
   );
 }
 
+const PROMO_DISMISS_KEY = "yerbatea-promo-dismissed";
+
 export function SiteHeader({ user }: SiteHeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [promoDismissed, setPromoDismissed] = useState(false);
   const { itemCount } = useCart();
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem(PROMO_DISMISS_KEY) === "1") {
+      setPromoDismissed(true);
+    }
+  }, []);
+
+  const dismissPromo = () => {
+    setPromoDismissed(true);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(PROMO_DISMISS_KEY, "1");
+    }
+  };
 
   const isActive = (href: string) => {
     if (pathname !== href.split("?")[0]) return false;
@@ -69,86 +88,90 @@ export function SiteHeader({ user }: SiteHeaderProps) {
     return linkCategory === currentCategory;
   };
 
-  const navLinkClass = (href: string) =>
-    isActive(href)
-      ? "text-[#DDA15E] font-semibold"
-      : `${navText} hover:opacity-90`;
-
   return (
     <>
-      <header className={`sticky top-0 z-40 w-full ${navBg}`}>
+      {/* Promo bar – black, dismissible (Figma-style) */}
+      {!promoDismissed && (
+        <div className="relative bg-black px-4 py-2.5 text-center text-sm text-white">
+          <span>
+            Sign up and get 20% off on your first order.{" "}
+            <Link href="/account/profile" className="underline font-semibold hover:no-underline">
+              Sign Up Now
+            </Link>
+          </span>
+          <button
+            type="button"
+            onClick={dismissPromo}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-white/80 hover:text-white"
+            aria-label="Close"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
+      {/* Main nav – white bg, black text (Figma SHOP.CO style) */}
+      <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white">
         <nav
-          className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 sm:py-4"
+          className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6"
           aria-label="Main navigation"
         >
           <Link
             href="/"
-            className={`text-lg font-semibold ${navText} transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618]`}
+            className="text-xl font-bold uppercase tracking-tight text-black hover:opacity-80"
           >
             YerbaTea
           </Link>
 
-          {/* Desktop: center nav links – Figma-style uppercase tracking */}
-          <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 lg:flex">
+          <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex">
             {navLinks.map(({ href, label }) => (
               <Link
                 key={`${href}-${label}`}
                 href={href}
-                className={`text-sm font-medium uppercase tracking-wide transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618] ${navLinkClass(href)}`}
+                className={`text-sm font-medium text-gray-700 hover:text-black ${isActive(href) ? "text-black font-semibold" : ""}`}
               >
                 {label}
               </Link>
             ))}
           </div>
 
-          {/* Right: cart + account (desktop) */}
           <div className="flex items-center gap-2 sm:gap-4">
             <Link
+              href="/products"
+              className="hidden items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 hover:border-gray-300 sm:flex"
+              aria-label="Search products"
+            >
+              <SearchIcon className="h-4 w-4" />
+              <span>Search for products...</span>
+            </Link>
+            <Link
               href="/cart"
-              className={`relative flex h-10 w-10 items-center justify-center ${navText} transition hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618]`}
+              className="relative flex h-10 w-10 items-center justify-center text-gray-700 hover:text-black"
               aria-label={`Cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
             >
               <CartIcon className="h-5 w-5" />
               <CartBadge count={itemCount} />
             </Link>
-            {user ? (
-              <>
-                {user.isAdmin && (
-                  <Link
-                    href="/admin"
-                    className={`hidden text-sm font-medium uppercase tracking-wide ${navText} hover:opacity-90 sm:block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618]`}
-                  >
-                    Admin
-                  </Link>
-                )}
-                <Link
-                  href="/account/profile"
-                  className={`hidden text-sm font-medium uppercase tracking-wide ${navText} hover:opacity-90 sm:block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618]`}
-                >
-                  Account
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/account/profile"
-                  className={`hidden text-sm font-medium uppercase tracking-wide ${navText} hover:opacity-90 sm:block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618]`}
-                >
-                  Log in
-                </Link>
-                <Link
-                  href="/account/profile"
-                  className={`hidden rounded border border-[#FEFAE0]/60 px-4 py-2 text-sm font-medium uppercase tracking-wide ${navText} hover:bg-[#FEFAE0]/10 sm:inline-block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618]`}
-                >
-                  Sign up
-                </Link>
-              </>
+            {user?.isAdmin && (
+              <Link
+                href="/admin"
+                className="hidden text-sm font-medium text-gray-700 hover:text-black sm:block"
+              >
+                Admin
+              </Link>
             )}
+            <Link
+              href="/account/profile"
+              className="hidden text-sm font-medium text-gray-700 hover:text-black sm:block"
+            >
+              {user ? "Account" : "Log in"}
+            </Link>
 
-            {/* Mobile menu button */}
             <button
               type="button"
-              className={`flex h-10 w-10 items-center justify-center ${navText} hover:opacity-80 lg:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#DDA15E] focus-visible:ring-offset-2 focus-visible:ring-offset-[#283618]`}
+              className="flex h-10 w-10 items-center justify-center text-gray-700 hover:text-black lg:hidden"
               onClick={() => setMenuOpen((o) => !o)}
               aria-expanded={menuOpen}
               aria-controls="mobile-nav"
@@ -167,60 +190,29 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           </div>
         </nav>
 
-        {/* Mobile dropdown menu – same dark style */}
         <div
           id="mobile-nav"
-          className={`border-t border-[#FEFAE0]/10 ${navBg} px-4 py-4 lg:hidden ${menuOpen ? "block" : "hidden"}`}
+          className={`border-t border-gray-100 bg-white px-4 py-4 lg:hidden ${menuOpen ? "block" : "hidden"}`}
         >
           <div className="flex flex-col gap-1">
             {navLinks.map(({ href, label }) => (
               <Link
                 key={`${href}-${label}`}
                 href={href}
-                className={`rounded-lg px-4 py-3 text-sm font-medium uppercase tracking-wide ${navLinkClass(href)} hover:bg-[#FEFAE0]/10`}
+                className="rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
                 onClick={() => setMenuOpen(false)}
               >
                 {label}
               </Link>
             ))}
-            <div className="mt-2 border-t border-[#FEFAE0]/10 pt-3">
-              {user ? (
-                <>
-                  {user.isAdmin && (
-                    <Link
-                      href="/admin"
-                      className={`block rounded-lg px-4 py-3 text-sm font-medium uppercase tracking-wide ${navText} hover:bg-[#FEFAE0]/10`}
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      Admin
-                    </Link>
-                  )}
-                  <Link
-                    href="/account/profile"
-                    className={`block rounded-lg px-4 py-3 text-sm font-medium uppercase tracking-wide ${navText} hover:bg-[#FEFAE0]/10`}
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Account
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/account/profile"
-                    className={`block rounded-lg px-4 py-3 text-sm font-medium uppercase tracking-wide ${navText} hover:bg-[#FEFAE0]/10`}
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Log in
-                  </Link>
-                  <Link
-                    href="/account/profile"
-                    className="mt-2 block rounded-lg border border-[#FEFAE0]/60 py-3 text-center text-sm font-medium uppercase tracking-wide text-[#FEFAE0] hover:bg-[#FEFAE0]/10"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Sign up
-                  </Link>
-                </>
-              )}
+            <div className="mt-2 border-t border-gray-100 pt-3">
+              <Link
+                href="/account/profile"
+                className="block rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                onClick={() => setMenuOpen(false)}
+              >
+                {user ? "Account" : "Log in"}
+              </Link>
             </div>
           </div>
         </div>

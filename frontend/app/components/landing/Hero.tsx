@@ -1,44 +1,45 @@
 import Link from "next/link";
 
-const heroBg = "bg-[#DDA15E]"; /* Light Caramel */
-
 export function Hero() {
   return (
     <section
-      className={`relative overflow-hidden ${heroBg} px-4 py-10 sm:py-14 md:flex md:min-h-[320px] md:items-center md:justify-between md:gap-8 md:px-8 lg:px-12`}
+      className="relative overflow-hidden bg-white px-4 py-12 sm:py-16 md:py-20 lg:py-24"
       aria-labelledby="hero-heading"
     >
-      <div className="flex flex-1 flex-col items-start gap-6 md:flex-row md:items-center md:gap-10">
-        {/* Left: vertical text + product image area */}
-        <div className="flex items-center gap-6 md:gap-10">
-          <p
-            className="origin-left -rotate-90 whitespace-nowrap text-sm font-bold uppercase tracking-widest text-white opacity-90"
-            aria-hidden
-          >
-            Back in stock
-          </p>
-          {/* Figma: hero image 550×550; scale down on smaller screens */}
-          <div className="flex h-52 w-52 shrink-0 items-center justify-center rounded-lg bg-white/10 sm:h-72 sm:w-72 md:h-[350px] md:w-[350px] lg:h-[450px] lg:w-[450px] xl:h-[550px] xl:w-[550px]">
-            <span className="text-sm text-white/60">Product image</span>
-          </div>
-        </div>
-
-        {/* Right: headline + price – Figma title ~159px cap, price ~35px */}
-        <div className="flex flex-1 flex-col justify-center">
+      <div className="mx-auto flex max-w-7xl flex-col gap-10 md:flex-row md:items-center md:justify-between md:gap-12">
+        <div className="flex-1">
           <h1
             id="hero-heading"
-            className="text-3xl font-bold uppercase leading-tight text-white sm:text-4xl md:text-5xl lg:text-6xl xl:text-[3.5rem]"
+            className="text-4xl font-bold leading-tight text-black sm:text-5xl md:text-6xl lg:text-[3.5rem]"
           >
-            Premium mate &amp; gourds
+            Find mate that matches your style
           </h1>
-          <p className="mt-2 text-base text-white/95 sm:text-lg">Quality you can taste.</p>
-          <p className="mt-4 text-xl font-semibold text-white sm:text-2xl">From €9.99</p>
+          <p className="mt-4 max-w-lg text-base text-gray-600 sm:text-lg">
+            Premium yerba mate and gourds. Quality you can taste, delivered to your door.
+          </p>
           <Link
             href="/products"
-            className="mt-6 inline-flex w-fit rounded border-2 border-[#283618] bg-transparent px-6 py-2.5 text-sm font-semibold text-[#283618] transition hover:bg-[#283618] hover:text-[#FEFAE0]"
+            className="mt-6 inline-flex rounded-md bg-black px-8 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800"
           >
             Shop now
           </Link>
+          <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-8">
+            <div>
+              <p className="text-2xl font-bold text-black">200+</p>
+              <p className="mt-1 text-sm text-gray-600">International brands</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-black">2,000+</p>
+              <p className="mt-1 text-sm text-gray-600">High quality products</p>
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-black">30,000+</p>
+              <p className="mt-1 text-sm text-gray-600">Happy customers</p>
+            </div>
+          </div>
+        </div>
+        <div className="relative flex-1">
+          <div className="aspect-square max-w-md rounded-2xl bg-gray-100" />
         </div>
       </div>
     </section>

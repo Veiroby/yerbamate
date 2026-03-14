@@ -160,21 +160,21 @@ export default async function ProductsPage({ searchParams }: Props) {
   };
 
   return (
-    <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
-        <header className="mb-10 flex flex-wrap items-end justify-between gap-6 border-b border-[#606C38]/15 pb-8">
+        <header className="mb-10 flex flex-wrap items-end justify-between gap-6 border-b border-gray-200 pb-8">
           <div>
-            <h1 className="text-2xl font-bold uppercase tracking-wide text-[#283618] sm:text-3xl md:text-4xl">
+            <h1 className="text-2xl font-bold uppercase tracking-wide text-black sm:text-3xl md:text-4xl">
               {getPageTitle()}
             </h1>
-            <p className="mt-2 text-base text-[#606C38]">
+            <p className="mt-2 text-base text-gray-600">
               {getPageDescription()}
             </p>
           </div>
           <Link
             href="/cart"
-            className="inline-flex shrink-0 rounded border-2 border-[#BC6C25] px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-[#BC6C25] transition hover:bg-[#BC6C25]/10"
+            className="inline-flex shrink-0 rounded border-2 border-black px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-black transition hover:bg-black hover:text-white"
           >
             View cart
           </Link>
@@ -186,9 +186,9 @@ export default async function ProductsPage({ searchParams }: Props) {
 
         <div className="mt-8">
           {productCards.length === 0 ? (
-            <div className="rounded-2xl border border-[#606C38]/15 bg-[#FEFAE0] p-16 text-center">
+            <div className="rounded-2xl border border-gray-200 bg-white p-16 text-center">
               <svg
-                className="mx-auto h-14 w-14 text-[#606C38]/40"
+                className="mx-auto h-14 w-14 text-gray-300"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -200,22 +200,22 @@ export default async function ProductsPage({ searchParams }: Props) {
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                 />
               </svg>
-              <h3 className="mt-6 text-xl font-bold uppercase tracking-wide text-[#283618]">
+              <h3 className="mt-6 text-xl font-bold uppercase tracking-wide text-black">
                 No products found
               </h3>
-              <p className="mt-3 text-base text-[#606C38]">
+              <p className="mt-3 text-base text-gray-600">
                 Try adjusting your filters or search terms.
               </p>
               <Link
                 href="/products"
-                className="mt-8 inline-flex rounded border-2 border-[#BC6C25] px-6 py-3 text-sm font-semibold uppercase tracking-wide text-[#BC6C25] transition hover:bg-[#BC6C25]/10"
+                className="mt-8 inline-flex rounded border-2 border-black px-6 py-3 text-sm font-semibold uppercase tracking-wide text-black transition hover:bg-black hover:text-white"
               >
                 Clear all filters
               </Link>
             </div>
           ) : (
             <>
-              <p className="mb-6 text-base font-medium text-[#606C38]">
+              <p className="mb-6 text-base font-medium text-gray-600">
                 Showing {productCards.length} product{productCards.length !== 1 ? "s" : ""}
               </p>
               <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

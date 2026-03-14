@@ -38,7 +38,7 @@ export function ProductCard({ product, showDescription }: Props) {
 
   return (
     <div
-      className={`group flex flex-col overflow-hidden rounded-2xl bg-transparent transition duration-200 hover:opacity-95 ${
+      className={`group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm transition duration-200 hover:opacity-95 hover:shadow-md ${
         soldOut ? "opacity-70" : "hover:-translate-y-0.5"
       }`}
     >
@@ -83,12 +83,12 @@ export function ProductCard({ product, showDescription }: Props) {
             />
           ) : (
             <div className="flex h-full items-center justify-center text-[#606C38]/50">
-              <span className="text-xs font-medium text-[#606C38]/60">Product image</span>
+              <span className="text-xs font-medium text-gray-500">Product image</span>
             </div>
           )}
           {soldOut && (
-            <div className="absolute inset-0 flex items-center justify-center bg-[#283618]/50">
-              <span className="rounded-full bg-[#283618] px-4 py-2 text-sm font-semibold uppercase tracking-wide text-[#FEFAE0]">
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <span className="rounded-full bg-black px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white">
                 Sold out
               </span>
             </div>
@@ -97,17 +97,17 @@ export function ProductCard({ product, showDescription }: Props) {
 
         {/* Left-aligned: title, weight, price (stacked) */}
         <div className="flex flex-col items-start px-4 pt-0 text-left">
-          <h2 className="line-clamp-2 text-lg font-semibold text-[#283618] transition group-hover:text-[#BC6C25]">
+          <h2 className="line-clamp-2 text-lg font-semibold text-gray-900 transition group-hover:text-black">
             {product.name}
           </h2>
-          <p className="mt-1.5 text-sm text-[#606C38]">
+          <p className="mt-1.5 text-sm text-gray-500">
             {product.weight ?? "—"}
           </p>
-          <p className="mt-1 text-lg font-semibold text-[#283618]">
+          <p className="mt-1 text-lg font-semibold text-black">
             {product.currency} {product.price.toFixed(2)}
           </p>
           {showDescription && product.description ? (
-            <p className="mt-2 line-clamp-2 text-xs text-[#606C38]">
+            <p className="mt-2 line-clamp-2 text-xs text-gray-500">
               {product.description}
             </p>
           ) : null}
@@ -121,7 +121,7 @@ export function ProductCard({ product, showDescription }: Props) {
             type="button"
             onClick={handleAddToCart}
             disabled={addingToCart || isLoading}
-            className="w-full rounded-xl bg-[#E9C46A] py-3.5 text-base font-bold text-[#283618] transition hover:bg-[#D4B35A] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full rounded-xl bg-black py-3.5 text-base font-bold text-white transition hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {addingToCart ? (
               <span className="flex items-center justify-center gap-2">

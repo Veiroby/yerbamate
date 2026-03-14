@@ -1,17 +1,17 @@
-const partners = ["Partner one", "Partner two", "Partner three", "Partner four", "Partner five"];
+const brands = ["Yerba Mate", "Mate Gourds", "Bombillas", "Accessories", "Blends"];
 
 export function BrandPartners() {
   return (
-    <section className="bg-[#606C38]/10 px-4 py-10 sm:py-14" aria-label="Brand partners">
-      <div className="mx-auto max-w-6xl">
-        <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12">
-          {partners.map((name) => (
-            <div
+    <section className="bg-black py-8 sm:py-10" aria-label="Featured brands">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 lg:gap-16">
+          {brands.map((name) => (
+            <span
               key={name}
-              className="flex h-12 items-center justify-center px-6 text-sm font-medium uppercase tracking-wider text-[#606C38]"
+              className="text-sm font-medium uppercase tracking-wider text-white"
             >
               {name}
-            </div>
+            </span>
           ))}
         </div>
       </div>
