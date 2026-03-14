@@ -33,15 +33,15 @@ export function ProductCarouselSection({ title, products }: Props) {
             <Link
               key={p.href}
               href={p.href}
-              className="group flex w-[160px] shrink-0 flex-col rounded-lg border border-[#606C38]/20 bg-[#FEFAE0] p-4 shadow-sm transition hover:shadow-md sm:w-[180px]"
+              className="group flex w-[160px] shrink-0 flex-col rounded-lg border border-[#606C38]/20 bg-transparent p-4 shadow-sm transition hover:shadow-md sm:w-[180px]"
             >
-              <div className="relative aspect-square w-full overflow-hidden rounded-md bg-gray-50">
+              <div className="relative aspect-square w-full overflow-hidden rounded-md bg-transparent">
                 {p.imageUrl ? (
                   <Image
                     src={p.imageUrl}
                     alt={p.imageAlt || p.title}
                     fill
-                    className="object-cover transition group-hover:scale-[1.02]"
+                    className="object-contain transition group-hover:scale-[1.02]"
                     sizes="180px"
                     unoptimized
                   />

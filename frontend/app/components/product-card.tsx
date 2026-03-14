@@ -46,7 +46,7 @@ export function ProductCard({ product, showDescription }: Props) {
 
   return (
     <div
-      className={`group flex flex-col overflow-hidden rounded-lg border border-[#606C38]/20 bg-[#FEFAE0] shadow-sm transition duration-200 hover:shadow-md ${
+      className={`group flex flex-col overflow-hidden rounded-lg border border-[#606C38]/20 bg-transparent shadow-sm transition duration-200 hover:shadow-md ${
         soldOut ? "opacity-70" : "hover:-translate-y-0.5"
       }`}
     >
@@ -54,17 +54,17 @@ export function ProductCard({ product, showDescription }: Props) {
         href={soldOut ? "#" : `/products/${encodeURIComponent(product.slug)}`}
         className={`block flex-1 min-h-0 ${soldOut ? "pointer-events-none" : "cursor-pointer"}`}
         aria-label={`View ${product.name}`}
-      >
-        <div className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-[#606C38]/10">
+        >
+          <div className="relative aspect-square w-full overflow-hidden rounded-t-lg bg-transparent">
           {product.imageUrl ? (
-            <Image
-              src={product.imageUrl}
-              alt={product.imageAlt ?? product.name}
-              fill
-              className="object-cover transition duration-200 group-hover:scale-[1.02]"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              unoptimized
-              style={
+              <Image
+                src={product.imageUrl}
+                alt={product.imageAlt ?? product.name}
+                fill
+                className="object-contain transition duration-200 group-hover:scale-[1.02]"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                unoptimized
+                style={
                 (product as any).focalX != null &&
                 (product as any).focalY != null
                   ? {

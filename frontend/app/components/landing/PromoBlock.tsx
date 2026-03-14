@@ -37,20 +37,32 @@ export function PromoBlock({
         className="flex shrink-0 items-center justify-center pl-4 pr-2 py-4 sm:pl-6 sm:pr-3 sm:py-4 md:pl-8 md:pr-4 md:py-5"
       >
         {imageUrl ? (
-          <div className="relative h-28 w-24 sm:h-32 sm:w-28 md:h-36 md:w-32">
+          <div className="relative h-36 w-32 sm:h-44 sm:w-40 md:h-52 md:w-48">
             <Image
               src={imageUrl}
               alt={imageAlt || title}
               fill
               className="object-contain object-center"
-              sizes="(max-width: 640px) 112px, (max-width: 768px) 128px, 144px"
+              sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, 208px"
               unoptimized
             />
           </div>
         ) : (
-          <div className={`flex h-28 w-24 items-center justify-center rounded-lg sm:h-32 sm:w-28 md:h-36 md:w-32 ${textColor} opacity-20`}>
-            <svg className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
+          <div
+            className={`flex h-36 w-32 items-center justify-center rounded-lg sm:h-44 sm:w-40 md:h-52 md:w-48 ${textColor} opacity-20`}
+          >
+            <svg
+              className="h-12 w-12"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={1}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14"
+              />
             </svg>
           </div>
         )}

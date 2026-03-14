@@ -63,77 +63,93 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <main className="mx-auto max-w-6xl px-4 py-12 sm:py-16">
         <Link
           href="/products"
-          className="mb-8 inline-flex text-sm font-medium text-[#606C38] transition hover:text-[#BC6C25]"
+          className="inline-flex text-sm font-medium text-[#606C38] transition hover:text-[#BC6C25]"
         >
           ← Back to products
         </Link>
+        <nav
+          aria-label="Breadcrumb"
+          className="mb-8 mt-2 text-xs font-medium uppercase tracking-wide text-[#606C38]"
+        >
+          <Link href="/" className="hover:text-[#BC6C25]">
+            Home
+          </Link>{" "}
+          <span className="mx-1 text-[#606C38]/60">/</span>
+          <Link href="/products" className="hover:text-[#BC6C25]">
+            Products
+          </Link>{" "}
+          <span className="mx-1 text-[#606C38]/60">/</span>
+          <span className="text-[#283618]">{product.name}</span>
+        </nav>
 
         <div className="grid gap-10 md:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-          {/* Images */}
+          {/* Images: thumbnails on the left, large image on the right (Figma-style) */}
           <div className="space-y-4">
-            <div className="relative aspect-square w-full overflow-hidden rounded-lg border border-[#606C38]/20 bg-[#606C38]/5 shadow-sm">
-              {primaryImage ? (
-                <Image
-                  src={primaryImage.url}
-                  alt={primaryImage.altText ?? product.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 768px) 100vw, 60vw"
-                  priority
-                  unoptimized
-                  style={{
-                    objectPosition: `${Math.round(primaryImage.focalX * 100)}% ${Math.round(
-                      primaryImage.focalY * 100,
-                    )}%`,
-                    transform:
-                      typeof (primaryImage as any).zoom === "number" &&
-                      (primaryImage as any).zoom !== 1
-                        ? `scale(${(primaryImage as any).zoom})`
-                        : undefined,
-                  }}
-                />
-              ) : (
-                <div className="flex h-full items-center justify-center text-[#606C38]/60">
-                  Product image
+            <div className="flex flex-col gap-4 md:flex-row md:items-start">
+              {product.images.length > 1 && (
+                <div className="flex gap-2 overflow-x-auto pb-2 md:flex-col md:gap-3 md:overflow-visible md:pb-0">
+                  {product.images.map((image) => (
+                    <div
+                      key={image.id}
+                      className="relative aspect-square h-16 w-16 shrink-0 overflow-hidden rounded-2xl border border-[#606C38]/20 bg-transparent md:h-20 md:w-20"
+                    >
+                      <Image
+                        src={image.url}
+                        alt={image.altText ?? product.name}
+                        fill
+                        className="object-contain"
+                        sizes="80px"
+                        unoptimized
+                        style={{
+                          objectPosition: `${Math.round(image.focalX * 100)}% ${Math.round(
+                            image.focalY * 100,
+                          )}%`,
+                          transform:
+                            typeof (image as any).zoom === "number" &&
+                            (image as any).zoom !== 1
+                              ? `scale(${(image as any).zoom})`
+                              : undefined,
+                        }}
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
-              {soldOut && (
-                <div className="absolute inset-0 flex items-center justify-center bg-[#283618]/50">
-                  <span className="rounded-full bg-[#283618] px-6 py-3 text-base font-semibold uppercase tracking-wide text-[#FEFAE0]">
-                    Sold out
-                  </span>
-                </div>
-              )}
-            </div>
-            {product.images.length > 1 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {product.images.map((image) => (
-                  <div
-                    key={image.id}
-                    className="relative aspect-square h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-[#606C38]/20 bg-[#606C38]/5"
-                  >
-                    <Image
-                      src={image.url}
-                      alt={image.altText ?? product.name}
-                      fill
-                      className="object-cover"
-                      sizes="80px"
-                      unoptimized
-                      style={{
-                        objectPosition: `${Math.round(image.focalX * 100)}% ${Math.round(
-                          image.focalY * 100,
-                        )}%`,
-                        transform:
-                          typeof (image as any).zoom === "number" &&
-                          (image as any).zoom !== 1
-                            ? `scale(${(image as any).zoom})`
-                            : undefined,
-                      }}
-                    />
+              <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-transparent">
+                {primaryImage ? (
+                  <Image
+                    src={primaryImage.url}
+                    alt={primaryImage.altText ?? product.name}
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 768px) 100vw, 60vw"
+                    priority
+                    unoptimized
+                    style={{
+                      objectPosition: `${Math.round(primaryImage.focalX * 100)}% ${Math.round(
+                        primaryImage.focalY * 100,
+                      )}%`,
+                      transform:
+                        typeof (primaryImage as any).zoom === "number" &&
+                        (primaryImage as any).zoom !== 1
+                          ? `scale(${(primaryImage as any).zoom})`
+                          : undefined,
+                    }}
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-[#606C38]/60">
+                    Product image
                   </div>
-                ))}
+                )}
+                {soldOut && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#283618]/50">
+                    <span className="rounded-full bg-[#283618] px-6 py-3 text-base font-semibold uppercase tracking-wide text-[#FEFAE0]">
+                      Sold out
+                    </span>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
 
           {/* Info & purchase */}
