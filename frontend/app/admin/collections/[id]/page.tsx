@@ -19,7 +19,16 @@ export default async function AdminCollectionEditPage({ params }: Props) {
     prisma.collection.findUnique({
       where: { id },
       include: {
-        products: { orderBy: { position: "asc" }, include: { product: { include: { images: { orderBy: { position: "asc" }, take: 1 } } } },
+        products: {
+          orderBy: { position: "asc" },
+          include: {
+            product: {
+              include: {
+                images: { orderBy: { position: "asc" }, take: 1 },
+              },
+            },
+          },
+        },
       },
     }),
     prisma.product.findMany({
