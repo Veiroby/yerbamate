@@ -20,6 +20,12 @@ function getBaseUrl(): string {
   return process.env.NODE_ENV === "production" ? BASE_URL_LIVE : BASE_URL_TEST;
 }
 
+function buildTransactionUrl(): string {
+  const base = getBaseUrl().replace(/\s+/g, "");
+  // Use URL constructor so the result is a valid absolute URL (avoids parse errors in some runtimes)
+  return new URL("/v1/transactions", base.endsWith("/") ? base : `${base}/`).href;
+}
+
 export type CreateTransactionParams = {
   amount: number; // in major units, e.g. 90.95
   currency: string;
@@ -64,11 +70,17 @@ export async function createTransaction(
     ...(params.customer && { customer: params.customer }),
   };
 
-  const baseUrl = getBaseUrl();
   const auth = Buffer.from(`${shopId}:${secretKey}`).toString("base64");
 
+  let requestUrl: URL;
   try {
-    const res = await fetch(`${baseUrl}/v1/transactions`, {
+    requestUrl = new URL(buildTransactionUrl());
+  } catch (urlErr) {
+    return { ok: false, error: "Invalid Maksekeskus API URL. Check MAKSEKESKUS_BASE_URL." };
+  }
+
+  try {
+    const res = await fetch(requestUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
