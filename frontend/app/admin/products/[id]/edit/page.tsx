@@ -72,12 +72,59 @@ async function updateFocalPointAction(formData: FormData) {
   redirect(`/admin/products/${productId}/edit?saved=1`);
 }
 
+function slugFromInput(s: string): string {
+  return s
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
+async function updateProductNameAndSlugAction(formData: FormData) {
+  "use server";
+  const productId = formData.get("productId")?.toString();
+  const name = formData.get("name")?.toString().trim();
+  const slugRaw = formData.get("slug")?.toString().trim();
+  if (!productId || !name) {
+    redirect(`/admin/products/${productId}/edit?error=name_required`);
+    return;
+  }
+  const slug = slugRaw ? slugFromInput(slugRaw) : slugFromInput(name);
+  if (!slug) {
+    redirect(`/admin/products/${productId}/edit?error=slug_invalid`);
+    return;
+  }
+
+  const user = await getCurrentUser();
+  if (!user?.isAdmin) {
+    notFound();
+  }
+
+  const existing = await prisma.product.findFirst({
+    where: { slug, id: { not: productId } },
+    select: { id: true },
+  });
+  if (existing) {
+    redirect(`/admin/products/${productId}/edit?error=slug_taken`);
+    return;
+  }
+
+  await prisma.product.update({
+    where: { id: productId },
+    data: { name, slug },
+  });
+
+  revalidatePath(`/admin/products/${productId}/edit`);
+  revalidatePath("/admin/products");
+  redirect(`/admin/products/${productId}/edit?updated=name`);
+}
+
 export default async function AdminProductEditPage({ params, searchParams }: Props) {
   const user = await getCurrentUser();
   if (!user?.isAdmin) notFound();
 
   const { id } = await params;
-  const { saved, error: errorParam } = await searchParams;
+  const { saved, updated, error: errorParam } = await searchParams;
   const product = await prisma.product.findUnique({
     where: { id },
     include: { images: { orderBy: { position: "asc" } } },
@@ -91,7 +138,27 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
           Images saved successfully.
         </p>
       )}
-      {errorParam && (
+      {updated === "name" && (
+        <p className="rounded-xl bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
+          Name and slug updated successfully.
+        </p>
+      )}
+      {errorParam === "slug_taken" && (
+        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+          That slug is already in use. Choose another.
+        </p>
+      )}
+      {errorParam === "slug_invalid" && (
+        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+          Slug must contain at least one letter or number.
+        </p>
+      )}
+      {errorParam === "name_required" && (
+        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+          Name is required.
+        </p>
+      )}
+      {errorParam && !["slug_taken", "slug_invalid", "name_required"].includes(errorParam) && (
         <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
           Upload failed. Check file type (JPEG, PNG, WebP, GIF) and size (max 10MB). See terminal for details.
         </p>
@@ -104,9 +171,48 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
           ← Products
         </Link>
         <h2 className="text-lg font-semibold text-zinc-900">
-          Images: {product.name}
+          Edit product: {product.name}
         </h2>
       </div>
+
+      <section className="rounded-2xl border bg-white p-5 shadow-sm">
+        <h3 className="mb-3 text-sm font-semibold text-zinc-900">
+          Name &amp; slug
+        </h3>
+        <form action={updateProductNameAndSlugAction} className="flex flex-wrap items-end gap-3">
+          <input type="hidden" name="productId" value={product.id} />
+          <label className="flex flex-col gap-1 text-xs text-zinc-600">
+            Product name
+            <input
+              type="text"
+              name="name"
+              defaultValue={product.name}
+              required
+              className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+              placeholder="e.g. Yerba Mate 1kg"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-zinc-600">
+            Slug (URL path, unique)
+            <input
+              type="text"
+              name="slug"
+              defaultValue={product.slug}
+              className="rounded-xl border border-zinc-300 px-3 py-2 text-sm font-mono"
+              placeholder="e.g. yerba-mate-1kg"
+            />
+          </label>
+          <button
+            type="submit"
+            className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+          >
+            Save name &amp; slug
+          </button>
+        </form>
+        <p className="mt-2 text-xs text-zinc-500">
+          Slug is used in the product URL (/products/[slug]). Leave empty to auto-generate from name.
+        </p>
+      </section>
 
       <section className="rounded-2xl border bg-white p-5 shadow-sm">
         <h3 className="mb-3 text-sm font-semibold text-zinc-900">
