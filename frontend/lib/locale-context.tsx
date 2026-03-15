@@ -32,7 +32,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
         ? navigator.languages
         : [navigator.language];
       const fromLocale = locales
-        .map((loc) => loc.split(\"-\").pop()?.toUpperCase())
+        .map((loc) => loc.split("-").pop()?.toUpperCase())
         .find((code): code is string => !!code) as string | undefined;
 
       if (fromLocale) {

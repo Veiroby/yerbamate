@@ -230,6 +230,7 @@ export function ShippingMethodSelector({
   onShippingMethodChange,
 }: Props) {
   const [methods, setMethods] = useState<ShippingOption[]>([]);
+  const [unsupportedCountry, setUnsupportedCountry] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
   const [selectedPickupId, setSelectedPickupId] = useState("");
@@ -256,6 +257,7 @@ export function ShippingMethodSelector({
         if (cancelled) return;
         const list = (data.methods ?? []) as ShippingOption[];
         setMethods(list);
+        setUnsupportedCountry(Boolean(data.unsupportedCountry));
         onMethodsLoaded?.(list);
         const defaultId = list.length > 0 ? list[0].id : null;
         setSelectedId(defaultId);
@@ -297,6 +299,17 @@ export function ShippingMethodSelector({
   if (loading) {
     return (
       <div className="text-sm text-gray-500">Loading shipping options…</div>
+    );
+  }
+
+  if (unsupportedCountry || methods.length === 0) {
+    return (
+      <section className="space-y-4">
+        <h2 className="text-lg font-bold text-black">Shipping method</h2>
+        <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-800">
+          Unfortunately we don&apos;t ship to your country.
+        </p>
+      </section>
     );
   }
 

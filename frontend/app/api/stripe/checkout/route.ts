@@ -122,6 +122,13 @@ export async function POST(request: Request) {
     preliminarySubtotal,
   );
 
+  if (!shipping.option) {
+    return NextResponse.json(
+      { error: "Unfortunately we don't ship to your country." },
+      { status: 400 },
+    );
+  }
+
   const validatedItems = await Promise.all(
     cart.items.map(async (item) => {
       const product = item.productId

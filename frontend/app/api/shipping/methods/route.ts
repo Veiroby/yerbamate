@@ -23,6 +23,9 @@ export async function GET(request: Request) {
     Number.isFinite(orderSubtotal) ? orderSubtotal : undefined,
   );
 
-  return NextResponse.json({ methods });
+  return NextResponse.json({
+    methods,
+    unsupportedCountry: methods.length === 0,
+  });
 }
 

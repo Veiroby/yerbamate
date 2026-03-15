@@ -42,6 +42,8 @@ export async function getAvailableShippingMethods(
       return countries.includes(countryCode);
     }) ?? null;
 
+  // Rates are determined by country: zone methods for that country, or DPD for Baltics.
+  // If the country is in no zone and not DPD-eligible, we do not ship there.
   if (matchingZone) {
     const methods = await prisma.shippingMethod.findMany({
       where: {
@@ -65,15 +67,6 @@ export async function getAvailableShippingMethods(
     }
   }
 
-  if (options.length === 0 && !isDpdAvailableForCountry(countryCode)) {
-    options.push({
-      id: "standard-flat",
-      name: "Standard shipping",
-      amount: freeShippingApplies ? 0 : 5,
-      estimatedDays: 5,
-    });
-  }
-
   if (isDpdAvailableForCountry(countryCode)) {
     options.push({
       id: DPD_PARCEL_MACHINE_METHOD_ID,
@@ -83,15 +76,7 @@ export async function getAvailableShippingMethods(
     });
   }
 
-  if (options.length === 0) {
-    options.push({
-      id: "standard-flat",
-      name: "Standard shipping",
-      amount: freeShippingApplies ? 0 : 5,
-      estimatedDays: 5,
-    });
-  }
-
+  // No fallback for unsupported countries: return empty so UI can show "we don't ship to your country"
   return options;
 }
 

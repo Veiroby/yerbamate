@@ -58,7 +58,9 @@ export function CartShippingPreview({ subtotal, currency }: Props) {
       {loading ? (
         <p className="text-xs text-gray-500">Loading options…</p>
       ) : methods.length === 0 ? (
-        <p className="text-xs text-gray-500">Calculated at checkout</p>
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-2 text-xs text-amber-800">
+          Unfortunately we don&apos;t ship to your country.
+        </p>
       ) : (
         <ul className="space-y-1.5">
           {methods.map((method) => (
