@@ -15,15 +15,21 @@ export function isMaksekeskusConfigured(): boolean {
 }
 
 function getBaseUrl(): string {
-  const url = process.env.MAKSEKESKUS_BASE_URL?.trim();
-  if (url) return url.replace(/\/+$/, "");
-  return process.env.NODE_ENV === "production" ? BASE_URL_LIVE : BASE_URL_TEST;
+  const raw = process.env.MAKSEKESKUS_BASE_URL?.trim();
+  if (!raw) {
+    return process.env.NODE_ENV === "production" ? BASE_URL_LIVE : BASE_URL_TEST;
+  }
+  const base = raw.replace(/\s+/g, "").replace(/\/+$/, "");
+  if (!base) return process.env.NODE_ENV === "production" ? BASE_URL_LIVE : BASE_URL_TEST;
+  // Ensure scheme so URL is valid
+  if (!/^https?:\/\//i.test(base)) return `https://${base}`;
+  return base;
 }
 
 function buildTransactionUrl(): string {
-  const base = getBaseUrl().replace(/\s+/g, "");
-  // Use URL constructor so the result is a valid absolute URL (avoids parse errors in some runtimes)
-  return new URL("/v1/transactions", base.endsWith("/") ? base : `${base}/`).href;
+  const base = getBaseUrl();
+  const path = "/v1/transactions";
+  return base.endsWith("/") ? `${base.slice(0, -1)}${path}` : `${base}${path}`;
 }
 
 export type CreateTransactionParams = {
@@ -71,16 +77,10 @@ export async function createTransaction(
   };
 
   const auth = Buffer.from(`${shopId}:${secretKey}`).toString("base64");
-
-  let requestUrl: URL;
-  try {
-    requestUrl = new URL(buildTransactionUrl());
-  } catch (urlErr) {
-    return { ok: false, error: "Invalid Maksekeskus API URL. Check MAKSEKESKUS_BASE_URL." };
-  }
+  const transactionUrl = buildTransactionUrl();
 
   try {
-    const res = await fetch(requestUrl, {
+    const res = await fetch(transactionUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
