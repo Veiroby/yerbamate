@@ -3,6 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
 import { ProductWishlistHeart } from "@/app/components/product-wishlist-heart";
 
@@ -30,6 +31,9 @@ type Props = {
 };
 
 export function ProductCard({ product, showDescription }: Props) {
+  const pathname = usePathname();
+  const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
+  const productHref = `${localePrefix}/products/${encodeURIComponent(product.slug)}`;
   const stockStatus = product.stockStatus ?? (product.quantityLeft > 0 ? "in_stock" : "get_in_5_7_days");
   const soldOut = product.stockLocation !== "warehouse" && product.quantityLeft <= 0;
   const { addToCart, isLoading } = useCart();
@@ -48,7 +52,7 @@ export function ProductCard({ product, showDescription }: Props) {
       }`}
     >
       <Link
-        href={soldOut ? "#" : `/products/${encodeURIComponent(product.slug)}`}
+        href={soldOut ? "#" : productHref}
         className={`block flex-1 min-h-0 ${soldOut ? "pointer-events-none" : "cursor-pointer"}`}
         aria-label={`View ${product.name}`}
       >

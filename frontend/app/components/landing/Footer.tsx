@@ -1,36 +1,38 @@
 import Link from "next/link";
+import type { Locale } from "@/lib/locale";
 
 const customerService = [
-  { href: "/contact", label: "Contact" },
-  { href: "/shipping-policy", label: "Shipping" },
-  { href: "/privacy", label: "Returns" },
+  { path: "contact", label: "Contact" },
+  { path: "shipping-policy", label: "Shipping" },
+  { path: "privacy", label: "Returns" },
 ];
 
 const myAccount = [
-  { href: "/account/profile", label: "My account" },
-  { href: "/account/orders", label: "Orders" },
-  { href: "/cart", label: "Cart" },
+  { path: "account/profile", label: "My account" },
+  { path: "account/orders", label: "Orders" },
+  { path: "cart", label: "Cart" },
 ];
 
 const company = [
-  { href: "/about", label: "About us" },
-  { href: "/products", label: "Products" },
+  { path: "about", label: "About us" },
+  { path: "products", label: "Products" },
 ];
 
 const legal = [
-  { href: "/privacy", label: "Privacy policy" },
-  { href: "/terms", label: "Terms of service" },
+  { path: "privacy", label: "Privacy policy" },
+  { path: "terms", label: "Terms of service" },
 ];
 
-export function Footer() {
+export function Footer({ locale }: { locale: Locale }) {
   const year = new Date().getFullYear();
+  const prefix = `/${locale}/`;
 
   return (
     <footer className="bg-gray-100">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:py-16">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
-            <Link href="/" className="text-xl font-bold uppercase tracking-tight text-black">
+            <Link href={prefix} className="text-xl font-bold uppercase tracking-tight text-black">
               YerbaTea
             </Link>
             <p className="mt-3 max-w-xs text-sm text-gray-600">
@@ -42,9 +44,9 @@ export function Footer() {
               Company
             </h3>
             <ul className="mt-4 space-y-2">
-              {company.map(({ href, label }) => (
-                <li key={href}>
-                  <Link href={href} className="text-sm text-gray-700 hover:text-black">
+              {company.map(({ path, label }) => (
+                <li key={path}>
+                  <Link href={prefix + path} className="text-sm text-gray-700 hover:text-black">
                     {label}
                   </Link>
                 </li>
@@ -56,9 +58,9 @@ export function Footer() {
               Help
             </h3>
             <ul className="mt-4 space-y-2">
-              {customerService.map(({ href, label }) => (
-                <li key={href}>
-                  <Link href={href} className="text-sm text-gray-700 hover:text-black">
+              {customerService.map(({ path, label }) => (
+                <li key={path}>
+                  <Link href={prefix + path} className="text-sm text-gray-700 hover:text-black">
                     {label}
                   </Link>
                 </li>
@@ -70,9 +72,9 @@ export function Footer() {
               Account
             </h3>
             <ul className="mt-4 space-y-2">
-              {myAccount.map(({ href, label }) => (
-                <li key={href}>
-                  <Link href={href} className="text-sm text-gray-700 hover:text-black">
+              {myAccount.map(({ path, label }) => (
+                <li key={path}>
+                  <Link href={prefix + path} className="text-sm text-gray-700 hover:text-black">
                     {label}
                   </Link>
                 </li>
@@ -82,9 +84,9 @@ export function Footer() {
               Legal
             </h3>
             <ul className="mt-4 space-y-2">
-              {legal.map(({ href, label }) => (
-                <li key={href}>
-                  <Link href={href} className="text-sm text-gray-700 hover:text-black">
+              {legal.map(({ path, label }) => (
+                <li key={path}>
+                  <Link href={prefix + path} className="text-sm text-gray-700 hover:text-black">
                     {label}
                   </Link>
                 </li>

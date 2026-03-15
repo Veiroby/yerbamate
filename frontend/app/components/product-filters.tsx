@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 
 type FilterOptions = {
   categories: Array<{ slug: string; name: string }>;
@@ -17,7 +17,10 @@ type Props = {
 
 export function ProductFilters({ options, className = "" }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
+  const productsPath = localePrefix ? `${localePrefix}/products` : "/products";
 
   const [filters, setFilters] = useState({
     q: searchParams.get("q") || "",
@@ -48,7 +51,7 @@ export function ProductFilters({ options, className = "" }: Props) {
     Object.entries(newFilters).forEach(([key, value]) => {
       if (value) params.set(key, value);
     });
-    router.push(`/products?${params.toString()}`);
+    router.push(`${productsPath}?${params.toString()}`);
     setMobileOpen(false);
   };
 
@@ -69,7 +72,7 @@ export function ProductFilters({ options, className = "" }: Props) {
       sort: "",
     };
     setFilters(clearedFilters);
-    router.push("/products");
+    router.push(productsPath);
     setMobileOpen(false);
   };
 
@@ -402,7 +405,10 @@ export function ProductFilters({ options, className = "" }: Props) {
 
 export function ActiveFilters() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+  const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
+  const productsPath = localePrefix ? `${localePrefix}/products` : "/products";
 
   const activeFilters: Array<{ key: string; label: string; value: string }> = [];
 
@@ -438,11 +444,11 @@ export function ActiveFilters() {
     } else {
       params.delete(key);
     }
-    router.push(`/products?${params.toString()}`);
+    router.push(`${productsPath}?${params.toString()}`);
   };
 
   const clearAll = () => {
-    router.push("/products");
+    router.push(productsPath);
   };
 
   return (

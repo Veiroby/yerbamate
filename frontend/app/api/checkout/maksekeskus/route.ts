@@ -78,6 +78,9 @@ export async function POST(request: Request) {
   const vatNumber = formData.get("vatNumber")?.toString() || null;
   const phone = formData.get("phone")?.toString() || null;
   const discountCodeInput = formData.get("discountCode")?.toString() || null;
+  const localeRaw = formData.get("locale")?.toString();
+  const locale = localeRaw === "lv" || localeRaw === "en" ? localeRaw : "";
+  const pathPrefix = locale ? `/${locale}` : "";
 
   const isDpdParcelMachine = shippingOptionId === DPD_PARCEL_MACHINE_METHOD_ID;
 
@@ -287,8 +290,8 @@ export async function POST(request: Request) {
     amount: total,
     currency,
     ip: getClientIp(request),
-    return_url: `${origin}/checkout/success?provider=maksekeskus&orderNumber=${encodeURIComponent(order.orderNumber)}`,
-    cancel_url: `${origin}/cart`,
+    return_url: `${origin}${pathPrefix}/checkout/success?provider=maksekeskus&orderNumber=${encodeURIComponent(order.orderNumber)}`,
+    cancel_url: `${origin}${pathPrefix}/cart`,
     notifications_url: `${origin}/api/checkout/maksekeskus/notify`,
     reference: order.orderNumber,
     merchant_data: order.id,

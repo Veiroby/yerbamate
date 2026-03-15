@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 type Props = {
   error?: string;
@@ -121,6 +122,8 @@ function EmailField(props: {
 }
 
 export function AuthForms({ error }: Props) {
+  const pathname = usePathname();
+  const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [focusedEmailField, setFocusedEmailField] = useState<
@@ -224,7 +227,7 @@ export function AuthForms({ error }: Props) {
           />
           <div className="flex items-center justify-end">
             <Link
-              href="/account/forgot-password"
+              href={localePrefix ? `${localePrefix}/account/forgot-password` : "/account/forgot-password"}
               className="text-xs font-medium text-black underline hover:no-underline"
             >
               Forgot password?
@@ -289,7 +292,7 @@ export function AuthForms({ error }: Props) {
       <p className="text-sm text-gray-500">
         You can always checkout as a guest from the{" "}
         <Link
-          href="/checkout"
+          href={localePrefix ? `${localePrefix}/checkout` : "/checkout"}
           className="font-medium text-black underline hover:no-underline"
         >
           checkout page

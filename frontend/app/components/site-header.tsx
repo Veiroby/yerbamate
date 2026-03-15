@@ -4,17 +4,20 @@ import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/lib/cart-context";
+import { useTranslation } from "@/lib/translation-context";
+import type { Locale } from "@/lib/locale";
 
 type SiteHeaderProps = {
   user: { isAdmin: boolean } | null;
+  locale: Locale;
 };
 
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/products", label: "Products" },
-  { href: "/about", label: "About Us" },
-  { href: "/contact", label: "Contact" },
-];
+const navLinkKeys = [
+  { path: "", labelKey: "nav.home" },
+  { path: "products", labelKey: "nav.products" },
+  { path: "about", labelKey: "nav.about" },
+  { path: "contact", labelKey: "nav.contact" },
+] as const;
 
 function CartIcon({ className }: { className?: string }) {
   return (
@@ -60,12 +63,13 @@ function CartBadge({ count }: { count: number }) {
 
 const PROMO_DISMISS_KEY = "yerbatea-promo-dismissed";
 
-export function SiteHeader({ user }: SiteHeaderProps) {
+export function SiteHeader({ user, locale }: SiteHeaderProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [menuOpen, setMenuOpen] = useState(false);
   const [promoDismissed, setPromoDismissed] = useState(false);
   const { itemCount } = useCart();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (typeof window !== "undefined" && localStorage.getItem(PROMO_DISMISS_KEY) === "1") {
@@ -80,13 +84,16 @@ export function SiteHeader({ user }: SiteHeaderProps) {
     }
   };
 
-  const isActive = (href: string) => {
-    if (pathname !== href.split("?")[0]) return false;
-    const linkUrl = new URL(href, "https://dummy");
-    const linkCategory = linkUrl.searchParams.get("category") ?? "";
-    const currentCategory = searchParams.get("category") ?? "";
-    return linkCategory === currentCategory;
+  const localePrefix = `/${locale}`;
+  const pathAfterLocale = pathname.replace(new RegExp(`^/${locale}`), "") || "/";
+  const isActive = (path: string) => {
+    const expected = path ? `/${path}` : "/";
+    if (pathAfterLocale.split("?")[0] !== expected) return false;
+    return true;
   };
+
+  const otherLocale: Locale = locale === "lv" ? "en" : "lv";
+  const switchLocalePath = pathname.replace(new RegExp(`^/${locale}(/|$)`), `/${otherLocale}$1`);
 
   return (
     <>
@@ -94,16 +101,16 @@ export function SiteHeader({ user }: SiteHeaderProps) {
       {!promoDismissed && (
         <div className="relative bg-black px-4 py-2.5 text-center text-sm text-white">
           <span>
-            Sign up and get 20% off on your first order.{" "}
-            <Link href="/account/profile" className="underline font-semibold hover:no-underline">
-              Sign Up Now
+            {t("promo.signUpText")}{" "}
+            <Link href={`/${locale}/account/profile`} className="underline font-semibold hover:no-underline">
+              {t("promo.signUpNow")}
             </Link>
           </span>
           <button
             type="button"
             onClick={dismissPromo}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-white/80 hover:text-white"
-            aria-label="Close"
+            aria-label={t("common.close")}
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -119,29 +126,47 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           aria-label="Main navigation"
         >
           <Link
-            href="/"
+            href={localePrefix}
             className="text-xl font-bold uppercase tracking-tight text-black hover:opacity-80"
           >
             YerbaTea
           </Link>
 
           <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex">
-            {navLinks.map(({ href, label }) => (
-              <Link
-                key={`${href}-${label}`}
-                href={href}
-                className={`text-sm font-medium text-gray-700 hover:text-black ${isActive(href) ? "text-black font-semibold" : ""}`}
-              >
-                {label}
-              </Link>
-            ))}
+            {navLinkKeys.map(({ path, labelKey }) => {
+              const href = path ? `${localePrefix}/${path}` : localePrefix;
+              return (
+                <Link
+                  key={labelKey}
+                  href={href}
+                  className={`text-sm font-medium text-gray-700 hover:text-black ${isActive(path) ? "text-black font-semibold" : ""}`}
+                >
+                  {t(labelKey)}
+                </Link>
+              );
+            })}
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
+            <span className="flex items-center gap-1 text-sm font-medium text-gray-600">
+              <Link
+                href={locale === "lv" ? switchLocalePath : switchLocalePath}
+                className={locale === "lv" ? "font-semibold text-black" : "hover:text-black"}
+              >
+                LV
+              </Link>
+              <span aria-hidden>|</span>
+              <Link
+                href={switchLocalePath}
+                className={locale === "en" ? "font-semibold text-black" : "hover:text-black"}
+              >
+                EN
+              </Link>
+            </span>
             <Link
-              href="/cart"
+              href={`/${locale}/cart`}
               className="relative flex h-10 w-10 items-center justify-center text-gray-700 hover:text-black"
-              aria-label={`Cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
+              aria-label={`${t("nav.cart")}${itemCount > 0 ? `, ${itemCount} items` : ""}`}
             >
               <CartIcon className="h-5 w-5" />
               <CartBadge count={itemCount} />
@@ -151,30 +176,30 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                 href="/admin"
                 className="hidden text-sm font-medium text-gray-700 hover:text-black sm:block"
               >
-                Admin
+                {t("nav.admin")}
               </Link>
             )}
             {user ? (
               <Link
-                href="/account/profile"
+                href={`/${locale}/account/profile`}
                 className="flex h-10 w-10 items-center justify-center text-gray-700 hover:text-black"
-                aria-label="Profile"
+                aria-label={t("nav.account")}
               >
                 <ProfileIcon className="h-5 w-5" />
               </Link>
             ) : (
               <>
                 <Link
-                  href="/account/profile"
+                  href={`/${locale}/account/profile`}
                   className="hidden text-sm font-medium text-gray-700 hover:text-black sm:block"
                 >
-                  Log in
+                  {t("nav.logIn")}
                 </Link>
                 <Link
-                  href="/account/profile"
+                  href={`/${locale}/account/profile`}
                   className="hidden rounded-md border-2 border-black bg-transparent px-4 py-2 text-sm font-semibold text-black transition hover:bg-black hover:text-white sm:inline-block"
                 >
-                  Sign up
+                  {t("nav.signUp")}
                 </Link>
               </>
             )}
@@ -186,7 +211,7 @@ export function SiteHeader({ user }: SiteHeaderProps) {
               aria-expanded={menuOpen}
               aria-controls="mobile-nav"
             >
-              <span className="sr-only">{menuOpen ? "Close menu" : "Open menu"}</span>
+              <span className="sr-only">{menuOpen ? t("nav.closeMenu") : t("nav.openMenu")}</span>
               {menuOpen ? (
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -205,41 +230,41 @@ export function SiteHeader({ user }: SiteHeaderProps) {
           className={`border-t border-gray-100 bg-white px-4 py-4 lg:hidden ${menuOpen ? "block" : "hidden"}`}
         >
           <div className="flex flex-col gap-1">
-            {navLinks.map(({ href, label }) => (
+            {navLinkKeys.map(({ path, labelKey }) => (
               <Link
-                key={`${href}-${label}`}
-                href={href}
+                key={labelKey}
+                href={path ? `${localePrefix}/${path}` : localePrefix}
                 className="rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
                 onClick={() => setMenuOpen(false)}
               >
-                {label}
+                {t(labelKey)}
               </Link>
             ))}
             <div className="mt-2 border-t border-gray-100 pt-3">
               {user ? (
                 <Link
-                  href="/account/profile"
+                  href={`/${locale}/account/profile`}
                   className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
                   onClick={() => setMenuOpen(false)}
                 >
                   <ProfileIcon className="h-5 w-5" />
-                  Account
+                  {t("nav.account")}
                 </Link>
               ) : (
                 <>
                   <Link
-                    href="/account/profile"
+                    href={`/${locale}/account/profile`}
                     className="block rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
                     onClick={() => setMenuOpen(false)}
                   >
-                    Log in
+                    {t("nav.logIn")}
                   </Link>
                   <Link
-                    href="/account/profile"
+                    href={`/${locale}/account/profile`}
                     className="mt-1 block rounded-lg border-2 border-black py-3 text-center text-sm font-semibold text-black hover:bg-black hover:text-white"
                     onClick={() => setMenuOpen(false)}
                   >
-                    Sign up
+                    {t("nav.signUp")}
                   </Link>
                 </>
               )}

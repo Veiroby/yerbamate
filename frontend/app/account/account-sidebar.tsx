@@ -5,18 +5,19 @@ import { usePathname } from "next/navigation";
 import { useRef, useEffect } from "react";
 
 export const navItems = [
-  { href: "/account/profile", label: "Account Dashboard" },
-  { href: "/account/information", label: "Account Information" },
-  { href: "/account/addresses", label: "Address Book" },
-  { href: "/account/orders", label: "My Orders" },
-  { href: "/account/wishlist", label: "My Wishlist" },
-  { href: "/account/newsletter", label: "Newsletter Subscriptions" },
+  { path: "account/profile", label: "Account Dashboard" },
+  { path: "account/information", label: "Account Information" },
+  { path: "account/addresses", label: "Address Book" },
+  { path: "account/orders", label: "My Orders" },
+  { path: "account/wishlist", label: "My Wishlist" },
+  { path: "account/newsletter", label: "Newsletter Subscriptions" },
 ];
 
-function isActive(pathname: string, href: string) {
+function isActive(pathname: string, path: string, localePrefix: string) {
+  const fullPath = localePrefix ? `${localePrefix}/${path}` : `/${path}`;
   return (
-    pathname === href ||
-    (href !== "/account/profile" && pathname.startsWith(href))
+    pathname === fullPath ||
+    (path !== "account/profile" && pathname.startsWith(fullPath))
   );
 }
 
@@ -28,6 +29,7 @@ type AccountSidebarProps = {
 export function AccountSidebar({ variant, className = "" }: AccountSidebarProps) {
   const pathname = usePathname();
   const tabsRef = useRef<HTMLDivElement>(null);
+  const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
 
   useEffect(() => {
     if (variant !== "tabs" || !tabsRef.current) return;
@@ -43,11 +45,12 @@ export function AccountSidebar({ variant, className = "" }: AccountSidebarProps)
           className="flex gap-1 overflow-x-auto rounded-2xl border border-gray-200 bg-white p-2 shadow-sm"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
-          {navItems.map(({ href, label }) => {
-            const active = isActive(pathname, href);
+          {navItems.map(({ path, label }) => {
+            const href = localePrefix ? `/${localePrefix}/${path}` : `/${path}`;
+            const active = isActive(pathname, path, localePrefix);
             return (
               <Link
-                key={href}
+                key={path}
                 href={href}
                 data-active={active}
                 className={`shrink-0 rounded-lg px-3 py-2.5 text-sm font-medium transition whitespace-nowrap ${
@@ -76,11 +79,12 @@ export function AccountSidebar({ variant, className = "" }: AccountSidebarProps)
   return (
     <aside className={`hidden w-56 shrink-0 md:block ${className}`.trim()}>
       <nav className="sticky top-6 space-y-0.5 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm">
-        {navItems.map(({ href, label }) => {
-          const active = isActive(pathname, href);
+        {navItems.map(({ path, label }) => {
+          const href = localePrefix ? `/${localePrefix}/${path}` : `/${path}`;
+          const active = isActive(pathname, path, localePrefix);
           return (
             <Link
-              key={href}
+              key={path}
               href={href}
               className={`block rounded-lg px-3 py-2.5 text-sm font-medium transition ${
                 active

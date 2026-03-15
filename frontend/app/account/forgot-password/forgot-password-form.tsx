@@ -1,8 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 export function ForgotPasswordForm() {
+  const pathname = usePathname();
+  const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
+  const profilePath = localePrefix ? `${localePrefix}/account/profile` : "/account/profile";
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -45,7 +49,7 @@ export function ForgotPasswordForm() {
           Didn&apos;t receive the email? Check your spam folder or refresh this page to try again.
         </p>
         <a
-          href="/account/profile"
+          href={profilePath}
           className="block text-center rounded-full border-2 border-black px-4 py-2.5 text-sm font-medium text-black transition hover:bg-gray-50"
         >
           Back to sign in

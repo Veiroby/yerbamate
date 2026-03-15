@@ -2,16 +2,20 @@
 
 import Link from "next/link";
 import { useLocale } from "@/lib/locale-context";
+import { useTranslation } from "@/lib/translation-context";
 import { EU_COUNTRIES, CURRENCIES, CountryCode, CurrencyCode } from "@/lib/locale-data";
+import type { Locale } from "@/lib/locale";
 
-const quickLinks = [
-  { href: "/privacy", label: "Privacy policy" },
-  { href: "/terms", label: "Terms and conditions" },
-  { href: "/shipping-policy", label: "Shipping policy" },
-];
+const quickLinkKeys = [
+  { path: "privacy", labelKey: "footer.privacy" },
+  { path: "terms", labelKey: "footer.terms" },
+  { path: "shipping-policy", labelKey: "footer.shippingPolicy" },
+] as const;
 
-export function SiteFooter() {
+export function SiteFooter({ locale }: { locale: Locale }) {
   const { country, currency, setCountry, setCurrency } = useLocale();
+  const { t } = useTranslation();
+  const localePrefix = `/${locale}`;
 
   return (
     <footer className="border-t border-stone-200 bg-stone-100/50 text-stone-700">
@@ -19,16 +23,16 @@ export function SiteFooter() {
         <div className="grid gap-8 sm:grid-cols-3">
           <div>
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-stone-500">
-              Quick links
+              {t("footer.quickLinks")}
             </h3>
             <ul className="space-y-2">
-              {quickLinks.map(({ href, label }) => (
-                <li key={href}>
+              {quickLinkKeys.map(({ path, labelKey }) => (
+                <li key={labelKey}>
                   <Link
-                    href={href}
+                    href={`${localePrefix}/${path}`}
                     className="text-sm text-stone-700 underline decoration-stone-300 underline-offset-2 transition hover:decoration-teal-500 hover:text-stone-900"
                   >
-                    {label}
+                    {t(labelKey)}
                   </Link>
                 </li>
               ))}
@@ -36,12 +40,12 @@ export function SiteFooter() {
           </div>
           <div>
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-stone-500">
-              Region & Currency
+              {t("footer.regionCurrency")}
             </h3>
             <div className="space-y-3">
               <div>
                 <label htmlFor="footer-country" className="mb-1 block text-xs text-stone-500">
-                  Country
+                  {t("footer.country")}
                 </label>
                 <select
                   id="footer-country"
@@ -58,7 +62,7 @@ export function SiteFooter() {
               </div>
               <div>
                 <label htmlFor="footer-currency" className="mb-1 block text-xs text-stone-500">
-                  Currency
+                  {t("footer.currency")}
                 </label>
                 <select
                   id="footer-currency"
@@ -77,7 +81,7 @@ export function SiteFooter() {
           </div>
           <div className="sm:text-right">
             <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-stone-500">
-              SIA YerbaTea
+              {t("footer.companyName")}
             </h3>
             <p className="text-sm text-stone-600">
               Reg. no. 50203504501
@@ -89,7 +93,7 @@ export function SiteFooter() {
           </div>
         </div>
         <p className="mt-8 border-t border-stone-200 pt-6 text-center text-xs text-stone-500">
-          © {new Date().getFullYear()} YerbaTea. All rights reserved.
+          © {new Date().getFullYear()} YerbaTea. {t("footer.copyright")}
         </p>
       </div>
     </footer>

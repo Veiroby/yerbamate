@@ -3,8 +3,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 import { ProductFavoriteHeart } from "@/app/components/product-favorite-heart";
 import { ProductWishlistHeart } from "@/app/components/product-wishlist-heart";
+import { useTranslation } from "@/lib/translation-context";
+import type { Locale } from "@/lib/locale";
 
 export type CarouselProduct = {
   title: string;
@@ -17,7 +20,8 @@ export type CarouselProduct = {
 };
 
 type Props = {
-  title: string;
+  title?: string;
+  titleKey?: string;
   products: CarouselProduct[];
 };
 
@@ -67,10 +71,15 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
   );
 }
 
-export function ProductCarouselSection({ title, products }: Props) {
+export function ProductCarouselSection({ title, titleKey, products }: Props) {
+  const { t } = useTranslation();
+  const pathname = usePathname();
+  const displayTitle = titleKey ? t(titleKey) : (title ?? "");
+  const locale: Locale = pathname?.startsWith("/en") ? "en" : "lv";
+
   if (products.length === 0) return null;
 
-  const sectionId = title.replace(/\s/g, "-").toLowerCase();
+  const sectionId = displayTitle.replace(/\s/g, "-").toLowerCase();
 
   return (
     <section className="bg-white px-4 py-12 sm:py-16" aria-labelledby={`carousel-${sectionId}`}>
@@ -79,7 +88,7 @@ export function ProductCarouselSection({ title, products }: Props) {
           id={`carousel-${sectionId}`}
           className="mb-8 text-center text-3xl font-bold uppercase tracking-wide text-black sm:text-4xl"
         >
-          {title}
+          {displayTitle}
         </h2>
         <div className="flex gap-6 overflow-x-auto pb-4 scroll-smooth scrollbar-thin sm:gap-8">
           {products.map((p) => (
@@ -88,7 +97,7 @@ export function ProductCarouselSection({ title, products }: Props) {
         </div>
         <div className="mt-10 flex justify-center">
           <Link
-            href="/products"
+            href={`/${locale}/products`}
             className="rounded-full border-2 border-gray-900 px-8 py-3 text-sm font-semibold text-gray-900 transition hover:bg-gray-900 hover:text-white"
           >
             View all

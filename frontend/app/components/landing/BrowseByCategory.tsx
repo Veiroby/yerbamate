@@ -1,13 +1,15 @@
 import Link from "next/link";
+import type { Locale } from "@/lib/locale";
 
 const categories = [
-  { href: "/products?category=yerba-mate", label: "Yerba Mate" },
-  { href: "/products?category=mate-gourds", label: "Mate Gourds" },
-  { href: "/products", label: "Blends" },
-  { href: "/products", label: "Accessories" },
+  { path: "products?category=yerba-mate", label: "Yerba Mate" },
+  { path: "products?category=mate-gourds", label: "Mate Gourds" },
+  { path: "products", label: "Blends" },
+  { path: "products", label: "Accessories" },
 ];
 
-export function BrowseByCategory() {
+export function BrowseByCategory({ locale }: { locale: Locale }) {
+  const prefix = `/${locale}/`;
   return (
     <section className="bg-white px-4 py-12 sm:py-16" aria-labelledby="browse-heading">
       <div className="mx-auto max-w-6xl">
@@ -18,10 +20,10 @@ export function BrowseByCategory() {
           Browse by category
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {categories.map(({ href, label }) => (
+          {categories.map(({ path, label }) => (
             <Link
               key={label}
-              href={href}
+              href={prefix + path}
               className="group relative overflow-hidden rounded-2xl bg-gray-100 aspect-[4/5] flex items-end p-6 transition hover:bg-gray-200"
             >
               <span className="text-lg font-semibold text-gray-900 group-hover:underline">

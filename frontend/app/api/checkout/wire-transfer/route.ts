@@ -61,6 +61,9 @@ export async function POST(request: Request) {
   const vatNumber = formData.get("vatNumber")?.toString() || null;
   const phone = formData.get("phone")?.toString() || null;
   const discountCodeInput = formData.get("discountCode")?.toString() || null;
+  const localeRaw = formData.get("locale")?.toString();
+  const locale = localeRaw === "lv" || localeRaw === "en" ? localeRaw : "";
+  const pathPrefix = locale ? `/${locale}` : "";
 
   if (customerType !== "BUSINESS") {
     return NextResponse.json(
@@ -302,6 +305,6 @@ export async function POST(request: Request) {
 
   await prisma.cart.delete({ where: { id: cart.id } });
 
-  const redirectUrl = `${getSiteOrigin(request)}/checkout/wire-transfer-success?orderNumber=${encodeURIComponent(order.orderNumber)}`;
+  const redirectUrl = `${getSiteOrigin(request)}${pathPrefix}/checkout/wire-transfer-success?orderNumber=${encodeURIComponent(order.orderNumber)}`;
   return NextResponse.redirect(redirectUrl, { status: 303 });
 }

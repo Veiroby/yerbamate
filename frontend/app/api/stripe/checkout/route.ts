@@ -76,6 +76,9 @@ export async function POST(request: Request) {
   const vatNumber = formData.get("vatNumber")?.toString() || null;
   const phone = formData.get("phone")?.toString() || null;
   const discountCodeInput = formData.get("discountCode")?.toString() || null;
+  const localeRaw = formData.get("locale")?.toString();
+  const locale = localeRaw === "lv" || localeRaw === "en" ? localeRaw : "";
+  const pathPrefix = locale ? `/${locale}` : "";
 
   const isDpdParcelMachine = shippingOptionId === DPD_PARCEL_MACHINE_METHOD_ID;
 
@@ -318,8 +321,8 @@ export async function POST(request: Request) {
     metadata: {
       orderId: order.id,
     },
-    success_url: `${getSiteOrigin(request)}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${getSiteOrigin(request)}/cart`,
+    success_url: `${getSiteOrigin(request)}${pathPrefix}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${getSiteOrigin(request)}${pathPrefix}/cart`,
   });
 
   if (!session.url) {

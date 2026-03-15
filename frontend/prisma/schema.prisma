@@ -453,3 +453,14 @@ model SiteSettings {
   homePromoProductIds          String[]  @default([])
   updatedAt                    DateTime @updatedAt
 }
+
+/// Admin-editable UI translation overrides. Key + locale unique; defaults from locales/*.json.
+model Translation {
+  id     String @id @default(cuid())
+  key    String
+  locale String
+  value  String @db.Text
+
+  @@unique([key, locale])
+  @@index([locale])
+}

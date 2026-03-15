@@ -9,9 +9,11 @@ type Props = {
   subtotal: number;
   discountCode?: string | null;
   maksekeskusAvailable?: boolean;
+  /** When set (e.g. "lv" | "en"), success/cancel redirects use /[locale]/checkout/... */
+  locale?: string;
 };
 
-export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvailable }: Props) {
+export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvailable, locale }: Props) {
   const [customerType, setCustomerType] = useState<"INDIVIDUAL" | "BUSINESS">(
     "INDIVIDUAL",
   );
@@ -118,6 +120,9 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
     >
       {discountCode && (
         <input type="hidden" name="discountCode" value={discountCode} />
+      )}
+      {locale && (
+        <input type="hidden" name="locale" value={locale} />
       )}
       {Object.keys(errors).length > 0 && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">

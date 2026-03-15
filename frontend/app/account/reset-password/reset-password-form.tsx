@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 
 type Props = {
   token: string;
@@ -9,6 +9,9 @@ type Props = {
 
 export function ResetPasswordForm({ token }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
+  const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
+  const profilePath = localePrefix ? `${localePrefix}/account/profile` : "/account/profile";
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -22,7 +25,7 @@ export function ResetPasswordForm({ token }: Props) {
       return () => clearTimeout(timer);
     }
     if (success && countdown === 0) {
-      router.push("/account/profile");
+      router.push(profilePath);
     }
   }, [success, countdown, router]);
 
@@ -64,7 +67,7 @@ export function ResetPasswordForm({ token }: Props) {
           password_needs_number: "Password must contain a number.",
         };
         setError(errorMessages[errorParam] || "Something went wrong. Please try again.");
-      } else if (statusParam === "password_reset" || url.pathname.includes("/account/profile")) {
+      } else if (statusParam === "password_reset" || url.pathname.includes("account/profile")) {
         setSuccess(true);
       } else {
         setSuccess(true);
@@ -86,7 +89,7 @@ export function ResetPasswordForm({ token }: Props) {
           </p>
         </div>
         <a
-          href="/account/profile"
+          href={profilePath}
           className="block text-center rounded-full bg-black px-4 py-3 text-sm font-medium text-white transition hover:bg-gray-800"
         >
           Sign in now
