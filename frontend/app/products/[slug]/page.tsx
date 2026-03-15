@@ -6,6 +6,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { SiteHeader } from "@/app/components/site-header";
 import { SiteFooter } from "@/app/components/site-footer";
 import { AddToCartForm } from "./add-to-cart-form";
+import { ProductReviewsSection } from "./product-reviews-section";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const slug = decodeURIComponent(rawSlug).trim();
   const user = await getCurrentUser();
 
-  const [product, bundleOffers] = await Promise.all([
+  const [product, bundleOffers, reviews] = await Promise.all([
     prisma.product.findUnique({
       where: { slug },
       include: {
@@ -32,6 +33,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
         OR: [{ productId: null }, { product: { slug } }],
       },
       orderBy: { discountPercent: "desc" },
+    }),
+    prisma.review.findMany({
+      where: { product: { slug }, status: "APPROVED" },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        authorName: true,
+        rating: true,
+        title: true,
+        body: true,
+        createdAt: true,
+      },
     }),
   ]);
 
@@ -58,6 +71,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const productBundles = bundleOffers.filter(
     (b) => b.productId === product.id || b.productId === null,
   );
+
+  const reviewList = reviews.map((r) => ({
+    id: r.id,
+    authorName: r.authorName ?? "Anonymous",
+    rating: r.rating,
+    title: r.title,
+    body: r.body,
+    createdAt: r.createdAt.toISOString(),
+  }));
+  const reviewAverage =
+    reviewList.length > 0
+      ? Math.round((reviewList.reduce((s, r) => s + r.rating, 0) / reviewList.length) * 10) / 10
+      : null;
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
@@ -185,7 +211,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
         </div>
 
-        {/* Product details section – Figma tabs style */}
+        {/* Product details section */}
         <section className="mt-12 border-t border-gray-200 pt-10">
           <h2 className="text-lg font-bold uppercase tracking-wide text-black">Product details</h2>
           <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-6">
@@ -194,6 +220,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </p>
           </div>
         </section>
+
+        <ProductReviewsSection
+          productSlug={slug}
+          productName={product.name}
+          initialReviews={reviewList}
+          initialAverage={reviewAverage}
+          initialCount={reviewList.length}
+          defaultAuthorEmail={user?.email}
+          defaultAuthorName={user?.name}
+        />
       </main>
       <SiteFooter />
     </div>

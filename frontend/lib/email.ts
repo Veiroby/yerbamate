@@ -361,4 +361,71 @@ function formatMoney(value: number, currency: string): string {
   }).format(value);
 }
 
+/** Options for the "leave a review" email sent 4 days after order */
+export async function sendReviewRequestEmail(options: {
+  email: string;
+  customerName?: string | null;
+  productLinks: { name: string; url: string }[];
+  siteOrigin?: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  if (!isEmailConfigured()) {
+    return { ok: false, error: "Email not configured" };
+  }
+  if (options.productLinks.length === 0) {
+    return { ok: false, error: "No products to review" };
+  }
+
+  const siteOrigin =
+    options.siteOrigin ??
+    process.env.NEXT_PUBLIC_APP_ORIGIN ??
+    "http://localhost:3000";
+
+  const html = renderReviewRequestHtml({
+    customerName: options.customerName,
+    productLinks: options.productLinks.map((p) => ({
+      name: p.name,
+      url: p.url.startsWith("http") ? p.url : `${siteOrigin}${p.url.startsWith("/") ? "" : "/"}${p.url}`,
+    })),
+    siteOrigin,
+  });
+
+  return sendEmail({
+    to: options.email,
+    subject: `How was your order? Leave a review (1–5 stars)`,
+    html,
+  });
+}
+
+function renderReviewRequestHtml(options: {
+  customerName?: string | null;
+  productLinks: { name: string; url: string }[];
+  siteOrigin: string;
+}): string {
+  const greeting = options.customerName
+    ? `Hi ${escapeHtml(options.customerName)},`
+    : "Hi,";
+  const productList = options.productLinks
+    .map(
+      (p) =>
+        `<li style="margin:6px 0"><a href="${escapeHtml(p.url)}" style="color:#059669;text-decoration:none">${escapeHtml(p.name)}</a> – leave a review (1–5 stars)</li>`,
+    )
+    .join("");
+
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Leave a review</title></head>
+<body style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#18181b">
+  <h1 style="font-size:1.25rem;margin:0 0 8px">How was your order?</h1>
+  <p style="margin:0 0 16px;line-height:1.6">${greeting}</p>
+  <p style="margin:0 0 16px;line-height:1.6">You placed an order with us a few days ago. We’d love to hear what you thought – leave a review and choose a star rating (1 to 5) for the products you received.</p>
+  <ul style="margin:0 0 24px;padding-left:20px;line-height:1.6">
+    ${productList}
+  </ul>
+  <p style="margin:0 0 16px;line-height:1.6">Thank you for shopping with us!</p>
+  <p style="color:#71717a;font-size:0.875rem"><a href="${escapeHtml(options.siteOrigin)}" style="color:#059669">Back to store</a></p>
+</body>
+</html>`;
+}
+
 export { SITE_NAME, FROM };
