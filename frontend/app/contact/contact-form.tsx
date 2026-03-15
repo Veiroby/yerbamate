@@ -11,10 +11,12 @@ export function ContactForm() {
   const validate = (form: HTMLFormElement): boolean => {
     const name = (form.elements.namedItem("name") as HTMLInputElement)?.value?.trim() ?? "";
     const email = (form.elements.namedItem("email") as HTMLInputElement)?.value?.trim() ?? "";
+    const message = (form.elements.namedItem("message") as HTMLTextAreaElement)?.value?.trim() ?? "";
     const newErrors: Record<string, string> = {};
     if (!name) newErrors.name = "Name is required.";
     if (!email) newErrors.email = "Email is required.";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = "Please enter a valid email.";
+    if (!message) newErrors.message = "Message is required.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -27,6 +29,7 @@ export function ContactForm() {
 
     const name = (form.elements.namedItem("name") as HTMLInputElement).value.trim();
     const email = (form.elements.namedItem("email") as HTMLInputElement).value.trim();
+    const message = (form.elements.namedItem("message") as HTMLTextAreaElement).value.trim();
     const orderNumber = (form.elements.namedItem("orderNumber") as HTMLInputElement).value.trim() || undefined;
 
     setIsSubmitting(true);
@@ -34,7 +37,7 @@ export function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, orderNumber }),
+        body: JSON.stringify({ name, email, message, orderNumber }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
@@ -117,6 +120,20 @@ export function ContactForm() {
           className={inputClass("orderNumber")}
           placeholder="e.g. ORD-12345"
         />
+      </div>
+      <div>
+        <label htmlFor="contact-message" className="mb-1.5 block text-sm font-medium text-neutral-700">
+          Message <span className="text-red-500">*</span>
+        </label>
+        <textarea
+          id="contact-message"
+          name="message"
+          required
+          rows={5}
+          className={`${inputClass("message")} resize-y min-h-[120px]`}
+          placeholder="Your message…"
+        />
+        {errors.message && <p className="mt-1 text-xs text-red-600">{errors.message}</p>}
       </div>
       <button
         type="submit"

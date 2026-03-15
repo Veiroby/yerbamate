@@ -23,7 +23,7 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: { name?: string; email?: string; orderNumber?: string };
+  let body: { name?: string; email?: string; message?: string; orderNumber?: string };
   try {
     body = await request.json();
   } catch {
@@ -35,6 +35,7 @@ export async function POST(request: Request) {
 
   const name = typeof body.name === "string" ? body.name.trim() : "";
   const email = typeof body.email === "string" ? body.email.trim() : "";
+  const message = typeof body.message === "string" ? body.message.trim() : "";
   const orderNumber =
     typeof body.orderNumber === "string" ? body.orderNumber.trim() : undefined;
 
@@ -56,6 +57,12 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+  if (!message) {
+    return NextResponse.json(
+      { error: "Message is required." },
+      { status: 400 }
+    );
+  }
 
   const html = `
 <!DOCTYPE html>
@@ -65,7 +72,9 @@ export async function POST(request: Request) {
   <h1 style="font-size: 1.25rem; margin: 0 0 16px;">New contact form message</h1>
   <p style="margin: 0 0 8px;"><strong>Name:</strong> ${escapeHtml(name)}</p>
   <p style="margin: 0 0 8px;"><strong>Email:</strong> ${escapeHtml(email)}</p>
-  ${orderNumber ? `<p style="margin: 0 0 16px;"><strong>Order number:</strong> ${escapeHtml(orderNumber)}</p>` : ""}
+  ${orderNumber ? `<p style="margin: 0 0 8px;"><strong>Order number:</strong> ${escapeHtml(orderNumber)}</p>` : ""}
+  <p style="margin: 16px 0 8px;"><strong>Message:</strong></p>
+  <p style="margin: 0 0 16px; white-space: pre-wrap; line-height: 1.6;">${escapeHtml(message)}</p>
   <p style="margin: 0; color: #71717a; font-size: 0.875rem;">Reply to this email to respond to the customer.</p>
 </body>
 </html>`;
