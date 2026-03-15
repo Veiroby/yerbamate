@@ -95,7 +95,7 @@ export async function POST(request: Request, { params }: GetParams) {
       productId: product.id,
       userId: user?.id ?? null,
       authorEmail: email,
-      authorName: authorName || user?.name ?? null,
+      authorName: (authorName || user?.name) ?? null,
       rating,
       title: title || null,
       body: textBody || null,
