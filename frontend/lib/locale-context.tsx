@@ -23,10 +23,27 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const storedCountry = localStorage.getItem(STORAGE_KEY_COUNTRY) as CountryCode | null;
     const storedCurrency = localStorage.getItem(STORAGE_KEY_CURRENCY) as CurrencyCode | null;
-    
+
     if (storedCountry) {
       setCountryState(storedCountry);
+    } else if (typeof window !== "undefined") {
+      // Best-effort browser-based country detection from locale, e.g. \"en-GB\" -> \"GB\"
+      const locales = (navigator.languages && navigator.languages.length > 0)
+        ? navigator.languages
+        : [navigator.language];
+      const fromLocale = locales
+        .map((loc) => loc.split(\"-\").pop()?.toUpperCase())
+        .find((code): code is string => !!code) as string | undefined;
+
+      if (fromLocale) {
+        // Only apply if it matches a known CountryCode
+        if ((EU_COUNTRIES as readonly { value: string; label: string }[]).some((c) => c.value === fromLocale)) {
+          setCountryState(fromLocale as CountryCode);
+          localStorage.setItem(STORAGE_KEY_COUNTRY, fromLocale);
+        }
+      }
     }
+
     if (storedCurrency) {
       setCurrencyState(storedCurrency);
     }
