@@ -310,44 +310,60 @@ export default async function AdminProductsPage() {
         <h2 className="mb-3 text-sm font-semibold text-zinc-900">
           Products
         </h2>
-        <div className="space-y-2 text-sm">
+        <p className="mb-4 text-xs text-zinc-500">
+          Quickly edit stock, pricing, and meta data here. Use{" "}
+          <span className="font-semibold">Edit details</span> to change full product information.
+        </p>
+        <div className="space-y-3 text-sm">
           {products.map((product) => (
             <div
               key={product.id}
-              className="flex items-center justify-between gap-4 rounded-xl border border-zinc-200 px-3 py-2"
+              className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4"
             >
-              <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-start gap-3">
                 {product.images[0] ? (
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-zinc-100">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-xl bg-zinc-100">
                     <Image
                       src={product.images[0].url}
                       alt={product.images[0].altText ?? product.name}
                       fill
                       className="object-cover"
-                      sizes="48px"
+                      sizes="56px"
                     />
                   </div>
                 ) : (
-                  <div className="h-12 w-12 shrink-0 rounded-lg bg-zinc-100" />
+                  <div className="h-14 w-14 shrink-0 rounded-xl bg-zinc-100" />
                 )}
-                <div className="min-w-0">
-                  <p className="font-medium text-zinc-900">{product.name}</p>
-                  <p className="text-xs text-zinc-500">
-                    /products/{product.slug} – {product.currency}{" "}
-                    {(product.price as unknown as number).toFixed(2)}
-                    {product.weight && (
-                      <> · {product.weight}</>
-                    )}
-                    {product.category && (
-                      <> · {product.category.name}</>
-                    )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-zinc-900">
+                        {product.name}
+                      </p>
+                      <p className="truncate text-xs text-zinc-500">
+                        /products/{product.slug}
+                      </p>
+                    </div>
+                    <p className="text-xs font-medium text-zinc-700">
+                      {product.currency}{" "}
+                      {(product.price as unknown as number).toFixed(2)}
+                    </p>
+                  </div>
+                  <p className="mt-1 line-clamp-1 text-xs text-zinc-500">
+                    {product.weight && <>Weight: {product.weight} · </>}
+                    {product.category && <>Category: {product.category.name} · </>}
+                    Stock:{" "}
+                    {product.stockLocation === "warehouse"
+                      ? "Warehouse (5–7 days)"
+                      : `${totalStock(product.variants)} in stock`}
                     {product.images.length > 0 && (
                       <> · {product.images.length} image(s)</>
                     )}
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 shrink-0 flex-wrap">
+
+              <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
                 <form
                   action={async (formData) => {
                     "use server";
@@ -367,28 +383,34 @@ export default async function AdminProductsPage() {
                     revalidatePath("/admin/inventory");
                     redirect("/admin/products?saved=1");
                   }}
-                  className="flex items-center gap-1"
+                  className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2"
                 >
-                  <label className="text-xs text-zinc-500">Qty</label>
-                  <input
-                    type="hidden"
-                    name="stockLocation"
-                    value={product.stockLocation ?? "instock"}
-                  />
-                  <input
-                    type="number"
-                    name="quantity"
-                    min={0}
-                    defaultValue={totalStock(product.variants)}
-                    className="w-16 rounded-lg border border-zinc-300 px-2 py-1 text-xs"
-                  />
+                  <div className="space-y-1 text-xs">
+                    <p className="font-medium text-zinc-700">Stock</p>
+                    <div className="flex items-center gap-2">
+                      <label className="text-[11px] text-zinc-500">Qty</label>
+                      <input
+                        type="hidden"
+                        name="stockLocation"
+                        value={product.stockLocation ?? "instock"}
+                      />
+                      <input
+                        type="number"
+                        name="quantity"
+                        min={0}
+                        defaultValue={totalStock(product.variants)}
+                        className="w-20 rounded-lg border border-zinc-300 px-2 py-1 text-xs"
+                      />
+                    </div>
+                  </div>
                   <button
                     type="submit"
-                    className="text-xs font-medium text-emerald-700 hover:text-emerald-800"
+                    className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
                   >
                     Save
                   </button>
                 </form>
+
                 <form
                   action={async (formData) => {
                     "use server";
@@ -401,62 +423,69 @@ export default async function AdminProductsPage() {
                     revalidatePath("/admin/inventory");
                     redirect("/admin/products?saved=1");
                   }}
-                  className="flex items-center gap-1"
+                  className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2"
                 >
-                  <label className="text-xs text-zinc-500">Location</label>
-                  <select
-                    name="stockLocation"
-                    defaultValue={product.stockLocation ?? "instock"}
-                    className="rounded-lg border border-zinc-300 px-2 py-1 text-xs"
-                  >
-                    <option value="instock">In stock</option>
-                    <option value="warehouse">Warehouse</option>
-                  </select>
+                  <div className="space-y-1 text-xs">
+                    <p className="font-medium text-zinc-700">Location</p>
+                    <select
+                      name="stockLocation"
+                      defaultValue={product.stockLocation ?? "instock"}
+                      className="w-full rounded-lg border border-zinc-300 px-2 py-1 text-xs"
+                    >
+                      <option value="instock">In stock</option>
+                      <option value="warehouse">Warehouse</option>
+                    </select>
+                  </div>
                   <button
                     type="submit"
-                    className="text-xs font-medium text-emerald-700 hover:text-emerald-800"
+                    className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
                   >
                     Save
                   </button>
                 </form>
+
                 {categoryDelegate && (
                   <form
                     action={async (formData) => {
                       "use server";
                       const categoryId =
                         formData.get("categoryId")?.toString().trim() || null;
-                    await prisma.product.update({
-                      where: { id: product.id },
-                      data: {
-                        categoryId: categoryId || undefined,
-                      },
-                    });
-                    revalidatePath("/admin/products");
-                    revalidatePath("/admin/inventory");
-                    redirect("/admin/products?saved=1");
-                  }}
-                    className="flex items-center gap-1"
+                      await prisma.product.update({
+                        where: { id: product.id },
+                        data: {
+                          categoryId: categoryId || undefined,
+                        },
+                      });
+                      revalidatePath("/admin/products");
+                      revalidatePath("/admin/inventory");
+                      redirect("/admin/products?saved=1");
+                    }}
+                    className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2"
                   >
-                    <select
-                      name="categoryId"
-                      defaultValue={product.categoryId ?? ""}
-                      className="rounded-lg border border-zinc-300 px-2 py-1 text-xs"
-                    >
-                      <option value="">No category</option>
-                      {categories.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="space-y-1 text-xs">
+                      <p className="font-medium text-zinc-700">Category</p>
+                      <select
+                        name="categoryId"
+                        defaultValue={product.categoryId ?? ""}
+                        className="w-full rounded-lg border border-zinc-300 px-2 py-1 text-xs"
+                      >
+                        <option value="">No category</option>
+                        {categories.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                     <button
                       type="submit"
-                      className="text-xs font-medium text-emerald-700 hover:text-emerald-800"
+                      className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
                     >
                       Save
                     </button>
                   </form>
                 )}
+
                 <form
                   action={async (formData) => {
                     "use server";
@@ -470,22 +499,26 @@ export default async function AdminProductsPage() {
                     revalidatePath("/admin/inventory");
                     redirect("/admin/products?saved=1");
                   }}
-                  className="flex items-center gap-1"
+                  className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2"
                 >
-                  <input
-                    type="text"
-                    name="barcode"
-                    defaultValue={product.barcode ?? ""}
-                    placeholder="Barcode"
-                    className="w-28 rounded-lg border border-zinc-300 px-2 py-1 text-xs"
-                  />
+                  <div className="space-y-1 text-xs">
+                    <p className="font-medium text-zinc-700">Barcode</p>
+                    <input
+                      type="text"
+                      name="barcode"
+                      defaultValue={product.barcode ?? ""}
+                      placeholder="Barcode"
+                      className="w-full rounded-lg border border-zinc-300 px-2 py-1 text-xs"
+                    />
+                  </div>
                   <button
                     type="submit"
-                    className="text-xs font-medium text-emerald-700 hover:text-emerald-800"
+                    className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
                   >
                     Save
                   </button>
                 </form>
+
                 <form
                   action={async (formData) => {
                     "use server";
@@ -499,22 +532,26 @@ export default async function AdminProductsPage() {
                     revalidatePath("/admin/inventory");
                     redirect("/admin/products?saved=1");
                   }}
-                  className="flex items-center gap-1"
+                  className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2"
                 >
-                  <input
-                    type="text"
-                    name="weight"
-                    defaultValue={product.weight ?? ""}
-                    placeholder="Weight"
-                    className="w-20 rounded-lg border border-zinc-300 px-2 py-1 text-xs"
-                  />
+                  <div className="space-y-1 text-xs">
+                    <p className="font-medium text-zinc-700">Weight</p>
+                    <input
+                      type="text"
+                      name="weight"
+                      defaultValue={product.weight ?? ""}
+                      placeholder="e.g. 500g"
+                      className="w-full rounded-lg border border-zinc-300 px-2 py-1 text-xs"
+                    />
+                  </div>
                   <button
                     type="submit"
-                    className="text-xs font-medium text-emerald-700 hover:text-emerald-800"
+                    className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
                   >
                     Save
                   </button>
                 </form>
+
                 <form
                   action={async (formData) => {
                     "use server";
@@ -530,61 +567,73 @@ export default async function AdminProductsPage() {
                     revalidatePath("/admin/inventory");
                     redirect("/admin/products?saved=1");
                   }}
-                  className="flex items-center gap-1"
+                  className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2"
                 >
-                  <label className="text-xs text-zinc-500">Price</label>
-                  <input
-                    type="number"
-                    name="price"
-                    step="0.01"
-                    min={0}
-                    defaultValue={Number(product.price)}
-                    className="w-20 rounded-lg border border-zinc-300 px-2 py-1 text-xs"
-                  />
+                  <div className="space-y-1 text-xs">
+                    <p className="font-medium text-zinc-700">Price</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-zinc-500">
+                        {product.currency}
+                      </span>
+                      <input
+                        type="number"
+                        name="price"
+                        step="0.01"
+                        min={0}
+                        defaultValue={Number(product.price)}
+                        className="w-24 rounded-lg border border-zinc-300 px-2 py-1 text-xs"
+                      />
+                    </div>
+                  </div>
                   <button
                     type="submit"
-                    className="text-xs font-medium text-emerald-700 hover:text-emerald-800"
+                    className="rounded-full bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
                   >
                     Save
                   </button>
                 </form>
-                <Link
-                  href={`/admin/products/${product.id}/edit`}
-                  className="text-xs font-medium text-zinc-600 hover:text-emerald-700"
-                >
-                  Edit images
-                </Link>
-                <form
-                  action={async (formData) => {
-                    "use server";
-                    const active =
-                      formData.get("active")?.toString() === "on";
-                    await prisma.product.update({
-                      where: { id: product.id },
-                      data: { active },
-                    });
-                    revalidatePath("/admin/products");
-                    revalidatePath("/admin/inventory");
-                    redirect("/admin/products?saved=1");
-                  }}
-                  className="flex items-center gap-2"
-                >
-                  <label className="flex items-center gap-1.5 text-xs text-zinc-600">
-                    <input
-                      type="checkbox"
-                      name="active"
-                      defaultChecked={product.active}
-                      className="h-4 w-4 rounded border-zinc-300"
-                    />
-                    Active
-                  </label>
-                  <button
-                    type="submit"
-                    className="text-xs font-medium text-emerald-700 hover:text-emerald-800"
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-3 text-xs">
+                <div className="flex flex-wrap items-center gap-3">
+                  <form
+                    action={async (formData) => {
+                      "use server";
+                      const active =
+                        formData.get("active")?.toString() === "on";
+                      await prisma.product.update({
+                        where: { id: product.id },
+                        data: { active },
+                      });
+                      revalidatePath("/admin/products");
+                      revalidatePath("/admin/inventory");
+                      redirect("/admin/products?saved=1");
+                    }}
+                    className="flex items-center gap-2"
                   >
-                    Update
-                  </button>
-                </form>
+                    <label className="flex items-center gap-1.5 text-xs text-zinc-600">
+                      <input
+                        type="checkbox"
+                        name="active"
+                        defaultChecked={product.active}
+                        className="h-4 w-4 rounded border-zinc-300"
+                      />
+                      Active
+                    </label>
+                    <button
+                      type="submit"
+                      className="text-xs font-medium text-emerald-700 hover:text-emerald-800"
+                    >
+                      Update
+                    </button>
+                  </form>
+                  <Link
+                    href={`/admin/products/${product.id}/edit`}
+                    className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:border-zinc-400 hover:text-zinc-900"
+                  >
+                    Edit details
+                  </Link>
+                </div>
                 <DeleteProductButton
                   productId={product.id}
                   productName={product.name}
