@@ -93,32 +93,32 @@ export function CheckoutForm({ currency, subtotal, discountCode }: Props) {
   };
 
   const inputClassName = (fieldName: string) =>
-    `w-full rounded-xl border px-3 py-2 text-sm ${
+    `w-full rounded-lg border px-3 py-2.5 text-sm ${
       errors[fieldName]
-        ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-500"
-        : "border-zinc-300 focus:border-emerald-500 focus:ring-emerald-500"
+        ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+        : "border-gray-200 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
     }`;
 
   return (
     <form
       ref={formRef}
       method="post"
-      className="space-y-5 rounded-2xl border bg-white p-5 shadow-sm"
+      className="space-y-6 rounded-2xl bg-white p-5 shadow-sm sm:p-6"
       onSubmit={(e) => e.preventDefault()}
     >
       {discountCode && (
         <input type="hidden" name="discountCode" value={discountCode} />
       )}
       {Object.keys(errors).length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-sm text-red-700">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
           Please fill in all required fields highlighted below.
         </div>
       )}
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-zinc-900">Contact</h2>
+      <section className="space-y-4">
+        <h2 className="text-lg font-bold text-black">Contact</h2>
         <div className="space-y-2">
-          <label className="block text-xs font-medium text-zinc-600">
+          <label className="block text-xs font-medium text-gray-600">
             Email
           </label>
           <input
@@ -132,7 +132,7 @@ export function CheckoutForm({ currency, subtotal, discountCode }: Props) {
           )}
         </div>
         <div className="space-y-2">
-          <label className="block text-xs font-medium text-zinc-600">
+          <label className="block text-xs font-medium text-gray-600">
             Full name
           </label>
           <input
@@ -146,7 +146,7 @@ export function CheckoutForm({ currency, subtotal, discountCode }: Props) {
           )}
         </div>
         <div className="space-y-2">
-          <label className="block text-xs font-medium text-zinc-600">
+          <label className="block text-xs font-medium text-gray-600">
             Phone number
           </label>
           <input
@@ -179,9 +179,12 @@ export function CheckoutForm({ currency, subtotal, discountCode }: Props) {
           type="button"
           onClick={handleStripeSubmit}
           disabled={isSubmitting}
-          className="flex w-full items-center justify-center rounded-full bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-black px-4 py-3.5 text-sm font-medium text-white transition hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? "Processing..." : "Pay securely with Stripe"}
+          {isSubmitting ? "Processing…" : "Pay securely with Stripe"}
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+          </svg>
         </button>
 
         {isBusiness && (
@@ -189,14 +192,14 @@ export function CheckoutForm({ currency, subtotal, discountCode }: Props) {
             type="button"
             onClick={handleWireTransferSubmit}
             disabled={isSubmitting}
-            className="flex w-full items-center justify-center rounded-full border-2 border-emerald-600 bg-white px-4 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex w-full items-center justify-center rounded-full border-2 border-black bg-white px-4 py-3 text-sm font-medium text-black transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "Processing..." : "Pay with Wire Transfer"}
+            {isSubmitting ? "Processing…" : "Pay with Wire Transfer"}
           </button>
         )}
       </div>
 
-      <p className="text-xs text-zinc-500">
+      <p className="text-xs text-gray-500">
         {isBusiness
           ? "Choose Stripe for instant payment, or Wire Transfer to receive an invoice and pay later."
           : "You will be redirected to a secure Stripe Checkout page to complete your payment."}

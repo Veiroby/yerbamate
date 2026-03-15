@@ -22,20 +22,20 @@ export function CheckoutShippingBlock({
   const [country, setCountry] = useState(globalCountry);
 
   const inputClassName = (fieldName: string) =>
-    `w-full rounded-xl border px-3 py-2 text-sm ${
+    `w-full rounded-lg border px-3 py-2.5 text-sm ${
       errors?.[fieldName]
-        ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-red-500"
-        : "border-zinc-300 focus:border-emerald-500 focus:ring-emerald-500"
+        ? "border-red-500 bg-red-50 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+        : "border-gray-200 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
     }`;
 
   return (
     <>
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-zinc-900">
+      <section className="space-y-4">
+        <h2 className="text-lg font-bold text-black">
           Shipping address
         </h2>
         <div className="space-y-2">
-          <label className="block text-xs font-medium text-zinc-600">
+          <label className="block text-xs font-medium text-gray-600">
             Address line 1
           </label>
           <input
@@ -50,18 +50,18 @@ export function CheckoutShippingBlock({
           )}
         </div>
         <div className="space-y-2">
-          <label className="block text-xs font-medium text-zinc-600">
+          <label className="block text-xs font-medium text-gray-600">
             Address line 2 (optional)
           </label>
           <input
             type="text"
             name="addressLine2"
-            className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
-            <label className="block text-xs font-medium text-zinc-600">
+            <label className="block text-xs font-medium text-gray-600">
               City
             </label>
             <input
@@ -75,7 +75,7 @@ export function CheckoutShippingBlock({
             )}
           </div>
           <div className="space-y-2">
-            <label className="block text-xs font-medium text-zinc-600">
+            <label className="block text-xs font-medium text-gray-600">
               Postal code
             </label>
             <input
@@ -90,14 +90,14 @@ export function CheckoutShippingBlock({
           </div>
         </div>
         <div className="space-y-2">
-          <label className="block text-xs font-medium text-zinc-600">
+          <label className="block text-xs font-medium text-gray-600">
             Country
           </label>
           <select
             name="country"
             value={country}
             onChange={(e) => setCountry(e.target.value as typeof country)}
-            className="w-full rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           >
             {EU_COUNTRIES.map((c) => (
               <option key={c.value} value={c.value}>

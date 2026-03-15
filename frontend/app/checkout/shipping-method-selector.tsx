@@ -90,8 +90,8 @@ function ParcelPicker({
     : "";
 
   return (
-    <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-3">
-      <label className="block text-xs font-medium text-zinc-700">
+    <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-3">
+      <label className="block text-xs font-medium text-gray-700">
         Choose parcel machine
       </label>
       {pickupLoading ? (
@@ -120,7 +120,7 @@ function ParcelPicker({
               setOpen(true);
               setFilter("");
             }}
-            className="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           />
           <input type="hidden" name="dpdPickupPointId" value={selectedPickupId} />
           <input
@@ -134,7 +134,7 @@ function ParcelPicker({
                 ref={listRef}
                 id="parcel-list"
                 role="listbox"
-                className="rounded-lg border border-zinc-200 bg-white shadow-lg"
+                className="rounded-lg border border-gray-200 bg-white shadow-lg"
                 style={{
                   position: "fixed",
                   top: dropdownRect.top,
@@ -148,7 +148,7 @@ function ParcelPicker({
                 }}
               >
                 {filtered.length === 0 ? (
-                  <div className="px-3 py-4 text-center text-sm text-zinc-500">
+                  <div className="px-3 py-4 text-center text-sm text-gray-500">
                     No matching parcel machines
                   </div>
                 ) : (
@@ -161,8 +161,8 @@ function ParcelPicker({
                         type="button"
                         role="option"
                         aria-selected={isSelected}
-                        className={`block w-full px-3 py-2.5 text-left text-sm hover:bg-emerald-50 ${
-                          isSelected ? "bg-emerald-50 font-medium" : ""
+                        className={`block w-full px-3 py-2.5 text-left text-sm hover:bg-gray-50 ${
+                          isSelected ? "bg-gray-100 font-medium" : ""
                         }`}
                         onClick={() => {
                           onSelect(point.id);
@@ -273,21 +273,21 @@ export function ShippingMethodSelector({
 
   if (loading) {
     return (
-      <div className="text-sm text-zinc-500">Loading shipping options…</div>
+      <div className="text-sm text-gray-500">Loading shipping options…</div>
     );
   }
 
   return (
-    <section className="space-y-3">
-      <h2 className="text-sm font-semibold text-zinc-900">Shipping method</h2>
+    <section className="space-y-4">
+      <h2 className="text-lg font-bold text-black">Shipping method</h2>
       <div className="space-y-2">
         {methods.map((method) => (
           <label
             key={method.id}
-            className={`flex cursor-pointer items-center justify-between rounded-2xl border px-3 py-2 text-sm transition ${
+            className={`flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2.5 text-sm transition ${
               selectedId === method.id
-                ? "border-emerald-200 bg-emerald-50"
-                : "border-zinc-200 hover:border-zinc-300"
+                ? "border-black bg-gray-50"
+                : "border-gray-200 hover:border-gray-300"
             }`}
           >
             <span className="flex items-center gap-2">
@@ -297,7 +297,7 @@ export function ShippingMethodSelector({
                 value={method.id}
                 checked={selectedId === method.id}
                 onChange={() => handleMethodChange(method.id)}
-                className="text-emerald-600"
+                className="border-gray-300 text-black focus:ring-black"
               />
               {method.id === DPD_PARCEL_MACHINE_METHOD_ID && (
                 <DpdLogo size="sm" className="shrink-0" />
@@ -305,13 +305,13 @@ export function ShippingMethodSelector({
               <span>
                 {method.name}
                 {method.estimatedDays ? (
-                  <span className="ml-1 text-xs text-zinc-500">
+                  <span className="ml-1 text-xs text-gray-500">
                     ({method.estimatedDays} business days)
                   </span>
                 ) : null}
               </span>
             </span>
-            <span className="font-medium">
+            <span className="font-medium text-black">
               {currency} {method.amount.toFixed(2)}
             </span>
           </label>
