@@ -35,18 +35,18 @@ export function ForgotPasswordForm() {
   if (submitted) {
     return (
       <div className="space-y-4">
-        <div className="rounded-xl bg-teal-50 px-4 py-3 text-sm text-teal-800">
+        <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
           <p className="font-medium">Check your email</p>
-          <p className="mt-1 text-teal-700">
+          <p className="mt-1 text-green-700">
             If an account exists with that email, we&apos;ve sent you a link to reset your password.
           </p>
         </div>
-        <p className="text-sm text-stone-600">
+        <p className="text-sm text-gray-600">
           Didn&apos;t receive the email? Check your spam folder or refresh this page to try again.
         </p>
         <a
           href="/account/profile"
-          className="block text-center rounded-2xl border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 transition hover:border-teal-500 hover:text-teal-700"
+          className="block text-center rounded-full border-2 border-black px-4 py-2.5 text-sm font-medium text-black transition hover:bg-gray-50"
         >
           Back to sign in
         </a>
@@ -56,8 +56,8 @@ export function ForgotPasswordForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-1">
-        <label htmlFor="email" className="block text-xs font-medium text-stone-600">
+      <div className="space-y-2">
+        <label htmlFor="email" className="block text-xs font-medium text-gray-600">
           Email
         </label>
         <input
@@ -68,13 +68,13 @@ export function ForgotPasswordForm() {
           autoComplete="email"
           placeholder="example@example.com"
           disabled={isSubmitting}
-          className="w-full rounded-xl border border-stone-300 px-3 py-2 text-sm transition outline-none placeholder:text-stone-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-100 disabled:bg-stone-100 disabled:cursor-not-allowed"
+          className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none transition placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
         />
       </div>
       <button
         type="submit"
         disabled={isSubmitting}
-        className="flex w-full items-center justify-center rounded-2xl bg-[#344e41] px-4 py-2 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b] disabled:bg-[#4e6a5a] disabled:cursor-not-allowed"
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-black px-4 py-3 text-sm font-medium text-white transition hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSubmitting ? (
           <>

@@ -18,7 +18,7 @@ function PasswordField(props: {
 
   return (
     <div className="space-y-1">
-      <label htmlFor={id} className="block text-xs font-medium text-stone-600">
+      <label htmlFor={id} className="block text-xs font-medium text-gray-600">
         {label}
       </label>
       <div className="relative">
@@ -27,13 +27,13 @@ function PasswordField(props: {
           type={visible ? "text" : "password"}
           name={name}
           required
-          className="w-full rounded-xl border border-stone-300 px-3 py-2 pr-11 text-sm transition outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+          className="w-full rounded-lg border border-gray-200 px-3 py-2.5 pr-11 text-sm outline-none transition placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black"
         />
         <button
           type="button"
           onClick={onToggle}
           aria-label={visible ? "Hide password" : "Show password"}
-          className="absolute inset-y-0 right-0 inline-flex items-center justify-center px-3 text-stone-500 transition hover:text-stone-700"
+          className="absolute inset-y-0 right-0 inline-flex items-center justify-center px-3 text-gray-500 transition hover:text-gray-700"
         >
           {visible ? (
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -93,7 +93,7 @@ function EmailField(props: {
 
   return (
     <div className="space-y-1">
-      <label htmlFor={id} className="block text-xs font-medium text-stone-600">
+      <label htmlFor={id} className="block text-xs font-medium text-gray-600">
         {label}
       </label>
       <input
@@ -107,13 +107,11 @@ function EmailField(props: {
         aria-describedby={helperId}
         onFocus={onFocus}
         onBlur={onBlur}
-        className="w-full rounded-xl border border-stone-300 px-3 py-2 text-sm transition outline-none placeholder:text-stone-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+        className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none transition placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black"
       />
       <p
         id={helperId}
-        className={`text-xs transition ${
-          focused ? "text-teal-700" : "text-stone-500"
-        }`}
+        className={`text-xs transition ${focused ? "text-gray-900" : "text-gray-500"}`}
       >
         Use a valid email format, for example{" "}
         <span className="font-medium">example@example.com</span>
@@ -130,9 +128,9 @@ export function AuthForms({ error }: Props) {
   >(null);
 
   return (
-    <div className="space-y-6 rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+    <div className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
       {error && (
-        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800">
           {error === "denied" && "Sign-in was cancelled."}
           {error === "oauth" &&
             "Something went wrong with sign-in. Please try again."}
@@ -165,11 +163,11 @@ export function AuthForms({ error }: Props) {
       )}
 
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-stone-900">Sign in with</h2>
+        <h2 className="text-lg font-bold text-black">Sign in with</h2>
         <div className="grid gap-2">
           <a
             href="/api/auth/google"
-            className="flex items-center justify-center gap-3 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm font-medium text-stone-800 transition hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-teal-100"
+            className="flex items-center justify-center gap-3 rounded-full border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2"
           >
             <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden>
               <path
@@ -196,18 +194,18 @@ export function AuthForms({ error }: Props) {
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-stone-200" />
+          <span className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-2 text-stone-500">or</span>
+          <span className="bg-white px-2 text-gray-500">or</span>
         </div>
       </div>
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-stone-900">
+      <section className="space-y-4">
+        <h2 className="text-lg font-bold text-black">
           Existing customers
         </h2>
-        <form action="/api/auth/login" method="post" className="space-y-3">
+        <form action="/api/auth/login" method="post" className="space-y-4">
           <EmailField
             id="login-email"
             helperId="login-email-helper"
@@ -227,31 +225,31 @@ export function AuthForms({ error }: Props) {
           <div className="flex items-center justify-end">
             <Link
               href="/account/forgot-password"
-              className="text-xs text-teal-700 hover:text-teal-800 hover:underline"
+              className="text-xs font-medium text-black underline hover:no-underline"
             >
               Forgot password?
             </Link>
           </div>
           <button
             type="submit"
-            className="flex w-full items-center justify-center rounded-2xl bg-[#344e41] px-4 py-2 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b]"
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-black px-4 py-3 text-sm font-medium text-white transition hover:bg-gray-800"
           >
             Sign in
           </button>
         </form>
       </section>
 
-      <section className="space-y-3 border-t border-stone-200 pt-4">
-        <h2 className="text-sm font-semibold text-stone-900">New customers</h2>
-        <p className="text-xs text-stone-500">
+      <section className="space-y-4 border-t border-gray-200 pt-6">
+        <h2 className="text-lg font-bold text-black">New customers</h2>
+        <p className="text-sm text-gray-500">
           Create an account to save your details and view your order history.
           Guest orders with the same email will be linked automatically.
         </p>
-        <form action="/api/auth/register" method="post" className="space-y-3">
-          <div className="space-y-1">
+        <form action="/api/auth/register" method="post" className="space-y-4">
+          <div className="space-y-2">
             <label
               htmlFor="register-name"
-              className="block text-xs font-medium text-stone-600"
+              className="block text-xs font-medium text-gray-600"
             >
               Name
             </label>
@@ -260,7 +258,7 @@ export function AuthForms({ error }: Props) {
               type="text"
               name="name"
               placeholder="Your full name"
-              className="w-full rounded-xl border border-stone-300 px-3 py-2 text-sm transition outline-none placeholder:text-stone-400 focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none transition placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black"
             />
           </div>
           <EmailField
@@ -281,18 +279,18 @@ export function AuthForms({ error }: Props) {
           />
           <button
             type="submit"
-            className="flex w-full items-center justify-center rounded-2xl bg-stone-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-stone-800"
+            className="flex w-full items-center justify-center rounded-full border-2 border-black bg-white px-4 py-3 text-sm font-medium text-black transition hover:bg-gray-50"
           >
             Create account
           </button>
         </form>
       </section>
 
-      <p className="text-xs text-stone-500">
+      <p className="text-sm text-gray-500">
         You can always checkout as a guest from the{" "}
         <Link
           href="/checkout"
-          className="text-teal-700 underline hover:text-teal-800"
+          className="font-medium text-black underline hover:no-underline"
         >
           checkout page
         </Link>

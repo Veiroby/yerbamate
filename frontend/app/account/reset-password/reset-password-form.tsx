@@ -79,15 +79,15 @@ export function ResetPasswordForm({ token }: Props) {
   if (success) {
     return (
       <div className="space-y-4">
-        <div className="rounded-xl bg-teal-50 px-4 py-3 text-sm text-teal-800">
+        <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
           <p className="font-medium">Password reset successful!</p>
-          <p className="mt-1 text-teal-700">
+          <p className="mt-1 text-green-700">
             Your password has been changed. Redirecting to sign in page in {countdown} seconds...
           </p>
         </div>
         <a
           href="/account/profile"
-          className="block text-center rounded-2xl bg-[#344e41] px-4 py-2 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b]"
+          className="block text-center rounded-full bg-black px-4 py-3 text-sm font-medium text-white transition hover:bg-gray-800"
         >
           Sign in now
         </a>
@@ -100,13 +100,13 @@ export function ResetPasswordForm({ token }: Props) {
       <input type="hidden" name="token" value={token} />
 
       {error && (
-        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+        <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800">
           {error}
         </p>
       )}
 
-      <div className="space-y-1">
-        <label htmlFor="password" className="block text-xs font-medium text-stone-600">
+      <div className="space-y-2">
+        <label htmlFor="password" className="block text-xs font-medium text-gray-600">
           New password
         </label>
         <div className="relative">
@@ -117,13 +117,13 @@ export function ResetPasswordForm({ token }: Props) {
             required
             minLength={8}
             disabled={isSubmitting}
-            className="w-full rounded-xl border border-stone-300 px-3 py-2 pr-11 text-sm transition outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 disabled:bg-stone-100 disabled:cursor-not-allowed"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 pr-11 text-sm outline-none transition focus:border-black focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
           />
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
             aria-label={showPassword ? "Hide password" : "Show password"}
-            className="absolute inset-y-0 right-0 inline-flex items-center justify-center px-3 text-stone-500 transition hover:text-stone-700"
+            className="absolute inset-y-0 right-0 inline-flex items-center justify-center px-3 text-gray-500 transition hover:text-gray-700"
           >
             {showPassword ? (
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -141,8 +141,8 @@ export function ResetPasswordForm({ token }: Props) {
         </div>
       </div>
 
-      <div className="space-y-1">
-        <label htmlFor="confirm-password" className="block text-xs font-medium text-stone-600">
+      <div className="space-y-2">
+        <label htmlFor="confirm-password" className="block text-xs font-medium text-gray-600">
           Confirm new password
         </label>
         <div className="relative">
@@ -152,13 +152,13 @@ export function ResetPasswordForm({ token }: Props) {
             required
             minLength={8}
             disabled={isSubmitting}
-            className="w-full rounded-xl border border-stone-300 px-3 py-2 pr-11 text-sm transition outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-100 disabled:bg-stone-100 disabled:cursor-not-allowed"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2.5 pr-11 text-sm outline-none transition focus:border-black focus:ring-1 focus:ring-black disabled:bg-gray-100 disabled:cursor-not-allowed"
           />
           <button
             type="button"
             onClick={() => setShowConfirmPassword((v) => !v)}
             aria-label={showConfirmPassword ? "Hide password" : "Show password"}
-            className="absolute inset-y-0 right-0 inline-flex items-center justify-center px-3 text-stone-500 transition hover:text-stone-700"
+            className="absolute inset-y-0 right-0 inline-flex items-center justify-center px-3 text-gray-500 transition hover:text-gray-700"
           >
             {showConfirmPassword ? (
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -176,14 +176,14 @@ export function ResetPasswordForm({ token }: Props) {
         </div>
       </div>
 
-      <p className="text-xs text-stone-500">
+      <p className="text-xs text-gray-500">
         Password must be at least 8 characters with uppercase, lowercase, and a number.
       </p>
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="flex w-full items-center justify-center rounded-2xl bg-[#344e41] px-4 py-2 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b] disabled:bg-[#4e6a5a] disabled:cursor-not-allowed"
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-black px-4 py-3 text-sm font-medium text-white transition hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSubmitting ? (
           <>
