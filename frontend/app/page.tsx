@@ -16,7 +16,7 @@ import { TestimonialsSection } from "@/app/components/landing/TestimonialsSectio
 
 export const dynamic = "force-dynamic";
 
-function toCarouselProduct(p: { name: string; price: unknown; slug: string; images: { url: string; altText: string | null }[]; weight: string | null }) {
+function toCarouselProduct(p: { id: string; name: string; price: unknown; slug: string; images: { url: string; altText: string | null }[]; weight: string | null }) {
   return {
     title: p.name,
     price: `€${Number(p.price).toFixed(2)}`,
@@ -24,6 +24,7 @@ function toCarouselProduct(p: { name: string; price: unknown; slug: string; imag
     imageUrl: p.images[0]?.url ?? null,
     imageAlt: p.images[0]?.altText ?? p.name,
     weight: p.weight ?? null,
+    productId: p.id,
   };
 }
 

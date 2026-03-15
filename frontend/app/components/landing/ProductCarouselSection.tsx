@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { ProductFavoriteHeart } from "@/app/components/product-favorite-heart";
+import { ProductWishlistHeart } from "@/app/components/product-wishlist-heart";
 
 export type CarouselProduct = {
   title: string;
@@ -12,6 +13,7 @@ export type CarouselProduct = {
   imageUrl?: string | null;
   imageAlt?: string;
   weight?: string | null;
+  productId?: string;
 };
 
 type Props = {
@@ -44,11 +46,15 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
             </svg>
           </div>
         )}
-        <ProductFavoriteHeart
-          isFavorited={isFavorited}
-          onToggle={() => setIsFavorited((v) => !v)}
-          className="absolute top-2 right-2 z-10"
-        />
+        {p.productId ? (
+          <ProductWishlistHeart productId={p.productId} className="absolute top-2 right-2 z-10" />
+        ) : (
+          <ProductFavoriteHeart
+            isFavorited={isFavorited}
+            onToggle={() => setIsFavorited((v) => !v)}
+            className="absolute top-2 right-2 z-10"
+          />
+        )}
       </div>
       <div className="flex flex-1 flex-col p-2">
         <p className="line-clamp-2 text-base font-medium text-gray-900 sm:text-lg">{p.title}</p>

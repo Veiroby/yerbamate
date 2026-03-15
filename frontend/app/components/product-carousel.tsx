@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { useCart } from "@/lib/cart-context";
-import { ProductFavoriteHeart } from "@/app/components/product-favorite-heart";
+import { ProductWishlistHeart } from "@/app/components/product-wishlist-heart";
 
 export type ProductCard = {
   id: string;
@@ -70,7 +70,6 @@ function CarouselAddToCartButtons({ productId, productName }: { productId: strin
 
 function CarouselProductCard({ product }: { product: ProductCard }) {
   const soldOut = product.quantityLeft <= 0;
-  const [isFavorited, setIsFavorited] = useState(false);
 
   return (
     <div
@@ -129,9 +128,8 @@ function CarouselProductCard({ product }: { product: ProductCard }) {
             </div>
           )}
           {!soldOut && (
-            <ProductFavoriteHeart
-              isFavorited={isFavorited}
-              onToggle={() => setIsFavorited((v) => !v)}
+            <ProductWishlistHeart
+              productId={product.id}
               className="absolute top-2 right-2 z-10"
             />
           )}

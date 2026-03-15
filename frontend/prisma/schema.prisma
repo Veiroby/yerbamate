@@ -90,11 +90,12 @@ model User {
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  accounts Account[]
-  carts    Cart[]
-  orders   Order[]
-  reviews  Review[]
-  sessions Session[]
+  accounts       Account[]
+  carts          Cart[]
+  orders         Order[]
+  reviews        Review[]
+  sessions       Session[]
+  wishlistItems  WishlistItem[]
 
   @@index([email])
   @@index([resetToken])
@@ -151,8 +152,9 @@ model Product {
   orderItems   OrderItem[]
   cartItems    CartItem[]
   bundleOffers BundleOffer[]
-  collections  ProductInCollection[]
-  reviews      Review[]
+  collections   ProductInCollection[]
+  reviews       Review[]
+  wishlistItems WishlistItem[]
 
   @@index([slug])
   @@index([active])
@@ -408,6 +410,19 @@ model Session {
   expiresAt    DateTime
 
   @@index([userId])
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@index([productId])
 }
 
 model EmailCampaign {

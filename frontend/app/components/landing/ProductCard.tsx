@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { ProductFavoriteHeart } from "@/app/components/product-favorite-heart";
+import { ProductWishlistHeart } from "@/app/components/product-wishlist-heart";
 
 export type ProductCardProps = {
   title: string;
@@ -12,6 +13,7 @@ export type ProductCardProps = {
   href: string;
   imageUrl?: string | null;
   imageAlt?: string;
+  productId?: string;
 };
 
 export function ProductCard({
@@ -21,6 +23,7 @@ export function ProductCard({
   href,
   imageUrl = null,
   imageAlt = "",
+  productId,
 }: ProductCardProps) {
   const [isFavorited, setIsFavorited] = useState(false);
 
@@ -54,11 +57,15 @@ export function ProductCard({
               </svg>
             </div>
           )}
-          <ProductFavoriteHeart
-            isFavorited={isFavorited}
-            onToggle={() => setIsFavorited((v) => !v)}
-            className="absolute top-2 right-2 z-10"
-          />
+          {productId ? (
+            <ProductWishlistHeart productId={productId} className="absolute top-2 right-2 z-10" />
+          ) : (
+            <ProductFavoriteHeart
+              isFavorited={isFavorited}
+              onToggle={() => setIsFavorited((v) => !v)}
+              className="absolute top-2 right-2 z-10"
+            />
+          )}
         </div>
         <div className="flex flex-1 flex-col p-2">
           <h3 className="font-serif text-lg font-semibold text-[#344e41] group-hover:underline">

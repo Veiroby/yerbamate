@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { useCart } from "@/lib/cart-context";
-import { ProductFavoriteHeart } from "@/app/components/product-favorite-heart";
+import { ProductWishlistHeart } from "@/app/components/product-wishlist-heart";
 
 export type ProductCardData = {
   id: string;
@@ -34,7 +34,6 @@ export function ProductCard({ product, showDescription }: Props) {
   const soldOut = product.stockLocation !== "warehouse" && product.quantityLeft <= 0;
   const { addToCart, isLoading } = useCart();
   const [addingToCart, setAddingToCart] = useState(false);
-  const [isFavorited, setIsFavorited] = useState(false);
 
   const handleAddToCart = async () => {
     setAddingToCart(true);
@@ -100,9 +99,8 @@ export function ProductCard({ product, showDescription }: Props) {
             </div>
           )}
           {!soldOut && (
-            <ProductFavoriteHeart
-              isFavorited={isFavorited}
-              onToggle={() => setIsFavorited((v) => !v)}
+            <ProductWishlistHeart
+              productId={product.id}
               className="absolute top-2 right-2 z-10"
             />
           )}
