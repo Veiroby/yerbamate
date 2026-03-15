@@ -9,7 +9,7 @@ import { FocalPointPicker } from "../focal-point-picker";
 
 type Props = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ saved?: string; error?: string }>;
+  searchParams: Promise<{ saved?: string; updated?: string; error?: string }>;
 };
 
 async function deleteImageAction(formData: FormData) {
