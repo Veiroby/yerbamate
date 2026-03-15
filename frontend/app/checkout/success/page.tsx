@@ -6,20 +6,25 @@ import { SiteFooter } from "@/app/components/site-footer";
 import { getCurrentUser } from "@/lib/auth";
 
 type Props = {
-  searchParams: Promise<{ session_id?: string }>;
+  searchParams: Promise<{ session_id?: string; provider?: string; orderNumber?: string }>;
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function CheckoutSuccessPage({ searchParams }: Props) {
   const user = await getCurrentUser();
-  const { session_id: sessionId } = await searchParams;
+  const { session_id: sessionId, provider, orderNumber: orderNumberParam } = await searchParams;
 
   let orderNumber: string | null = null;
   let message =
     "Thanks! If your payment was successful, you will receive a confirmation email shortly.";
 
-  if (sessionId && process.env.STRIPE_SECRET_KEY) {
+  if (provider === "maksekeskus" && orderNumberParam) {
+    orderNumber = orderNumberParam;
+    message = `Order ${orderNumberParam} received. You will receive a confirmation email once the payment is confirmed.`;
+  }
+
+  if (provider !== "maksekeskus" && sessionId && process.env.STRIPE_SECRET_KEY) {
     try {
       const session = await stripe.checkout.sessions.retrieve(sessionId);
       const orderId = (session.metadata?.orderId as string | undefined) ?? null;

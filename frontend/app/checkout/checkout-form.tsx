@@ -8,9 +8,10 @@ type Props = {
   currency: string;
   subtotal: number;
   discountCode?: string | null;
+  maksekeskusAvailable?: boolean;
 };
 
-export function CheckoutForm({ currency, subtotal, discountCode }: Props) {
+export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvailable }: Props) {
   const [customerType, setCustomerType] = useState<"INDIVIDUAL" | "BUSINESS">(
     "INDIVIDUAL",
   );
@@ -88,6 +89,15 @@ export function CheckoutForm({ currency, subtotal, discountCode }: Props) {
     if (!validateForm()) return;
 
     formRef.current.action = "/api/checkout/wire-transfer";
+    setIsSubmitting(true);
+    formRef.current.submit();
+  };
+
+  const handleMaksekeskusSubmit = () => {
+    if (!formRef.current) return;
+    if (!validateForm()) return;
+
+    formRef.current.action = "/api/checkout/maksekeskus";
     setIsSubmitting(true);
     formRef.current.submit();
   };
@@ -187,6 +197,17 @@ export function CheckoutForm({ currency, subtotal, discountCode }: Props) {
           </svg>
         </button>
 
+        {maksekeskusAvailable && (
+          <button
+            type="button"
+            onClick={handleMaksekeskusSubmit}
+            disabled={isSubmitting}
+            className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-black bg-white px-4 py-3 text-sm font-medium text-black transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? "Processing…" : "Pay with bank link or card (Maksekeskus)"}
+          </button>
+        )}
+
         {isBusiness && (
           <button
             type="button"
@@ -201,8 +222,10 @@ export function CheckoutForm({ currency, subtotal, discountCode }: Props) {
 
       <p className="text-xs text-gray-500">
         {isBusiness
-          ? "Choose Stripe for instant payment, or Wire Transfer to receive an invoice and pay later."
-          : "You will be redirected to a secure Stripe Checkout page to complete your payment."}
+          ? "Choose Stripe for instant payment, Wire Transfer for invoice, or Maksekeskus for bank link or card."
+          : maksekeskusAvailable
+            ? "Pay with Stripe (card) or Maksekeskus (bank link, card). You may be redirected to complete payment."
+            : "You will be redirected to a secure Stripe Checkout page to complete your payment."}
       </p>
     </form>
   );

@@ -37,6 +37,7 @@ enum CustomerType {
 enum PaymentMethod {
   STRIPE
   WIRE_TRANSFER
+  MAKSEKESKUS
 }
 
 enum DiscountType {
@@ -298,8 +299,9 @@ model Order {
   currency              String        @default("USD")
   shippingAddress       Json          // full shipping address snapshot
   billingAddress        Json?         // optional billing address snapshot
-  stripePaymentIntentId String?
-  confirmationEmailSentAt DateTime?   // when order confirmation email was last sent
+  stripePaymentIntentId     String?
+  maksekeskusTransactionId  String?
+  confirmationEmailSentAt   DateTime?   // when order confirmation email was last sent
   reviewRequestEmailSentAt DateTime? // when "leave a review" email was sent (4 days after order)
   dpdShipmentId         String?       // DPD shipment ID
   dpdTrackingNumber     String?       // DPD tracking number

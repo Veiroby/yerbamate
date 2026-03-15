@@ -7,6 +7,7 @@ import { calculateShippingForOrder } from "@/lib/shipping/service";
 import { SiteHeader } from "@/app/components/site-header";
 import { SiteFooter } from "@/app/components/site-footer";
 import { CheckoutForm } from "./checkout-form";
+import { isMaksekeskusConfigured } from "@/lib/maksekeskus";
 
 async function getCartWithItems() {
   const sessionId = (await cookies()).get("cart_session_id")?.value;
@@ -135,6 +136,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
               currency={currency}
               subtotal={subtotal}
               discountCode={appliedDiscountCode}
+              maksekeskusAvailable={isMaksekeskusConfigured()}
             />
 
             <div className="lg:sticky lg:top-6 lg:self-start">

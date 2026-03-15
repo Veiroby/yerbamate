@@ -219,9 +219,15 @@ export default async function AdminOrdersPage() {
                   <span className={`rounded-full px-2 py-0.5 ${
                     order.paymentMethod === "WIRE_TRANSFER"
                       ? "bg-amber-100 text-amber-700"
-                      : "bg-blue-100 text-blue-700"
+                      : order.paymentMethod === "MAKSEKESKUS"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-blue-100 text-blue-700"
                   }`}>
-                    {order.paymentMethod === "WIRE_TRANSFER" ? "Wire Transfer" : "Stripe"}
+                    {order.paymentMethod === "WIRE_TRANSFER"
+                      ? "Wire Transfer"
+                      : order.paymentMethod === "MAKSEKESKUS"
+                        ? "Maksekeskus"
+                        : "Stripe"}
                   </span>
                   {order.customerType === "BUSINESS" && (
                     <span className="rounded-full bg-purple-100 px-2 py-0.5 text-purple-700">
