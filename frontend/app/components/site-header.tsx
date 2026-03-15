@@ -10,10 +10,10 @@ type SiteHeaderProps = {
 };
 
 const navLinks = [
-  { href: "/products", label: "Shop" },
-  { href: "/products?sort=price-asc", label: "On Sale" },
-  { href: "/products?sort=newest", label: "New Arrivals" },
-  { href: "/products", label: "Brands" },
+  { href: "/", label: "Home" },
+  { href: "/products", label: "Products" },
+  { href: "/about", label: "About Us" },
+  { href: "/contact", label: "Contact" },
 ];
 
 function CartIcon({ className }: { className?: string }) {

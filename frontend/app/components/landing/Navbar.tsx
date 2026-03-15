@@ -12,7 +12,7 @@ export function Navbar() {
   return (
     <header className={`sticky top-0 z-40 w-full ${navBg}`}>
       <nav
-        className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6"
+        className="relative mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6"
         aria-label="Main navigation"
       >
         <Link
@@ -22,16 +22,22 @@ export function Navbar() {
           YerbaTea
         </Link>
 
-        <div className="flex items-center gap-4 sm:gap-6">
-          <Link
-            href="/products"
-            className={`hidden p-2 ${navText} hover:opacity-80 sm:block`}
-            aria-label="Search"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+        <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 sm:flex">
+          <Link href="/" className={`${navText} text-sm font-medium hover:opacity-80`}>
+            Home
           </Link>
+          <Link href="/products" className={`${navText} text-sm font-medium hover:opacity-80`}>
+            Products
+          </Link>
+          <Link href="/about" className={`${navText} text-sm font-medium hover:opacity-80`}>
+            About Us
+          </Link>
+          <Link href="/contact" className={`${navText} text-sm font-medium hover:opacity-80`}>
+            Contact
+          </Link>
+        </div>
+
+        <div className="flex items-center gap-4 sm:gap-6">
           <Link
             href="/cart"
             className={`p-2 ${navText} hover:opacity-80`}
@@ -77,8 +83,17 @@ export function Navbar() {
         className={`border-t border-white/10 ${navBg} px-4 py-4 sm:hidden ${menuOpen ? "block" : "hidden"}`}
       >
         <div className="flex flex-col gap-2">
+          <Link href="/" className={`py-2 ${navText}`} onClick={() => setMenuOpen(false)}>
+            Home
+          </Link>
           <Link href="/products" className={`py-2 ${navText}`} onClick={() => setMenuOpen(false)}>
             Products
+          </Link>
+          <Link href="/about" className={`py-2 ${navText}`} onClick={() => setMenuOpen(false)}>
+            About Us
+          </Link>
+          <Link href="/contact" className={`py-2 ${navText}`} onClick={() => setMenuOpen(false)}>
+            Contact
           </Link>
           <Link href="/cart" className={`py-2 ${navText}`} onClick={() => setMenuOpen(false)}>
             Cart
