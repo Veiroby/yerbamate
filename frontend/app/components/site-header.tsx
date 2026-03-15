@@ -24,10 +24,10 @@ function CartIcon({ className }: { className?: string }) {
   );
 }
 
-function SearchIcon({ className }: { className?: string }) {
+function ProfileIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
     </svg>
   );
 }
@@ -139,14 +139,6 @@ export function SiteHeader({ user }: SiteHeaderProps) {
 
           <div className="flex items-center gap-2 sm:gap-4">
             <Link
-              href="/products"
-              className="hidden items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm text-gray-500 hover:border-gray-300 sm:flex"
-              aria-label="Search products"
-            >
-              <SearchIcon className="h-4 w-4" />
-              <span>Search for products...</span>
-            </Link>
-            <Link
               href="/cart"
               className="relative flex h-10 w-10 items-center justify-center text-gray-700 hover:text-black"
               aria-label={`Cart${itemCount > 0 ? `, ${itemCount} items` : ""}`}
@@ -162,12 +154,30 @@ export function SiteHeader({ user }: SiteHeaderProps) {
                 Admin
               </Link>
             )}
-            <Link
-              href="/account/profile"
-              className="hidden text-sm font-medium text-gray-700 hover:text-black sm:block"
-            >
-              {user ? "Account" : "Log in"}
-            </Link>
+            {user ? (
+              <Link
+                href="/account/profile"
+                className="flex h-10 w-10 items-center justify-center text-gray-700 hover:text-black"
+                aria-label="Profile"
+              >
+                <ProfileIcon className="h-5 w-5" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/account/profile"
+                  className="hidden text-sm font-medium text-gray-700 hover:text-black sm:block"
+                >
+                  Log in
+                </Link>
+                <Link
+                  href="/account/profile"
+                  className="hidden rounded-md border-2 border-black bg-transparent px-4 py-2 text-sm font-semibold text-black transition hover:bg-black hover:text-white sm:inline-block"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
 
             <button
               type="button"
@@ -206,13 +216,33 @@ export function SiteHeader({ user }: SiteHeaderProps) {
               </Link>
             ))}
             <div className="mt-2 border-t border-gray-100 pt-3">
-              <Link
-                href="/account/profile"
-                className="block rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
-                onClick={() => setMenuOpen(false)}
-              >
-                {user ? "Account" : "Log in"}
-              </Link>
+              {user ? (
+                <Link
+                  href="/account/profile"
+                  className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <ProfileIcon className="h-5 w-5" />
+                  Account
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/account/profile"
+                    className="block rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href="/account/profile"
+                    className="mt-1 block rounded-lg border-2 border-black py-3 text-center text-sm font-semibold text-black hover:bg-black hover:text-white"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Sign up
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
 import { useCart } from "@/lib/cart-context";
+import { ProductFavoriteHeart } from "@/app/components/product-favorite-heart";
 
 export type ProductCardData = {
   id: string;
@@ -33,6 +34,7 @@ export function ProductCard({ product, showDescription }: Props) {
   const soldOut = product.stockLocation !== "warehouse" && product.quantityLeft <= 0;
   const { addToCart, isLoading } = useCart();
   const [addingToCart, setAddingToCart] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
 
   const handleAddToCart = async () => {
     setAddingToCart(true);
@@ -97,18 +99,22 @@ export function ProductCard({ product, showDescription }: Props) {
               </span>
             </div>
           )}
+          {!soldOut && (
+            <ProductFavoriteHeart
+              isFavorited={isFavorited}
+              onToggle={() => setIsFavorited((v) => !v)}
+              className="absolute top-2 right-2 z-10"
+            />
+          )}
         </div>
 
-        {/* Left-aligned: title, weight, price (stacked) */}
-        <div className="flex flex-col items-start px-4 pt-0 text-left">
+        {/* Left-aligned: title, weight, stock; price at bottom-left */}
+        <div className="flex flex-1 min-h-0 flex-col items-start px-4 pt-0 text-left">
           <h2 className="line-clamp-2 text-lg font-semibold text-gray-900 transition group-hover:text-black">
             {product.name}
           </h2>
           <p className="mt-1.5 text-sm text-gray-500">
             {product.weight ?? "—"}
-          </p>
-          <p className="mt-1 text-lg font-semibold text-black">
-            {product.currency} {product.price.toFixed(2)}
           </p>
           <p className="mt-1 text-xs font-medium text-gray-600">
             {stockStatus === "in_stock" ? (
@@ -122,6 +128,9 @@ export function ProductCard({ product, showDescription }: Props) {
               {product.description}
             </p>
           ) : null}
+          <p className="mt-auto text-lg font-semibold text-black">
+            {product.currency} {product.price.toFixed(2)}
+          </p>
         </div>
       </Link>
 
