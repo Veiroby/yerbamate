@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "@/lib/translation-context";
 
 export function ContactForm() {
+  const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -13,10 +15,10 @@ export function ContactForm() {
     const email = (form.elements.namedItem("email") as HTMLInputElement)?.value?.trim() ?? "";
     const message = (form.elements.namedItem("message") as HTMLTextAreaElement)?.value?.trim() ?? "";
     const newErrors: Record<string, string> = {};
-    if (!name) newErrors.name = "Name is required.";
-    if (!email) newErrors.email = "Email is required.";
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = "Please enter a valid email.";
-    if (!message) newErrors.message = "Message is required.";
+    if (!name) newErrors.name = t("contact.errorNameRequired");
+    if (!email) newErrors.email = t("contact.errorEmailRequired");
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) newErrors.email = t("contact.errorEmailInvalid");
+    if (!message) newErrors.message = t("contact.errorMessageRequired");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -41,13 +43,13 @@ export function ContactForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error ?? "Something went wrong. Please try again.");
+        setError(data.error ?? t("contact.errorGeneric"));
         return;
       }
       setSuccess(true);
       form.reset();
     } catch {
-      setError("Network error. Please try again.");
+      setError(t("contact.errorNetwork"));
     } finally {
       setIsSubmitting(false);
     }
@@ -63,9 +65,9 @@ export function ContactForm() {
   if (success) {
     return (
       <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800">
-        <p className="font-medium">Message sent.</p>
+        <p className="font-medium">{t("contact.successTitle")}</p>
         <p className="mt-1 text-green-700">
-          We&apos;ll get back to you at your email address soon.
+          {t("contact.successText")}
         </p>
       </div>
     );
@@ -80,7 +82,7 @@ export function ContactForm() {
       )}
       <div>
         <label htmlFor="contact-name" className="mb-1.5 block text-sm font-medium text-neutral-700">
-          Name <span className="text-red-500">*</span>
+          {t("contact.labelName")} <span className="text-red-500">*</span>
         </label>
         <input
           id="contact-name"
@@ -89,13 +91,13 @@ export function ContactForm() {
           required
           autoComplete="name"
           className={inputClass("name")}
-          placeholder="Your name"
+          placeholder={t("contact.placeholderName")}
         />
         {errors.name && <p className="mt-1 text-xs text-red-600">{errors.name}</p>}
       </div>
       <div>
         <label htmlFor="contact-email" className="mb-1.5 block text-sm font-medium text-neutral-700">
-          Email <span className="text-red-500">*</span>
+          {t("contact.labelEmail")} <span className="text-red-500">*</span>
         </label>
         <input
           id="contact-email"
@@ -104,13 +106,13 @@ export function ContactForm() {
           required
           autoComplete="email"
           className={inputClass("email")}
-          placeholder="you@example.com"
+          placeholder={t("contact.placeholderEmail")}
         />
         {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email}</p>}
       </div>
       <div>
         <label htmlFor="contact-orderNumber" className="mb-1.5 block text-sm font-medium text-neutral-700">
-          Order number <span className="text-neutral-400">(optional)</span>
+          {t("contact.labelOrderNumber")} <span className="text-neutral-400">{t("contact.optional")}</span>
         </label>
         <input
           id="contact-orderNumber"
@@ -118,12 +120,12 @@ export function ContactForm() {
           name="orderNumber"
           autoComplete="off"
           className={inputClass("orderNumber")}
-          placeholder="e.g. ORD-12345"
+          placeholder={t("contact.placeholderOrderNumber")}
         />
       </div>
       <div>
         <label htmlFor="contact-message" className="mb-1.5 block text-sm font-medium text-neutral-700">
-          Message <span className="text-red-500">*</span>
+          {t("contact.labelMessage")} <span className="text-red-500">*</span>
         </label>
         <textarea
           id="contact-message"
@@ -131,7 +133,7 @@ export function ContactForm() {
           required
           rows={5}
           className={`${inputClass("message")} resize-y min-h-[120px]`}
-          placeholder="Your message…"
+          placeholder={t("contact.placeholderMessage")}
         />
         {errors.message && <p className="mt-1 text-xs text-red-600">{errors.message}</p>}
       </div>
@@ -140,7 +142,7 @@ export function ContactForm() {
         disabled={isSubmitting}
         className="w-full rounded-lg bg-black px-4 py-3.5 text-sm font-medium text-white transition hover:bg-neutral-800 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {isSubmitting ? "Sending…" : "Send message"}
+        {isSubmitting ? t("contact.sending") : t("contact.send")}
       </button>
     </form>
   );
