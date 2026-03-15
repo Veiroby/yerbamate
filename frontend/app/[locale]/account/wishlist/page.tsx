@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { removeFromWishlist } from "@/app/account/wishlist/actions";
-import { isValidLocale } from "@/lib/i18n";
+import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -16,7 +16,8 @@ export default async function WishlistPage({ params }: Props) {
   const user = await getCurrentUser();
   if (!user) redirect(`/${locale}/account/profile`);
 
-  const items = await prisma.wishlistItem.findMany({
+  const [items, translations] = await Promise.all([
+    prisma.wishlistItem.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: "desc" },
     include: {
@@ -26,31 +27,33 @@ export default async function WishlistPage({ params }: Props) {
         },
       },
     },
-  });
-
+    }),
+    getTranslations(locale),
+  ]);
+  const t = createT(translations);
   const prefix = `/${locale}`;
 
   return (
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold uppercase tracking-tight text-black sm:text-3xl">
-          My Wishlist
+          {t("account.myWishlist")}
         </h1>
         <p className="mt-1 text-sm text-gray-500">
-          Products you've saved to your wishlist.
+          {t("account.wishlistDescription")}
         </p>
       </header>
 
       {items.length === 0 ? (
         <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm text-center">
           <p className="text-sm text-gray-600">
-            Your wishlist is empty. Use the heart on product pages to add items.
+            {t("account.wishlistEmpty")}
           </p>
           <Link
             href={`${prefix}/products`}
             className="mt-4 inline-block text-sm font-medium text-black underline hover:no-underline"
           >
-            Browse products
+            {t("account.browseProducts")}
           </Link>
         </div>
       ) : (
@@ -93,7 +96,7 @@ export default async function WishlistPage({ params }: Props) {
                       type="submit"
                       className="w-full rounded-lg border border-red-200 bg-red-50 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
                     >
-                      Remove from wishlist
+                      {t("account.removeFromWishlist")}
                     </button>
                   </form>
                 </div>

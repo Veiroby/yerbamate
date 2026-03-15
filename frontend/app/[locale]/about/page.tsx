@@ -25,19 +25,7 @@ export default async function AboutPage({ params }: Props) {
         </h1>
         <div className="prose prose-neutral max-w-none">
           <p className="leading-relaxed text-neutral-600">
-            I am Roberts, a professional footballer based in Latvia. In 2016, I
-            discovered yerba mate and instantly fell in love with it. The drink
-            provided a clear edge in my professional sports career, enhancing my
-            focus during training sessions, improving my mood, and delivering
-            sustained energy without the downsides of coffee. Eager to share
-            this benefit, I connected with producers in Argentina to import
-            authentic yerba mate to Latvia, making it available to all. Our
-            initial launch of premium mate gourds faced challenges, as the
-            tradition was unfamiliar to most. From that experience, we committed
-            to educating the market through tastings and workshops, while
-            offering a wide selection of products tailored for beginners and
-            experienced mate enthusiasts alike. Today, we&apos;re fostering a
-            growing community around this timeless ritual.
+            {t("about.intro")}
           </p>
         </div>
       </main>

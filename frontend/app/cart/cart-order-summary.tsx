@@ -34,7 +34,7 @@ export function CartOrderSummary({ subtotal, currency, showReminder, bundleSavin
       <h2 className="text-lg font-bold text-black">{t("cart.orderSummary")}</h2>
       <dl className="space-y-3 text-sm">
         <div className="flex justify-between">
-          <dt className="text-gray-500">Subtotal</dt>
+          <dt className="text-gray-500">{t("cart.subtotal")}</dt>
           <dd className="font-medium text-black">
             {currency} {subtotal.toFixed(2)}
           </dd>
@@ -49,7 +49,7 @@ export function CartOrderSummary({ subtotal, currency, showReminder, bundleSavin
         )}
         {appliedDiscount && (
           <div className="flex justify-between text-red-600">
-            <dt>Discount ({appliedDiscount.code})</dt>
+            <dt>{t("cart.discountCode", { code: appliedDiscount.code })}</dt>
             <dd className="font-medium">
               -{currency} {discountAmount.toFixed(2)}
             </dd>
@@ -59,7 +59,7 @@ export function CartOrderSummary({ subtotal, currency, showReminder, bundleSavin
           <CartShippingPreview subtotal={discountedSubtotal} currency={currency} />
         </div>
         <div className="flex justify-between border-t border-gray-100 pt-3">
-          <dt className="font-bold text-black">Total</dt>
+          <dt className="font-bold text-black">{t("cart.total")}</dt>
           <dd className="font-bold text-black">
             {currency} {Math.max(0, discountedSubtotal).toFixed(2)}
           </dd>
@@ -90,11 +90,11 @@ export function CartOrderSummary({ subtotal, currency, showReminder, bundleSavin
       </form>
 
       <p className="text-xs text-gray-500">
-        You can checkout as a guest or create an account during checkout.
+        {t("cart.youCanCheckout")}
       </p>
       {showReminder && (
         <div className="border-t border-gray-100 pt-4">
-          <p className="mb-2 text-xs font-medium text-gray-700">Get a reminder</p>
+          <p className="mb-2 text-xs font-medium text-gray-700">{t("cart.getReminder")}</p>
           <CartReminder />
         </div>
       )}

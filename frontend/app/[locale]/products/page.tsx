@@ -6,13 +6,13 @@ import { SiteHeader } from "@/app/components/site-header";
 import { SiteFooter } from "@/app/components/site-footer";
 import { ProductFilters, ActiveFilters } from "@/app/components/product-filters";
 import { Prisma } from "@/app/generated/prisma/client";
-import { isValidLocale } from "@/lib/i18n";
+import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
-const CATEGORY_LABELS: Record<string, string> = {
-  "yerba-mate": "Yerba Mate",
-  "mate-gourds": "Mate Gourds",
+const CATEGORY_KEYS: Record<string, string> = {
+  "yerba-mate": "products.categoryYerbaMate",
+  "mate-gourds": "products.categoryMateGourds",
 };
 
 type Props = {
@@ -91,7 +91,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
       break;
   }
 
-  const [products, categories, allProducts] = await Promise.all([
+  const [products, categories, allProducts, translations] = await Promise.all([
     prisma.product.findMany({
       where,
       orderBy,
@@ -109,7 +109,9 @@ export default async function ProductsPage({ params, searchParams }: Props) {
       where: { active: true },
       select: { brand: true, origin: true, price: true },
     }),
+    getTranslations(locale),
   ]);
+  const t = createT(translations);
 
   const brands = [...new Set(allProducts.map((p) => p.brand).filter(Boolean))] as string[];
   const origins = [...new Set(allProducts.map((p) => p.origin).filter(Boolean))] as string[];
@@ -126,7 +128,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
     priceRange,
   };
 
-  const categoryLabel = category ? CATEGORY_LABELS[category] ?? category : null;
+  const categoryLabel = category && CATEGORY_KEYS[category] ? t(CATEGORY_KEYS[category]) : category ?? null;
 
   const productCards = products.map((p) => {
     const quantityLeft = p.variants.reduce(
@@ -161,15 +163,15 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   });
 
   const getPageTitle = () => {
-    if (q) return `Search: "${q}"`;
+    if (q) return t("products.searchTitle", { q });
     if (categoryLabel) return categoryLabel;
-    return "All Products";
+    return t("products.allProducts");
   };
 
   const getPageDescription = () => {
-    if (q) return `${products.length} results found`;
-    if (categoryLabel) return `Browse our ${categoryLabel.toLowerCase()} selection`;
-    return "Browse our full yerba mate catalog";
+    if (q) return t("products.resultsFound", { count: products.length });
+    if (categoryLabel) return t("products.browseCategorySelection", { category: categoryLabel });
+    return t("products.browseCatalog");
   };
 
   const prefix = `/${locale}`;
@@ -191,7 +193,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
             href={`${prefix}/cart`}
             className="inline-flex shrink-0 rounded border-2 border-black px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-black transition hover:bg-black hover:text-white"
           >
-            View cart
+            {t("products.viewCart")}
           </Link>
         </header>
 
@@ -216,22 +218,24 @@ export default async function ProductsPage({ params, searchParams }: Props) {
                 />
               </svg>
               <h3 className="mt-6 text-xl font-bold uppercase tracking-wide text-black">
-                No products found
+                {t("products.noProductsFound")}
               </h3>
               <p className="mt-3 text-base text-gray-600">
-                Try adjusting your filters or search terms.
+                {t("products.tryAdjustingFilters")}
               </p>
               <Link
                 href={`${prefix}/products`}
                 className="mt-8 inline-flex rounded border-2 border-black px-6 py-3 text-sm font-semibold uppercase tracking-wide text-black transition hover:bg-black hover:text-white"
               >
-                Clear all filters
+                {t("products.clearAllFilters")}
               </Link>
             </div>
           ) : (
             <>
               <p className="mb-6 text-base font-medium text-gray-600">
-                Showing {productCards.length} product{productCards.length !== 1 ? "s" : ""}
+                {productCards.length === 1
+                  ? t("products.showingCount", { count: productCards.length })
+                  : t("products.showingCountPlural", { count: productCards.length })}
               </p>
               <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {productCards.map((product) => (

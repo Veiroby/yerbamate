@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
+import { useTranslation } from "@/lib/translation-context";
 import { ProductWishlistHeart } from "@/app/components/product-wishlist-heart";
 
 export type ProductCardData = {
@@ -32,6 +33,7 @@ type Props = {
 
 export function ProductCard({ product, showDescription }: Props) {
   const pathname = usePathname();
+  const { t } = useTranslation();
   const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
   const productHref = `${localePrefix}/products/${encodeURIComponent(product.slug)}`;
   const stockStatus = product.stockStatus ?? (product.quantityLeft > 0 ? "in_stock" : "get_in_5_7_days");
@@ -92,13 +94,13 @@ export function ProductCard({ product, showDescription }: Props) {
             />
           ) : (
             <div className="flex h-full items-center justify-center text-[#606C38]/50">
-              <span className="text-xs font-medium text-gray-500">Product image</span>
+              <span className="text-xs font-medium text-gray-500">{t("product.productImage")}</span>
             </div>
           )}
           {soldOut && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/50">
               <span className="rounded-full bg-black px-4 py-2 text-sm font-semibold uppercase tracking-wide text-white">
-                Sold out
+                {t("product.soldOut")}
               </span>
             </div>
           )}
@@ -120,9 +122,9 @@ export function ProductCard({ product, showDescription }: Props) {
           </p>
           <p className="mt-1 text-xs font-medium text-gray-600">
             {stockStatus === "in_stock" ? (
-              <>In stock{product.quantityLeft > 0 && product.quantityLeft <= 20 ? ` (${product.quantityLeft})` : ""}</>
+              <>{t("product.inStock")}{product.quantityLeft > 0 && product.quantityLeft <= 20 ? ` (${product.quantityLeft})` : ""}</>
             ) : (
-              <>Get in 5–7 days</>
+              <>{t("product.getIn57Days")}</>
             )}
           </p>
           {showDescription && product.description ? (
@@ -151,10 +153,10 @@ export function ProductCard({ product, showDescription }: Props) {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Adding...
+                {t("cart.adding")}
               </span>
             ) : (
-              "Add to cart"
+              t("product.addToCart")
             )}
           </button>
         </div>

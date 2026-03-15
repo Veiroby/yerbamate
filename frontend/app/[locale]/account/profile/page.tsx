@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { AuthForms } from "@/app/account/auth-forms";
-import { isValidLocale } from "@/lib/i18n";
+import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -12,7 +12,11 @@ type Props = {
 export default async function ProfilePage({ params, searchParams }: Props) {
   const { locale } = await params;
   if (!isValidLocale(locale)) return null;
-  const user = await getCurrentUser();
+  const [user, translations] = await Promise.all([
+    getCurrentUser(),
+    getTranslations(locale),
+  ]);
+  const t = createT(translations);
   const { error, status } = await searchParams;
   const prefix = `/${locale}`;
 
@@ -20,7 +24,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
     return (
       <>
         <h1 className="mb-4 text-2xl font-bold uppercase tracking-tight text-black">
-          Sign in or create an account
+          {t("account.signInOrCreate")}
         </h1>
         <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
           <AuthForms error={error} />
@@ -39,52 +43,52 @@ export default async function ProfilePage({ params, searchParams }: Props) {
     <div className="space-y-6">
       {showPasswordResetSuccess && (
         <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-          <p className="font-medium">Password reset successful</p>
+          <p className="font-medium">{t("account.passwordResetSuccess")}</p>
           <p className="mt-1 text-green-700">
-            Your password has been updated and you&apos;re now signed in.
+            {t("account.passwordUpdated")}
           </p>
         </div>
       )}
 
       <header>
         <h1 className="text-2xl font-bold uppercase tracking-tight text-black sm:text-3xl">
-          Account Dashboard
+          {t("account.dashboard")}
         </h1>
         <p className="mt-1 text-sm text-gray-500">
-          Signed in as {user.email}
+          {t("account.signedInAs")} {user.email}
         </p>
       </header>
 
       <div className="grid gap-6 sm:grid-cols-2">
         <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-          <h2 className="text-lg font-bold text-black">Account Information</h2>
+          <h2 className="text-lg font-bold text-black">{t("account.information")}</h2>
           <p className="mt-2 text-sm text-gray-600">
             {user.name ? (
-              <>Name: <span className="font-medium text-black">{user.name}</span></>
+              <>{t("common.name")}: <span className="font-medium text-black">{user.name}</span></>
             ) : (
-              "Add your name in Account Information."
+              t("account.addNameHint")
             )}
           </p>
           <Link
             href={`${prefix}/account/information`}
             className="mt-3 inline-block text-sm font-medium text-black underline hover:no-underline"
           >
-            Edit details →
+            {t("account.editDetails")}
           </Link>
         </section>
 
         <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-          <h2 className="text-lg font-bold text-black">Orders overview</h2>
+          <h2 className="text-lg font-bold text-black">{t("account.ordersOverview")}</h2>
           <p className="mt-2 text-sm text-gray-600">
-            You have{" "}
-            <span className="font-semibold text-black">{ordersCount}</span>{" "}
-            order{ordersCount === 1 ? "" : "s"} linked to this account.
+            {ordersCount === 1
+              ? t("account.ordersCount", { count: ordersCount })
+              : t("account.ordersCountPlural", { count: ordersCount })}
           </p>
           <Link
             href={`${prefix}/account/orders`}
             className="mt-3 inline-block text-sm font-medium text-black underline hover:no-underline"
           >
-            View order history →
+            {t("account.viewOrderHistory")}
           </Link>
         </section>
       </div>

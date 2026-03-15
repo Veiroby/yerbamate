@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useTranslation } from "@/lib/translation-context";
 
 type Props = {
   token: string;
@@ -10,6 +11,7 @@ type Props = {
 export function ResetPasswordForm({ token }: Props) {
   const router = useRouter();
   const pathname = usePathname();
+  const { t } = useTranslation();
   const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
   const profilePath = localePrefix ? `${localePrefix}/account/profile` : "/account/profile";
   const [showPassword, setShowPassword] = useState(false);
@@ -83,16 +85,16 @@ export function ResetPasswordForm({ token }: Props) {
     return (
       <div className="space-y-4">
         <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
-          <p className="font-medium">Password reset successful!</p>
+          <p className="font-medium">{t("account.passwordResetSuccessTitle")}</p>
           <p className="mt-1 text-green-700">
-            Your password has been changed. Redirecting to sign in page in {countdown} seconds...
+            {t("account.redirectingIn", { count: countdown })}
           </p>
         </div>
         <a
           href={profilePath}
           className="block text-center rounded-full bg-black px-4 py-3 text-sm font-medium text-white transition hover:bg-gray-800"
         >
-          Sign in now
+          {t("account.signInNow")}
         </a>
       </div>
     );
@@ -110,7 +112,7 @@ export function ResetPasswordForm({ token }: Props) {
 
       <div className="space-y-2">
         <label htmlFor="password" className="block text-xs font-medium text-gray-600">
-          New password
+          {t("account.newPassword")}
         </label>
         <div className="relative">
           <input
@@ -146,7 +148,7 @@ export function ResetPasswordForm({ token }: Props) {
 
       <div className="space-y-2">
         <label htmlFor="confirm-password" className="block text-xs font-medium text-gray-600">
-          Confirm new password
+          {t("account.confirmPassword")}
         </label>
         <div className="relative">
           <input
@@ -160,7 +162,7 @@ export function ResetPasswordForm({ token }: Props) {
           <button
             type="button"
             onClick={() => setShowConfirmPassword((v) => !v)}
-            aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+            aria-label={showConfirmPassword ? t("account.hidePassword") : t("account.showPassword")}
             className="absolute inset-y-0 right-0 inline-flex items-center justify-center px-3 text-gray-500 transition hover:text-gray-700"
           >
             {showConfirmPassword ? (
@@ -197,7 +199,7 @@ export function ResetPasswordForm({ token }: Props) {
             Resetting...
           </>
         ) : (
-          "Reset password"
+          {t("account.resetPasswordButton")}
         )}
       </button>
     </form>

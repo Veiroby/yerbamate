@@ -2,7 +2,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/app/components/site-header";
 import { SiteFooter } from "@/app/components/site-footer";
 import { getCurrentUser } from "@/lib/auth";
-import { isValidLocale } from "@/lib/i18n";
+import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -15,6 +15,8 @@ export default async function WireTransferSuccessPage({ params, searchParams }: 
   const user = await getCurrentUser();
   const { orderNumber } = await searchParams;
   const prefix = `/${locale}`;
+  const translations = await getTranslations(locale);
+  const t = createT(translations);
 
   return (
     <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
@@ -37,37 +39,37 @@ export default async function WireTransferSuccessPage({ params, searchParams }: 
             </svg>
           </div>
 
-          <h1 className="heading-page mb-2">Order Received</h1>
+          <h1 className="heading-page mb-2">{t("checkout.orderReceived")}</h1>
 
           {orderNumber && (
             <p className="mb-6 text-[#606C38]">
-              Order number: <strong className="text-[#283618]">{orderNumber}</strong>
+              {t("checkout.orderNumber")}: <strong className="text-[#283618]">{orderNumber}</strong>
             </p>
           )}
 
           <div className="mb-6 rounded-xl bg-[#606C38]/10 p-6 text-left">
             <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-[#283618]">
-              Wire Transfer Payment Instructions
+              {t("checkout.wireTransferInstructions")}
             </h2>
             <dl className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <dt className="text-[#606C38]">Bank</dt>
+                <dt className="text-[#606C38]">{t("checkout.bank")}</dt>
                 <dd className="font-medium text-[#283618]">Swedbank</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-[#606C38]">IBAN</dt>
+                <dt className="text-[#606C38]">{t("checkout.iban")}</dt>
                 <dd className="font-mono font-medium text-[#283618]">
                   LV30HABA0551057129470
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-[#606C38]">Beneficiary</dt>
+                <dt className="text-[#606C38]">{t("checkout.beneficiary")}</dt>
                 <dd className="font-medium text-[#283618]">SIA YerbaTea</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-[#606C38]">Reference</dt>
+                <dt className="text-[#606C38]">{t("checkout.reference")}</dt>
                 <dd className="font-mono font-medium text-[#283618]">
-                  {orderNumber || "Your order number"}
+                  {orderNumber || t("checkout.yourOrderNumber")}
                 </dd>
               </div>
             </dl>
@@ -75,21 +77,19 @@ export default async function WireTransferSuccessPage({ params, searchParams }: 
 
           <div className="mb-6 rounded-xl border border-[#DDA15E]/50 bg-[#DDA15E]/15 p-4">
             <p className="text-sm text-[#283618]">
-              <strong>Important:</strong> We will ship your order after the
-              payment is received. An invoice has been sent to your email.
+              {t("checkout.wireTransferImportant")}
             </p>
           </div>
 
           <p className="mb-6 text-sm text-[#606C38]">
-            Please include your order number ({orderNumber || "as shown above"})
-            as the payment reference to ensure we can process your order quickly.
+            {t("checkout.wireTransferReference", { orderNumber: orderNumber || t("checkout.wireTransferReferenceFallback") })}
           </p>
 
           <Link
             href={`${prefix}/products`}
             className="inline-flex items-center justify-center rounded-full bg-[#283618] px-6 py-2 text-sm font-medium uppercase tracking-wide text-[#FEFAE0] hover:bg-[#283618]/90"
           >
-            Continue Shopping
+            {t("checkout.continueShoppingButton")}
           </Link>
         </div>
       </main>

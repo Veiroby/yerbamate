@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
-import { getLocalePrefixForRedirect, isValidLocale } from "@/lib/i18n";
+import { getLocalePrefixForRedirect, isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -11,22 +11,26 @@ type Props = {
 export default async function AccountInformationPage({ params }: Props) {
   const { locale } = await params;
   if (!isValidLocale(locale)) return null;
-  const user = await getCurrentUser();
+  const [user, translations] = await Promise.all([
+    getCurrentUser(),
+    getTranslations(locale),
+  ]);
   if (!user) redirect(`/${locale}/account/profile`);
+  const t = createT(translations);
 
   return (
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold uppercase tracking-tight text-black sm:text-3xl">
-          Account Information
+          {t("account.information")}
         </h1>
         <p className="mt-1 text-sm text-gray-500">
-          Update your name and contact details.
+          {t("account.updateNameAndContact")}
         </p>
       </header>
 
       <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-        <h2 className="text-lg font-bold text-black">Personal details</h2>
+        <h2 className="text-lg font-bold text-black">{t("account.personalDetails")}</h2>
         <form
           action={async (formData) => {
             "use server";
@@ -57,7 +61,7 @@ export default async function AccountInformationPage({ params }: Props) {
           </div>
           <div className="space-y-2">
             <label className="block text-xs font-medium text-gray-600">
-              Email
+              {t("common.email")}
             </label>
             <input
               type="email"
@@ -66,14 +70,14 @@ export default async function AccountInformationPage({ params }: Props) {
               className="w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-500"
             />
             <p className="text-xs text-gray-500">
-              Email cannot be changed here. Contact support if needed.
+              {t("account.emailCannotChange")}
             </p>
           </div>
           <button
             type="submit"
             className="rounded-full bg-black px-4 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800"
           >
-            Save changes
+            {t("account.saveChanges")}
           </button>
         </form>
       </section>

@@ -6,7 +6,7 @@ import { createT, type Translations } from "./translations";
 
 type TranslationContextType = {
   locale: Locale;
-  t: (key: string) => string;
+  t: (key: string, vars?: Record<string, string | number>) => string;
   translations: Translations;
 };
 

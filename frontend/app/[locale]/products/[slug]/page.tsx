@@ -7,7 +7,7 @@ import { SiteHeader } from "@/app/components/site-header";
 import { SiteFooter } from "@/app/components/site-footer";
 import { AddToCartForm } from "@/app/products/[slug]/add-to-cart-form";
 import { ProductReviewsSection } from "@/app/products/[slug]/product-reviews-section";
-import { isValidLocale } from "@/lib/i18n";
+import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +22,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const slug = decodeURIComponent(rawSlug).trim();
   const user = await getCurrentUser();
 
-  const [product, bundleOffers, reviews] = await Promise.all([
+  const [product, bundleOffers, reviews, translations] = await Promise.all([
     prisma.product.findUnique({
       where: { slug },
       include: {
@@ -64,10 +64,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const soldOut = stockLocation !== "warehouse" && quantityLeft <= 0;
   const stockLabel =
     stockLocation === "warehouse"
-      ? "Get in 5–7 days"
+      ? "get_in_5_7_days"
       : quantityLeft > 0
-        ? "In stock"
-        : "Get in 5–7 days";
+        ? "in_stock"
+        : "get_in_5_7_days";
   const primaryImage = product.images[0];
   const price = Number(product.price);
 
@@ -96,9 +96,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <nav aria-label="Breadcrumb" className="mb-6 text-sm text-gray-500">
-          <Link href={prefix} className="hover:text-black">Home</Link>
+          <Link href={prefix} className="hover:text-black">{t("common.home")}</Link>
           <span className="mx-1">/</span>
-          <Link href={`${prefix}/products`} className="hover:text-black">Shop</Link>
+          <Link href={`${prefix}/products`} className="hover:text-black">{t("product.shop")}</Link>
           <span className="mx-1">/</span>
           <span className="text-gray-900">{product.name}</span>
         </nav>
@@ -121,11 +121,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   }}
                 />
               ) : (
-                <div className="flex h-full items-center justify-center text-gray-400">Product image</div>
+                <div className="flex h-full items-center justify-center text-gray-400">{t("product.productImage")}</div>
               )}
               {soldOut && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                  <span className="rounded-full bg-black px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white">Sold out</span>
+                  <span className="rounded-full bg-black px-6 py-3 text-sm font-semibold uppercase tracking-wide text-white">{t("product.soldOut")}</span>
                 </div>
               )}
             </div>
@@ -161,8 +161,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <p className="text-xl font-semibold text-black">{product.currency} {price.toFixed(2)}</p>
               {!soldOut && (
                 <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
-                  {stockLabel}
-                  {stockLabel === "In stock" && quantityLeft > 0 && quantityLeft <= 20 && ` (${quantityLeft})`}
+                  {stockLabel === "in_stock" ? t("product.inStock") : t("product.getIn57Days")}
+                  {stockLabel === "in_stock" && quantityLeft > 0 && quantityLeft <= 20 && ` (${quantityLeft})`}
                 </span>
               )}
             </div>
@@ -175,19 +175,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </p>
             )}
             {product.origin && (
-              <p className="mt-2 text-xs text-gray-500">Origin: {product.origin}</p>
+              <p className="mt-2 text-xs text-gray-500">{t("product.origin")}: {product.origin}</p>
             )}
 
             {productBundles.length > 0 && (
               <div className="mt-6 space-y-3">
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Offers</p>
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t("product.offers")}</p>
                 {productBundles.map((bundle) => (
                   <div
                     key={bundle.id}
                     className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3"
                   >
                     <span className="text-sm font-medium text-gray-900">
-                      Buy {bundle.minQuantity}+ — save {Number(bundle.discountPercent)}%
+                      {t("product.buySave", { min: bundle.minQuantity, percent: Number(bundle.discountPercent) })}
                     </span>
                     {bundle.description && (
                       <span className="text-xs text-gray-500">{bundle.description}</span>
@@ -208,16 +208,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
             )}
 
             <p className="mt-6 text-xs text-gray-500">
-              Ships in 1–2 business days. Secure checkout with Stripe. Guest checkout supported.
+              {t("product.shipsIn12Days")}
             </p>
           </div>
         </div>
 
         <section className="mt-12 border-t border-gray-200 pt-10">
-          <h2 className="text-lg font-bold uppercase tracking-wide text-black">Product details</h2>
+          <h2 className="text-lg font-bold uppercase tracking-wide text-black">{t("product.productDetails")}</h2>
           <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-6">
             <p className="whitespace-pre-line text-sm leading-relaxed text-gray-700">
-              {product.description ?? "No description available."}
+              {product.description ?? t("product.noDescription")}
             </p>
           </div>
         </section>

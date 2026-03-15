@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/lib/translation-context";
 
 type Props = {
   id: string;
@@ -17,6 +18,7 @@ type Props = {
 
 export function CartItem({ id, quantity: initialQuantity, unitPrice, currency, product }: Props) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [quantity, setQuantity] = useState(initialQuantity);
   const [loading, setLoading] = useState(false);
 
@@ -62,7 +64,7 @@ export function CartItem({ id, quantity: initialQuantity, unitPrice, currency, p
         onClick={handleDelete}
         disabled={loading}
         className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center text-gray-400 hover:text-red-600 disabled:opacity-40 transition sm:static sm:order-last sm:ml-auto"
-        aria-label="Remove item"
+        aria-label={t("cart.removeItem")}
       >
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -89,10 +91,10 @@ export function CartItem({ id, quantity: initialQuantity, unitPrice, currency, p
         </div>
         <div className="flex-1 min-w-0 pt-1 sm:pt-0">
           <p className="font-semibold text-black truncate">
-            {product?.name ?? "Product"}
+            {product?.name ?? t("common.product")}
           </p>
           <p className="mt-0.5 text-sm text-gray-500">
-            {currency} {unitPrice.toFixed(2)} each
+            {currency} {unitPrice.toFixed(2)} {t("cart.each")}
           </p>
           <p className="mt-2 text-base font-bold text-black sm:mt-3">
             {currency} {lineTotal.toFixed(2)}
@@ -104,21 +106,21 @@ export function CartItem({ id, quantity: initialQuantity, unitPrice, currency, p
                 onClick={handleDecrement}
                 disabled={loading || quantity <= 1}
                 className="flex h-9 w-9 items-center justify-center rounded-l-full text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                aria-label="Decrease quantity"
+                aria-label={t("cart.decreaseQty")}
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                 </svg>
               </button>
               <span className="min-w-[2.25rem] text-center text-sm font-medium text-black">
-                {loading ? "..." : quantity}
+                {loading ? t("cart.loadingQty") : quantity}
               </span>
               <button
                 type="button"
                 onClick={handleIncrement}
                 disabled={loading}
                 className="flex h-9 w-9 items-center justify-center rounded-r-full text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-                aria-label="Increase quantity"
+                aria-label={t("cart.increaseQty")}
               >
                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

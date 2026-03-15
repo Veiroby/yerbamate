@@ -169,7 +169,7 @@ export default async function CartPage({ params }: Props) {
                 <div className="flex items-center gap-2 rounded-xl bg-[#606C38]/10 px-4 py-3 text-sm text-[#283618]">
                   <span className="text-[#BC6C25]">🎉</span>
                   <span className="font-medium">
-                    You&apos;re saving {currency} {bundleSavings.toFixed(2)} with bundle discounts!
+                    {t("cart.bundleSavingsMessage", { currency, amount: bundleSavings.toFixed(2) })}
                   </span>
                 </div>
               )}

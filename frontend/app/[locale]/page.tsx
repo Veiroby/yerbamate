@@ -14,6 +14,7 @@ import { FollowSubscribe } from "@/app/components/landing/FollowSubscribe";
 import { Footer } from "@/app/components/landing/Footer";
 import { TestimonialsSection } from "@/app/components/landing/TestimonialsSection";
 import type { Locale } from "@/lib/i18n";
+import { getTranslations, createT } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -45,8 +46,8 @@ export default async function HomePage({ params }: Props) {
   const { locale: localeParam } = await params;
   const locale = (localeParam === "lv" || localeParam === "en" ? localeParam : "lv") as Locale;
 
-  const user = await getCurrentUser();
-  const [settings, latestProducts, heroStats] = await Promise.all([
+  const [user, settings, latestProducts, heroStats, translations] = await Promise.all([
+    getCurrentUser(),
     prisma.siteSettings.findUnique({
       where: { id: "default" },
     }),
@@ -71,7 +72,9 @@ export default async function HomePage({ params }: Props) {
       const customerCount = new Set(customerEmails.map((o) => o.email)).size;
       return { productCount, brandCount, customerCount };
     })(),
+    getTranslations(locale),
   ]);
+  const t = createT(translations);
 
   const newArrivalsCollectionId = settings?.homeNewArrivalsCollectionId ?? null;
   const topSellingCollectionId = settings?.homeTopSellingCollectionId ?? null;
@@ -149,8 +152,8 @@ export default async function HomePage({ params }: Props) {
         />
 
         <section className="grid md:grid-cols-2" aria-label="Featured products">
-          <PromoBlock
-            title={firstProduct?.name ?? "Pure yerba mate"}
+<PromoBlock
+          title={firstProduct?.name ?? t("home.pureYerbaMate")}
             price={firstProduct ? `€${Number(firstProduct.price).toFixed(2)}` : "€19.99"}
             href={
               firstProduct
@@ -165,7 +168,7 @@ export default async function HomePage({ params }: Props) {
             productSlug={firstProduct?.slug}
           />
           <PromoBlock
-            title={secondProduct?.name ?? "Best blends"}
+            title={secondProduct?.name ?? t("home.bestBlends")}
             price={secondProduct ? `€${Number(secondProduct.price).toFixed(2)}` : "€19.99"}
             href={
               secondProduct
@@ -187,7 +190,7 @@ export default async function HomePage({ params }: Props) {
 
         <section className="grid md:grid-cols-2" aria-label="More products">
           <PromoBlock
-            title={thirdProduct?.name ?? "Classic mate"}
+            title={thirdProduct?.name ?? t("home.classicMate")}
             price={thirdProduct ? `€${Number(thirdProduct.price).toFixed(2)}` : "€2.32"}
             href={
               thirdProduct
@@ -202,7 +205,7 @@ export default async function HomePage({ params }: Props) {
             productSlug={thirdProduct?.slug}
           />
           <PromoBlock
-            title={fourthProduct?.name ?? "Herbal blends"}
+            title={fourthProduct?.name ?? t("home.herbalBlends")}
             price={fourthProduct ? `€${Number(fourthProduct.price).toFixed(2)}` : "€19.99"}
             href={
               fourthProduct

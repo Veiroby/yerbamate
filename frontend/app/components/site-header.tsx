@@ -166,7 +166,7 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
             <Link
               href={`/${locale}/cart`}
               className="relative flex h-10 w-10 items-center justify-center text-gray-700 hover:text-black"
-              aria-label={`${t("nav.cart")}${itemCount > 0 ? `, ${itemCount} items` : ""}`}
+              aria-label={`${t("nav.cart")}${itemCount > 0 ? t("nav.cartWithCount", { count: itemCount }) : ""}`}
             >
               <CartIcon className="h-5 w-5" />
               <CartBadge count={itemCount} />

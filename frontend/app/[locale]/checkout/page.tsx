@@ -8,7 +8,7 @@ import { SiteHeader } from "@/app/components/site-header";
 import { SiteFooter } from "@/app/components/site-footer";
 import { CheckoutForm } from "@/app/checkout/checkout-form";
 import { isMaksekeskusConfigured } from "@/lib/maksekeskus";
-import { isValidLocale } from "@/lib/i18n";
+import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
 async function getCartWithItems() {
   const sessionId = (await cookies()).get("cart_session_id")?.value;
@@ -83,6 +83,8 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
   const estimatedTotal = subtotal - discountAmount + shipping.amount;
   const currency = items[0]?.product?.currency ?? "EUR";
   const prefix = `/${locale}`;
+  const translations = await getTranslations(locale);
+  const t = createT(translations);
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] text-[#1a1a1a]">
@@ -92,18 +94,18 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
           <ol className="flex items-center gap-1.5">
             <li>
               <Link href={prefix} className="transition hover:text-gray-900">
-                Home
+                {t("common.home")}
               </Link>
             </li>
             <li aria-hidden>/</li>
             <li>
               <Link href={`${prefix}/cart`} className="transition hover:text-gray-900">
-                Cart
+                {t("nav.cart")}
               </Link>
             </li>
             <li aria-hidden>/</li>
             <li className="font-medium text-gray-900" aria-current="page">
-              Checkout
+              {t("checkout.checkout")}
             </li>
           </ol>
         </nav>
@@ -111,28 +113,28 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
         <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold uppercase tracking-tight text-black sm:text-3xl">
-              Checkout
+              {t("checkout.checkout")}
             </h1>
             <p className="mt-1 text-sm text-gray-500">
-              Guest checkout is supported. You can create an account later.
+              {t("checkout.guestCheckout")}
             </p>
           </div>
           <Link
             href={`${prefix}/cart`}
             className="text-sm font-medium uppercase tracking-wide text-gray-600 transition hover:text-black"
           >
-            Back to cart
+            {t("checkout.backToCart")}
           </Link>
         </header>
 
         {items.length === 0 ? (
           <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
             <p className="text-sm text-gray-600">
-              Your cart is empty. Add items from the{" "}
+              {t("checkout.cartEmpty")}{" "}
               <Link href={`${prefix}/products`} className="font-medium text-black underline hover:no-underline">
-                shop
+                {t("checkout.shop")}
               </Link>{" "}
-              before checking out.
+              {t("checkout.beforeCheckingOut")}
             </p>
           </div>
         ) : (
@@ -147,7 +149,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
 
             <div className="lg:sticky lg:top-6 lg:self-start">
               <section className="space-y-5 rounded-2xl bg-white p-5 shadow-sm sm:p-6">
-                <h2 className="text-lg font-bold text-black">Order summary</h2>
+                <h2 className="text-lg font-bold text-black">{t("checkout.orderSummary")}</h2>
                 <div className="max-h-[260px] space-y-3 overflow-y-auto pr-1">
                   {items.map((item) => (
                     <div
@@ -168,10 +170,10 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium text-black">
-                            {item.product?.name ?? "Product"}
+                            {item.product?.name ?? t("common.product")}
                           </p>
                           <p className="text-xs text-gray-500">
-                            Qty {item.quantity}
+                            {t("checkout.qty")} {item.quantity}
                           </p>
                         </div>
                       </div>
@@ -183,27 +185,27 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
                 </div>
                 <dl className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <dt className="text-gray-500">Subtotal</dt>
+                    <dt className="text-gray-500">{t("cart.subtotal")}</dt>
                     <dd className="font-medium text-black">
                       {currency} {subtotal.toFixed(2)}
                     </dd>
                   </div>
                   {appliedDiscountCode && discountAmount > 0 && (
                     <div className="flex justify-between text-red-600">
-                      <dt>Discount ({appliedDiscountCode})</dt>
+                      <dt>{t("cart.discountCode", { code: appliedDiscountCode })}</dt>
                       <dd className="font-medium">
                         -{currency} {discountAmount.toFixed(2)}
                       </dd>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <dt className="text-gray-500">Shipping</dt>
+                    <dt className="text-gray-500">{t("checkout.shipping")}</dt>
                     <dd className="font-medium text-black">
                       {currency} {(shipping.amount ?? 0).toFixed(2)}
                     </dd>
                   </div>
                   <div className="flex justify-between border-t border-gray-100 pt-3">
-                    <dt className="font-bold text-black">Estimated total</dt>
+                    <dt className="font-bold text-black">{t("checkout.estimatedTotal")}</dt>
                     <dd className="font-bold text-black">
                       {currency} {estimatedTotal.toFixed(2)}
                     </dd>
