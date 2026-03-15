@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import {
@@ -56,6 +57,7 @@ export default async function AdminShippingPage() {
               dpdPriceByCountry,
             });
             revalidatePath("/admin/shipping");
+            redirect("/admin/shipping?saved=1");
           }}
           className="space-y-4"
         >
@@ -141,6 +143,8 @@ export default async function AdminShippingPage() {
                 countries,
               },
             });
+            revalidatePath("/admin/shipping");
+            redirect("/admin/shipping?saved=1");
           }}
           className="grid gap-3 md:grid-cols-3"
         >
@@ -238,6 +242,8 @@ export default async function AdminShippingPage() {
                       estimatedDays: estimatedDays ?? undefined,
                     },
                   });
+                  revalidatePath("/admin/shipping");
+                  redirect("/admin/shipping?saved=1");
                 }}
                 className="grid gap-2 md:grid-cols-4"
               >

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 type PopupSettings = {
   popupEnabled: boolean;
@@ -16,6 +17,7 @@ type Props = {
 };
 
 export function PopupSettingsForm({ initialSettings }: Props) {
+  const router = useRouter();
   const [settings, setSettings] = useState<PopupSettings>(initialSettings);
   const [status, setStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -33,9 +35,7 @@ export function PopupSettingsForm({ initialSettings }: Props) {
       });
 
       if (res.ok) {
-        setStatus("success");
-        setMessage("Settings saved successfully!");
-        setTimeout(() => setStatus("idle"), 3000);
+        router.push("/admin/email?saved=1");
       } else {
         const data = await res.json();
         setStatus("error");

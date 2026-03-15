@@ -1,5 +1,6 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 
@@ -14,6 +15,7 @@ export async function addProductToCollection(collectionId: string, productId: st
   });
   revalidatePath(`/admin/collections/${collectionId}`);
   revalidatePath("/");
+  redirect(`/admin/collections/${collectionId}?saved=1`);
 }
 
 export async function removeProductFromCollection(collectionId: string, productInCollectionId: string) {
@@ -22,6 +24,7 @@ export async function removeProductFromCollection(collectionId: string, productI
   });
   revalidatePath(`/admin/collections/${collectionId}`);
   revalidatePath("/");
+  redirect(`/admin/collections/${collectionId}?saved=1`);
 }
 
 export async function reorderCollectionProducts(
@@ -36,4 +39,5 @@ export async function reorderCollectionProducts(
   }
   revalidatePath(`/admin/collections/${collectionId}`);
   revalidatePath("/");
+  redirect(`/admin/collections/${collectionId}?saved=1`);
 }

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { AdminSidebar } from "./admin-sidebar";
+import { SaveNotification } from "@/app/components/save-notification";
 
 export default async function AdminLayout({
   children,
@@ -17,6 +18,7 @@ export default async function AdminLayout({
 
   return (
     <div className="flex min-h-screen bg-zinc-50">
+      <SaveNotification />
       <AdminSidebar />
       <main className="flex-1 overflow-auto">
         <header className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-200 bg-white/95 px-6 py-4 backdrop-blur">

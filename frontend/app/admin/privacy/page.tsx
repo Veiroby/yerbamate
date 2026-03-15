@@ -1,3 +1,6 @@
+import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
+
 export default function AdminPrivacyPage() {
   return (
     <div className="max-w-3xl space-y-6">
@@ -16,6 +19,8 @@ export default function AdminPrivacyPage() {
           action={async (formData) => {
             "use server";
             // Placeholder: persist privacy policy (e.g. in DB or CMS) in a future release
+            revalidatePath("/admin/privacy");
+            redirect("/admin/privacy?saved=1");
           }}
           className="space-y-4"
         >

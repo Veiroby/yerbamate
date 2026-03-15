@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 
@@ -60,6 +61,7 @@ export default async function AdminMainPageEditor() {
             });
             revalidatePath("/admin/main-page");
             revalidatePath("/");
+            redirect("/admin/main-page?saved=1");
           }}
           className="flex flex-wrap items-end gap-3"
         >
@@ -106,6 +108,7 @@ export default async function AdminMainPageEditor() {
             });
             revalidatePath("/admin/main-page");
             revalidatePath("/");
+            redirect("/admin/main-page?saved=1");
           }}
           className="flex flex-wrap items-end gap-3"
         >
@@ -154,6 +157,7 @@ export default async function AdminMainPageEditor() {
             });
             revalidatePath("/admin/main-page");
             revalidatePath("/");
+            redirect("/admin/main-page?saved=1");
           }}
           className="space-y-4"
         >

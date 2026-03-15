@@ -29,6 +29,7 @@ async function deleteImageAction(formData: FormData) {
 
   await revalidatePath(`/admin/products/${productId}/edit`);
   await revalidatePath("/admin/products");
+  redirect(`/admin/products/${productId}/edit?saved=1`);
 }
 
 async function updateFocalPointAction(formData: FormData) {
@@ -68,6 +69,7 @@ async function updateFocalPointAction(formData: FormData) {
 
   await revalidatePath(`/admin/products/${productId}/edit`);
   await revalidatePath("/admin/products");
+  redirect(`/admin/products/${productId}/edit?saved=1`);
 }
 
 export default async function AdminProductEditPage({ params, searchParams }: Props) {

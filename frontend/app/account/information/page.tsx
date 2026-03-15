@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -27,6 +28,8 @@ export default async function AccountInformationPage() {
               where: { id: user.id },
               data: { name },
             });
+            revalidatePath("/account/information");
+            redirect("/account/information?saved=1");
           }}
           className="mt-4 space-y-4"
         >

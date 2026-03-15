@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { saveProductImage } from "@/lib/upload";
@@ -46,6 +47,7 @@ async function deleteProductAction(formData: FormData) {
   });
   revalidatePath("/admin/products");
   revalidatePath("/admin/inventory");
+  redirect("/admin/products?saved=1");
 }
 
 export default async function AdminProductsPage() {
@@ -93,6 +95,8 @@ export default async function AdminProductsPage() {
                 await prisma.category.create({
                   data: { name, slug: finalSlug },
                 });
+                revalidatePath("/admin/products");
+                redirect("/admin/products?saved=1");
               }}
               className="mb-4 flex flex-wrap items-end gap-3"
             >
@@ -199,6 +203,7 @@ export default async function AdminProductsPage() {
             }
             revalidatePath("/admin/products");
             revalidatePath("/admin/inventory");
+            redirect("/admin/products?saved=1");
           }}
           encType="multipart/form-data"
           className="grid gap-3 md:grid-cols-4"
@@ -360,6 +365,7 @@ export default async function AdminProductsPage() {
                     );
                     revalidatePath("/admin/products");
                     revalidatePath("/admin/inventory");
+                    redirect("/admin/products?saved=1");
                   }}
                   className="flex items-center gap-1"
                 >
@@ -393,6 +399,7 @@ export default async function AdminProductsPage() {
                     });
                     revalidatePath("/admin/products");
                     revalidatePath("/admin/inventory");
+                    redirect("/admin/products?saved=1");
                   }}
                   className="flex items-center gap-1"
                 >
@@ -426,6 +433,7 @@ export default async function AdminProductsPage() {
                     });
                     revalidatePath("/admin/products");
                     revalidatePath("/admin/inventory");
+                    redirect("/admin/products?saved=1");
                   }}
                     className="flex items-center gap-1"
                   >
@@ -460,6 +468,7 @@ export default async function AdminProductsPage() {
                     });
                     revalidatePath("/admin/products");
                     revalidatePath("/admin/inventory");
+                    redirect("/admin/products?saved=1");
                   }}
                   className="flex items-center gap-1"
                 >
@@ -488,6 +497,7 @@ export default async function AdminProductsPage() {
                     });
                     revalidatePath("/admin/products");
                     revalidatePath("/admin/inventory");
+                    redirect("/admin/products?saved=1");
                   }}
                   className="flex items-center gap-1"
                 >
@@ -518,6 +528,7 @@ export default async function AdminProductsPage() {
                     });
                     revalidatePath("/admin/products");
                     revalidatePath("/admin/inventory");
+                    redirect("/admin/products?saved=1");
                   }}
                   className="flex items-center gap-1"
                 >
@@ -554,6 +565,7 @@ export default async function AdminProductsPage() {
                     });
                     revalidatePath("/admin/products");
                     revalidatePath("/admin/inventory");
+                    redirect("/admin/products?saved=1");
                   }}
                   className="flex items-center gap-2"
                 >

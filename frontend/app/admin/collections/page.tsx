@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 
@@ -43,6 +44,7 @@ export default async function AdminCollectionsPage() {
             });
             revalidatePath("/admin/collections");
             revalidatePath("/");
+            redirect("/admin/collections?saved=1");
           }}
           className="flex flex-wrap items-end gap-3"
         >
