@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { DEFAULT_LOCALE, isValidLocale } from "./lib/locale";
 
-const LOCALE_PREFIX = "/:locale(lv|en)";
-
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
   // Skip API, admin, and static
