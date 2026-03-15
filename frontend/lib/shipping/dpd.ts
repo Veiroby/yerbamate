@@ -61,6 +61,25 @@ export type DpdShipmentRequest = {
 // In-memory token cache
 let cachedToken: { token: string; expiresAt: Date } | null = null;
 
+// In-memory pickup-point cache (per country, shared between API and validation)
+type PickupCacheEntry = { points: DpdPickupPoint[]; fetchedAt: number };
+const pickupCache = new Map<string, PickupCacheEntry>();
+const PICKUP_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+function getCachedPickupPoints(code: string): DpdPickupPoint[] | null {
+  const entry = pickupCache.get(code);
+  if (!entry) return null;
+  if (Date.now() - entry.fetchedAt > PICKUP_CACHE_TTL_MS) {
+    pickupCache.delete(code);
+    return null;
+  }
+  return entry.points;
+}
+
+function setCachedPickupPoints(code: string, points: DpdPickupPoint[]): void {
+  pickupCache.set(code, { points, fetchedAt: Date.now() });
+}
+
 function getDpdCredentials() {
   return {
     username: process.env.DPD_USERNAME || "",
@@ -213,6 +232,7 @@ export async function fetchDpdPickupPointsFromApi(country: string): Promise<DpdP
     console.log(`[DPD API] Fetched ${points.length} pickup points for ${code}`);
     
     if (points.length > 0) {
+      setCachedPickupPoints(code, points);
       return points;
     }
   } catch (error) {
@@ -507,6 +527,8 @@ const PICKUP_POINTS: Record<string, DpdPickupPoint[]> = {
 export function getDpdPickupPoints(country: string): DpdPickupPoint[] {
   const code = country.toUpperCase();
   if (code === "LV" || code === "EE" || code === "LT") {
+    const cached = getCachedPickupPoints(code);
+    if (cached) return cached;
     return PICKUP_POINTS[code] ?? [];
   }
   return [];

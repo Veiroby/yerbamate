@@ -42,13 +42,37 @@ function ParcelPicker({
 
   const selected = pickupPoints.find((p) => p.id === selectedPickupId);
   const searchLower = filter.trim().toLowerCase();
-  const filtered =
-    searchLower === ""
-      ? pickupPoints
-      : pickupPoints.filter((p) => {
-          const text = `${p.name} ${p.address} ${p.city} ${p.postalCode}`.toLowerCase();
-          return text.includes(searchLower);
-        });
+  const filtered = (() => {
+    if (pickupPoints.length === 0) return [];
+
+    // If no filter, show all points as-is
+    if (searchLower === "") return pickupPoints;
+
+    const minChars = 2;
+    const source = searchLower.length < minChars ? pickupPoints : pickupPoints;
+
+    const scored = source
+      .map((p) => {
+        const name = p.name.toLowerCase();
+        const city = p.city.toLowerCase();
+        const address = p.address.toLowerCase();
+        const postal = p.postalCode.toLowerCase();
+        const haystack = `${name} ${address} ${city} ${postal}`;
+        if (!haystack.includes(searchLower)) return null;
+
+        // Simple scoring: prioritize prefix matches on city/name, then others
+        let score = 0;
+        if (city.startsWith(searchLower)) score += 3;
+        if (name.startsWith(searchLower)) score += 2;
+        if (address.startsWith(searchLower)) score += 1;
+
+        return { point: p, score };
+      })
+      .filter((x): x is { point: PickupPoint; score: number } => x !== null);
+
+    scored.sort((a, b) => b.score - a.score);
+    return scored.map((x) => x.point);
+  })();
 
   useEffect(() => {
     if (!open) return;
