@@ -111,32 +111,51 @@ export default async function CartPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
+    <div className="min-h-screen bg-[#F5F5F5] text-[#1a1a1a]">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} />
-      <main className="mx-auto max-w-4xl px-4 py-10">
-        <header className="mb-6 flex items-center justify-between">
-          <h1 className="heading-page">Your cart</h1>
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+        {/* Breadcrumbs */}
+        <nav className="mb-4 text-sm text-gray-500" aria-label="Breadcrumb">
+          <ol className="flex items-center gap-1.5">
+            <li>
+              <Link href="/" className="transition hover:text-gray-900">
+                Home
+              </Link>
+            </li>
+            <li aria-hidden>/</li>
+            <li className="font-medium text-gray-900" aria-current="page">
+              Cart
+            </li>
+          </ol>
+        </nav>
+
+        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-2xl font-bold uppercase tracking-tight text-black sm:text-3xl">
+            Your cart
+          </h1>
           <Link
             href="/products"
-            className="text-sm font-medium uppercase tracking-wide text-[#606C38] transition hover:text-[#BC6C25]"
+            className="text-sm font-medium uppercase tracking-wide text-gray-600 transition hover:text-black"
           >
             Continue shopping
           </Link>
         </header>
 
         {items.length === 0 ? (
-          <div className="rounded-2xl border border-[#606C38]/20 bg-[#FEFAE0] p-8 text-center text-sm text-[#606C38]">
-            Your cart is empty. Start by adding some products from the{" "}
-            <Link href="/products" className="text-[#BC6C25] underline hover:text-[#BC6C25]/90">
-              shop
-            </Link>
-            .
+          <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+            <p className="text-sm text-gray-600">
+              Your cart is empty. Start by adding some products from the{" "}
+              <Link href="/products" className="font-medium text-black underline hover:no-underline">
+                shop
+              </Link>
+              .
+            </p>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-            <div className="space-y-3">
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+            <div className="space-y-4">
               {bundleSavings > 0 && (
-                <div className="flex items-center gap-2 rounded-xl bg-[#606C38]/15 px-4 py-3 text-sm text-[#283618]">
+                <div className="flex items-center gap-2 rounded-xl bg-[#606C38]/10 px-4 py-3 text-sm text-[#283618]">
                   <span className="text-[#BC6C25]">🎉</span>
                   <span className="font-medium">
                     You&apos;re saving {currency} {bundleSavings.toFixed(2)} with bundle discounts!
@@ -162,12 +181,14 @@ export default async function CartPage() {
               ))}
             </div>
 
-            <CartOrderSummary
-              subtotal={subtotal}
-              currency={currency}
-              showReminder={!user}
-              bundleSavings={bundleSavings}
-            />
+            <div className="lg:sticky lg:top-6 lg:self-start">
+              <CartOrderSummary
+                subtotal={subtotal}
+                currency={currency}
+                showReminder={!user}
+                bundleSavings={bundleSavings}
+              />
+            </div>
           </div>
         )}
       </main>

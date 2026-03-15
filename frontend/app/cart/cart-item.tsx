@@ -55,75 +55,78 @@ export function CartItem({ id, quantity: initialQuantity, unitPrice, currency, p
   const lineTotal = unitPrice * quantity;
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-2xl border border-stone-200 bg-white p-4">
-      <div className="flex flex-1 items-center gap-4">
-        <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-stone-100 aspect-square">
+    <div className="relative flex flex-col gap-4 rounded-2xl bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:gap-6">
+      {/* Delete: top-right on mobile, inline on desktop */}
+      <button
+        type="button"
+        onClick={handleDelete}
+        disabled={loading}
+        className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center text-gray-400 hover:text-red-600 disabled:opacity-40 transition sm:static sm:order-last sm:ml-auto"
+        aria-label="Remove item"
+      >
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+      </button>
+
+      <div className="flex flex-1 items-start gap-4 sm:items-center min-w-0">
+        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100 sm:h-28 sm:w-28">
           {product?.image ? (
             <Image
               src={product.image.url}
               alt={product.image.altText ?? product.name}
               fill
               className="object-cover"
-              sizes="64px"
+              sizes="(max-width: 640px) 96px, 112px"
             />
-          ) : null}
+          ) : (
+            <div className="flex h-full items-center justify-center text-gray-400">
+              <svg className="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
+              </svg>
+            </div>
+          )}
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-stone-900 truncate">
+        <div className="flex-1 min-w-0 pt-1 sm:pt-0">
+          <p className="font-semibold text-black truncate">
             {product?.name ?? "Product"}
           </p>
-          <p className="text-xs text-stone-500">
+          <p className="mt-0.5 text-sm text-gray-500">
             {currency} {unitPrice.toFixed(2)} each
           </p>
-        </div>
-      </div>
-
-      <div className="flex items-center gap-3">
-        <div className="flex items-center rounded-lg border border-stone-200">
-          <button
-            type="button"
-            onClick={handleDecrement}
-            disabled={loading || quantity <= 1}
-            className="flex h-8 w-8 items-center justify-center text-stone-600 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed rounded-l-lg transition"
-            aria-label="Decrease quantity"
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-            </svg>
-          </button>
-          <span className="w-10 text-center text-sm font-medium text-stone-900">
-            {loading ? "..." : quantity}
-          </span>
-          <button
-            type="button"
-            onClick={handleIncrement}
-            disabled={loading}
-            className="flex h-8 w-8 items-center justify-center text-stone-600 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed rounded-r-lg transition"
-            aria-label="Increase quantity"
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-          </button>
-        </div>
-
-        <div className="w-20 text-right">
-          <p className="text-sm font-medium text-stone-900">
+          <p className="mt-2 text-base font-bold text-black sm:mt-3">
             {currency} {lineTotal.toFixed(2)}
           </p>
+          <div className="mt-3 flex items-center gap-3">
+            <div className="inline-flex items-center rounded-full border border-gray-200 bg-white">
+              <button
+                type="button"
+                onClick={handleDecrement}
+                disabled={loading || quantity <= 1}
+                className="flex h-9 w-9 items-center justify-center rounded-l-full text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                aria-label="Decrease quantity"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                </svg>
+              </button>
+              <span className="min-w-[2.25rem] text-center text-sm font-medium text-black">
+                {loading ? "..." : quantity}
+              </span>
+              <button
+                type="button"
+                onClick={handleIncrement}
+                disabled={loading}
+                className="flex h-9 w-9 items-center justify-center rounded-r-full text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+                aria-label="Increase quantity"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
-
-        <button
-          type="button"
-          onClick={handleDelete}
-          disabled={loading}
-          className="flex h-8 w-8 items-center justify-center text-stone-400 hover:text-red-600 disabled:opacity-40 transition"
-          aria-label="Remove item"
-        >
-          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
       </div>
     </div>
   );

@@ -42,12 +42,12 @@ export function CartShippingPreview({ subtotal, currency }: Props) {
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-zinc-700">Shipping</span>
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-sm font-medium text-gray-600">Delivery</span>
         <select
           value={globalCountry}
           onChange={(e) => setGlobalCountry(e.target.value as CountryCode)}
-          className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-700 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          className="rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs text-gray-700 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           aria-label="Delivery country"
         >
           {EU_COUNTRIES.map((opt) => (
@@ -58,30 +58,30 @@ export function CartShippingPreview({ subtotal, currency }: Props) {
         </select>
       </div>
       {loading ? (
-        <p className="text-xs text-zinc-500">Loading options…</p>
+        <p className="text-xs text-gray-500">Loading options…</p>
       ) : methods.length === 0 ? (
-        <p className="text-xs text-zinc-500">Calculated at checkout</p>
+        <p className="text-xs text-gray-500">Calculated at checkout</p>
       ) : (
         <ul className="space-y-1.5">
           {methods.map((method) => (
             <li
               key={method.id}
-              className="flex items-center justify-between rounded-lg border border-zinc-200 bg-zinc-50/80 px-2.5 py-2"
+              className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50/80 px-2.5 py-2"
             >
               <span className="flex items-center gap-2">
                 {method.id === DPD_PARCEL_MACHINE_METHOD_ID && (
                   <DpdLogo size="sm" className="shrink-0" />
                 )}
-                <span className="text-xs font-medium text-zinc-800">
+                <span className="text-xs font-medium text-gray-800">
                   {method.name}
                   {method.estimatedDays != null ? (
-                    <span className="ml-1 font-normal text-zinc-500">
+                    <span className="ml-1 font-normal text-gray-500">
                       · {method.estimatedDays} days
                     </span>
                   ) : null}
                 </span>
               </span>
-              <span className="text-xs font-semibold text-zinc-900">
+              <span className="text-xs font-semibold text-black">
                 {method.amount === 0
                   ? "Free"
                   : `${currency} ${method.amount.toFixed(2)}`}
