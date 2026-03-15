@@ -73,7 +73,7 @@ export function PromoBlock({
       </Link>
 
       {/* Content: Figma hierarchy – title (largest), price (large bold), description (smaller), buttons (smallest) */}
-      <div className="flex flex-1 flex-col justify-center px-4 pb-4 sm:px-6 sm:pb-6 md:py-6 md:pr-6 md:pl-2">
+      <div className="flex flex-1 flex-col justify-center pl-0 pr-4 pb-4 sm:pr-6 sm:pb-6 md:py-6 md:pr-6 md:pl-0">
         <h3 className={`text-[1.125rem] font-bold uppercase leading-tight tracking-wide ${textColor} sm:text-xl md:text-2xl`}>
           {title}
         </h3>

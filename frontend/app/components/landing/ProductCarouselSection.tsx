@@ -50,7 +50,7 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
           className="absolute top-2 right-2 z-10"
         />
       </div>
-      <div className="flex flex-1 flex-col p-4">
+      <div className="flex flex-1 flex-col p-2">
         <p className="line-clamp-2 text-base font-medium text-gray-900 sm:text-lg">{p.title}</p>
         {p.weight ? (
           <p className="mt-1 text-sm text-gray-500">{p.weight}</p>

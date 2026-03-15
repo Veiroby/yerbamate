@@ -136,7 +136,7 @@ function CarouselProductCard({ product }: { product: ProductCard }) {
             />
           )}
         </div>
-        <div className="flex flex-1 min-h-0 flex-col px-4 py-2">
+        <div className="flex flex-1 flex-col p-2">
           <h3 className="line-clamp-2 text-sm font-medium text-stone-900 group-hover:text-teal-700 transition">
             {product.name}
           </h3>

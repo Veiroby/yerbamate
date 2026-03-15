@@ -60,7 +60,7 @@ export function ProductCard({
             className="absolute top-2 right-2 z-10"
           />
         </div>
-        <div className="flex flex-1 flex-col p-4 sm:p-5">
+        <div className="flex flex-1 flex-col p-2">
           <h3 className="font-serif text-lg font-semibold text-[#344e41] group-hover:underline">
             {title}
           </h3>

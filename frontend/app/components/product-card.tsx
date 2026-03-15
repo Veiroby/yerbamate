@@ -109,7 +109,7 @@ export function ProductCard({ product, showDescription }: Props) {
         </div>
 
         {/* Left-aligned: title, weight, stock; price at bottom-left */}
-        <div className="flex flex-1 min-h-0 flex-col items-start px-4 pt-0 text-left">
+        <div className="flex flex-1 min-h-0 flex-col p-2 text-left">
           <h2 className="line-clamp-2 text-lg font-semibold text-gray-900 transition group-hover:text-black">
             {product.name}
           </h2>

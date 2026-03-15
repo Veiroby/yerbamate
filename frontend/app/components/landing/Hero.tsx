@@ -38,18 +38,30 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
               Shop now
             </Link>
           </div>
-          <div className="flex flex-row items-center justify-between gap-3 sm:mt-12 sm:grid sm:grid-cols-3 sm:gap-8">
-            <div className="min-w-0 flex-1 text-center sm:text-left">
-              <p className="text-lg font-bold text-black sm:text-2xl">{formatStat(brandCount)}</p>
-              <p className="mt-0.5 text-xs text-gray-600 sm:mt-1 sm:text-sm">International brands</p>
+          <div className="flex flex-row flex-nowrap items-start justify-between gap-2 sm:mt-12 sm:grid sm:grid-cols-3 sm:gap-8">
+            <div className="min-w-0 basis-1/3 shrink-0 text-center sm:text-left">
+              <p className="text-base font-bold text-black sm:text-2xl">
+                {formatStat(brandCount)}
+              </p>
+              <p className="mt-0.5 whitespace-nowrap text-[11px] text-gray-600 sm:mt-1 sm:text-sm">
+                International brands
+              </p>
             </div>
-            <div className="min-w-0 flex-1 text-center sm:text-left">
-              <p className="text-lg font-bold text-black sm:text-2xl">{formatStat(productCount)}</p>
-              <p className="mt-0.5 text-xs text-gray-600 sm:mt-1 sm:text-sm">High quality products</p>
+            <div className="min-w-0 basis-1/3 shrink-0 text-center sm:text-left">
+              <p className="text-base font-bold text-black sm:text-2xl">
+                {formatStat(productCount)}
+              </p>
+              <p className="mt-0.5 whitespace-nowrap text-[11px] text-gray-600 sm:mt-1 sm:text-sm">
+                High quality products
+              </p>
             </div>
-            <div className="min-w-0 flex-1 text-center sm:text-left">
-              <p className="text-lg font-bold text-black sm:text-2xl">{formatStat(customerCount)}</p>
-              <p className="mt-0.5 text-xs text-gray-600 sm:mt-1 sm:text-sm">Happy customers</p>
+            <div className="min-w-0 basis-1/3 shrink-0 text-center sm:text-left">
+              <p className="text-base font-bold text-black sm:text-2xl">
+                {formatStat(customerCount)}
+              </p>
+              <p className="mt-0.5 whitespace-nowrap text-[11px] text-gray-600 sm:mt-1 sm:text-sm">
+                Happy customers
+              </p>
             </div>
           </div>
         </div>
