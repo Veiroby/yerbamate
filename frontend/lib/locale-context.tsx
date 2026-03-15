@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
-import { CountryCode, CurrencyCode, DEFAULT_COUNTRY, DEFAULT_CURRENCY } from "./locale-data";
+import { CountryCode, CurrencyCode, DEFAULT_COUNTRY, DEFAULT_CURRENCY, EU_COUNTRIES } from "./locale-data";
 
 const STORAGE_KEY_COUNTRY = "yerbatea-country";
 const STORAGE_KEY_CURRENCY = "yerbatea-currency";
