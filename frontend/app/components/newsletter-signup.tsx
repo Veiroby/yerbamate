@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "@/lib/translation-context";
 
 type Variant = "default" | "dark";
 
 export function NewsletterSignup({ variant = "default" }: { variant?: Variant }) {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
@@ -25,29 +27,29 @@ export function NewsletterSignup({ variant = "default" }: { variant?: Variant })
       const data = await res.json();
       if (!res.ok) {
         setStatus("error");
-        setMessage(data.error ?? "Something went wrong");
+        setMessage(data.error ?? t("newsletter.error"));
         return;
       }
       setStatus("success");
-      setMessage(data.message ?? "Thanks for subscribing!");
+      setMessage(data.message ?? t("newsletter.success"));
       setEmail("");
     } catch {
       setStatus("error");
-      setMessage("Something went wrong");
+      setMessage(t("newsletter.error"));
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex w-full flex-col gap-2 sm:flex-row sm:items-center">
       <label htmlFor="newsletter-email" className="sr-only">
-        Email for newsletter
+        {t("newsletter.emailLabel")}
       </label>
       <input
         id="newsletter-email"
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        placeholder={isDark ? "Enter your email address" : "Your email"}
+        placeholder={isDark ? t("newsletter.placeholderDark") : t("newsletter.placeholder")}
         disabled={status === "loading"}
         className={`min-w-0 flex-1 rounded-md px-4 py-3 text-sm focus:outline-none focus:ring-2 disabled:opacity-60 ${
           isDark
@@ -65,7 +67,7 @@ export function NewsletterSignup({ variant = "default" }: { variant?: Variant })
             : "bg-[#BC6C25] text-[#FEFAE0] hover:bg-[#a55a1f]"
         }`}
       >
-        {status === "loading" ? "…" : isDark ? "Subscribe to Newsletter" : "Subscribe"}
+        {status === "loading" ? "…" : isDark ? t("newsletter.subscribeToNewsletter") : t("newsletter.subscribe")}
       </button>
       {message && (
         <p

@@ -1,8 +1,11 @@
 "use client";
 
+import { useTranslation } from "@/lib/translation-context";
 import { NewsletterSignup } from "@/app/components/newsletter-signup";
 
 export function FollowSubscribe() {
+  const { t } = useTranslation();
+
   return (
     <section
       className="bg-black px-4 py-12 sm:py-14"
@@ -13,7 +16,7 @@ export function FollowSubscribe() {
           id="newsletter-heading"
           className="text-center text-xl font-bold uppercase tracking-wide text-white sm:text-left sm:text-2xl"
         >
-          Stay up to date about our latest offers
+          {t("newsletter.heading")}
         </h2>
         <div className="w-full shrink-0 sm:max-w-md">
           <NewsletterSignup variant="dark" />

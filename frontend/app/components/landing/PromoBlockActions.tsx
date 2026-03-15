@@ -1,7 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
+import { useTranslation } from "@/lib/translation-context";
 import { useState } from "react";
 
 type Props = {
@@ -22,9 +23,12 @@ export function PromoBlockActions({
   outlineClass = "border-2 border-[#606C38] text-[#606C38] hover:bg-[#606C38]/10",
 }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
+  const { t } = useTranslation();
   const { addToCart, isLoading } = useCart();
   const [adding, setAdding] = useState(false);
   const busy = adding || isLoading;
+  const checkoutPrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
 
   const handleAddToCart = async () => {
     setAdding(true);
@@ -36,7 +40,7 @@ export function PromoBlockActions({
     setAdding(true);
     const ok = await addToCart(productId, productName, 1);
     setAdding(false);
-    if (ok) router.push("/checkout");
+    if (ok) router.push(checkoutPrefix ? `${checkoutPrefix}/checkout` : "/checkout");
   };
 
   return (
@@ -47,7 +51,7 @@ export function PromoBlockActions({
         disabled={busy}
         className={`h-11 w-full min-h-[44px] rounded px-3 py-2.5 text-xs font-semibold uppercase tracking-wide transition disabled:opacity-50 sm:h-auto sm:min-h-0 sm:w-auto sm:px-4 sm:py-2.5 sm:text-sm ${outlineClass}`}
       >
-        {busy ? "…" : "Add to cart"}
+        {busy ? "…" : t("home.addToCart")}
       </button>
       <button
         type="button"
@@ -55,7 +59,7 @@ export function PromoBlockActions({
         disabled={busy}
         className={`h-11 w-full min-h-[44px] rounded px-3 py-2.5 text-xs font-semibold uppercase tracking-wide text-white transition disabled:opacity-50 sm:h-auto sm:min-h-0 sm:w-auto sm:px-4 sm:py-2.5 sm:text-sm ${buttonClass}`}
       >
-        Buy now
+        {t("home.buyNow")}
       </button>
     </div>
   );

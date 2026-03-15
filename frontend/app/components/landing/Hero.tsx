@@ -1,5 +1,9 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useTranslation } from "@/lib/translation-context";
 
 type HeroProps = {
   productCount: number;
@@ -14,6 +18,10 @@ function formatStat(n: number): string {
 }
 
 export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
+  const { t } = useTranslation();
+  const pathname = usePathname();
+  const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
+
   return (
     <section
       className="relative overflow-hidden bg-white px-4 py-12 sm:py-16 md:py-20 lg:py-24"
@@ -26,16 +34,16 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
               id="hero-heading"
               className="text-4xl font-bold leading-tight text-black sm:text-5xl md:text-6xl lg:text-[3.5rem]"
             >
-              Find mate that matches your style
+              {t("hero.heading")}
             </h1>
             <p className="mt-4 max-w-lg text-base text-gray-600 sm:text-lg">
-              Premium yerba mate and gourds. Quality you can taste, delivered to your door.
+              {t("hero.subheading")}
             </p>
             <Link
-              href="/products"
+              href={localePrefix ? `${localePrefix}/products` : "/products"}
               className="mt-6 inline-flex rounded-md bg-black px-8 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800"
             >
-              Shop now
+              {t("hero.shopNow")}
             </Link>
           </div>
           <div className="flex flex-row flex-nowrap items-start justify-between gap-2 sm:mt-12 sm:grid sm:grid-cols-3 sm:gap-8">
@@ -44,7 +52,7 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
                 {formatStat(brandCount)}
               </p>
               <p className="mt-0.5 whitespace-nowrap text-[11px] text-gray-600 sm:mt-1 sm:text-sm">
-                International brands
+                {t("hero.internationalBrands")}
               </p>
             </div>
             <div className="min-w-0 basis-1/3 shrink-0 text-center sm:text-left">
@@ -52,7 +60,7 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
                 {formatStat(productCount)}
               </p>
               <p className="mt-0.5 whitespace-nowrap text-[11px] text-gray-600 sm:mt-1 sm:text-sm">
-                High quality products
+                {t("hero.highQualityProducts")}
               </p>
             </div>
             <div className="min-w-0 basis-1/3 shrink-0 text-center sm:text-left">
@@ -60,7 +68,7 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
                 {formatStat(customerCount)}
               </p>
               <p className="mt-0.5 whitespace-nowrap text-[11px] text-gray-600 sm:mt-1 sm:text-sm">
-                Happy customers
+                {t("hero.happyCustomers")}
               </p>
             </div>
           </div>
@@ -69,7 +77,7 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
           <div className="relative aspect-square max-w-md overflow-hidden rounded-2xl">
             <Image
               src="/hero-mate.png"
-              alt="Pouring hot water from a thermos into a yerba mate gourd"
+              alt={t("hero.imageAlt")}
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 28rem"

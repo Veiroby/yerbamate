@@ -1,20 +1,9 @@
-const testimonials = [
-  {
-    name: "Sarah M.",
-    text: "Best yerba mate I have ordered online. Fast delivery and the quality is outstanding.",
-    rating: 5,
-  },
-  {
-    name: "Alex K.",
-    text: "Great selection and the mate gourd I bought is beautiful. Will order again.",
-    rating: 5,
-  },
-  {
-    name: "Jordan P.",
-    text: "Customer service was helpful and my order arrived well packaged. Very happy.",
-    rating: 5,
-  },
-];
+"use client";
+
+import { useTranslation } from "@/lib/translation-context";
+
+const testimonialKeys = ["testimonials.quote1", "testimonials.quote2", "testimonials.quote3"] as const;
+const names = ["Sarah M.", "Alex K.", "Jordan P."];
 
 function StarRating({ count }: { count: number }) {
   return (
@@ -29,6 +18,8 @@ function StarRating({ count }: { count: number }) {
 }
 
 export function TestimonialsSection() {
+  const { t } = useTranslation();
+
   return (
     <section className="bg-white px-4 py-12 sm:py-16" aria-labelledby="testimonials-heading">
       <div className="mx-auto max-w-6xl">
@@ -36,17 +27,17 @@ export function TestimonialsSection() {
           id="testimonials-heading"
           className="mb-8 text-center text-3xl font-bold uppercase tracking-wide text-black sm:text-4xl"
         >
-          Our happy customers
+          {t("testimonials.heading")}
         </h2>
         <div className="grid gap-6 sm:grid-cols-3">
-          {testimonials.map(({ name, text, rating }) => (
+          {testimonialKeys.map((key, i) => (
             <div
-              key={name}
+              key={key}
               className="rounded-2xl border border-gray-200 bg-gray-50 p-6"
             >
-              <StarRating count={rating} />
-              <p className="mt-4 text-sm text-gray-700">{text}</p>
-              <p className="mt-3 font-semibold text-gray-900">{name}</p>
+              <StarRating count={5} />
+              <p className="mt-4 text-sm text-gray-700">{t(key)}</p>
+              <p className="mt-3 font-semibold text-gray-900">{names[i]}</p>
             </div>
           ))}
         </div>

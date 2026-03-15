@@ -1,21 +1,16 @@
+"use client";
+
+import { useTranslation } from "@/lib/translation-context";
 import { BenefitsAccordion } from "./BenefitsAccordion";
 
-const benefits = [
-  {
-    title: "Smooth, clean energy",
-    body: "Yerba mate offers a gentle lift without the jitters. Its balanced caffeine and theobromine support focus and alertness, so you stay sharp without the crash.",
-  },
-  {
-    title: "Rich in antioxidants",
-    body: "Packed with vitamins, minerals and polyphenols, mate rivals green tea in antioxidant power. A daily cup supports your body’s natural defences and overall wellness.",
-  },
-  {
-    title: "Supports digestion & wellbeing",
-    body: "Traditionally enjoyed after meals, yerba mate is known to support healthy digestion. Many find it helps maintain a calm, energised state as part of a mindful daily ritual.",
-  },
-];
-
 export function TrendingSection() {
+  const { t } = useTranslation();
+  const benefits = [
+    { title: t("trending.benefit1Title"), body: t("trending.benefit1Body") },
+    { title: t("trending.benefit2Title"), body: t("trending.benefit2Body") },
+    { title: t("trending.benefit3Title"), body: t("trending.benefit3Body") },
+  ];
+
   return (
     <section
       className="bg-white px-4 py-12 sm:py-16"
@@ -26,7 +21,7 @@ export function TrendingSection() {
           id="why-yerba-heading"
           className="text-center text-xl font-bold uppercase tracking-wide text-black sm:text-2xl"
         >
-          Why yerba mate is so good for you
+          {t("trending.heading")}
         </h2>
         <div className="mt-8">
           <BenefitsAccordion benefits={benefits} />
