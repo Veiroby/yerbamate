@@ -35,7 +35,13 @@ function ParcelPicker({
 }) {
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
-  const [dropdownRect, setDropdownRect] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [dropdownRect, setDropdownRect] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    maxHeight: number;
+    openAbove: boolean;
+  } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -73,13 +79,31 @@ function ParcelPicker({
     return scored.map((x) => x.point);
   })();
 
+  const SAFE_MARGIN = 16;
+  const PREFERRED_MAX_HEIGHT = 240;
+  const MIN_SPACE_TO_OPEN_BELOW = 200;
+
   useEffect(() => {
     if (!open) return;
     const el = inputRef.current;
     if (!el) return;
     const updateRect = () => {
       const r = el.getBoundingClientRect();
-      setDropdownRect({ top: r.bottom + 4, left: r.left, width: r.width });
+      const spaceBelow = window.innerHeight - r.bottom - SAFE_MARGIN;
+      const spaceAbove = r.top - SAFE_MARGIN;
+      const openAbove =
+        spaceBelow < MIN_SPACE_TO_OPEN_BELOW || spaceBelow < spaceAbove;
+      const maxHeight = Math.min(
+        PREFERRED_MAX_HEIGHT,
+        openAbove ? spaceAbove : spaceBelow
+      );
+      setDropdownRect({
+        top: r.bottom + 4,
+        left: r.left,
+        width: r.width,
+        maxHeight: Math.max(120, maxHeight),
+        openAbove,
+      });
     };
     updateRect();
     window.addEventListener("scroll", updateRect, true);
@@ -160,10 +184,15 @@ function ParcelPicker({
                 className="rounded-lg border border-gray-200 bg-white shadow-lg"
                 style={{
                   position: "fixed",
-                  top: dropdownRect.top,
+                  ...(dropdownRect.openAbove
+                    ? {
+                        bottom: window.innerHeight - dropdownRect.top + 4,
+                        top: "auto",
+                      }
+                    : { top: dropdownRect.top }),
                   left: dropdownRect.left,
                   width: dropdownRect.width,
-                  maxHeight: 240,
+                  maxHeight: dropdownRect.maxHeight,
                   overflowY: "auto",
                   overflowX: "hidden",
                   WebkitOverflowScrolling: "touch",
