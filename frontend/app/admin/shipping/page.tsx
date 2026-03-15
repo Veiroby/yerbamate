@@ -179,13 +179,76 @@ export default async function AdminShippingPage() {
               key={zone.id}
               className="space-y-3 rounded-xl border border-zinc-200 p-3"
             >
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
                   <p className="font-medium text-zinc-900">{zone.name}</p>
                   <p className="text-xs text-zinc-500">
                     Countries:{" "}
                     {(zone.countries as unknown as string[]).join(", ")}
                   </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <form
+                    action={async (formData) => {
+                      "use server";
+                      const zoneId = formData.get("zoneId")?.toString();
+                      const name = formData.get("name")?.toString().trim();
+                      const countriesRaw = formData.get("countries")?.toString() ?? "";
+                      const countries = countriesRaw
+                        .split(",")
+                        .map((c) => c.trim().toUpperCase())
+                        .filter(Boolean);
+                      if (!zoneId || !name || countries.length === 0) return;
+                      await prisma.shippingZone.update({
+                        where: { id: zoneId },
+                        data: { name, countries },
+                      });
+                      revalidatePath("/admin/shipping");
+                      redirect("/admin/shipping?saved=1");
+                    }}
+                    className="flex flex-wrap items-center gap-2"
+                  >
+                    <input type="hidden" name="zoneId" value={zone.id} />
+                    <input
+                      name="name"
+                      placeholder="Zone name"
+                      defaultValue={zone.name}
+                      className="w-32 rounded-lg border border-zinc-300 px-2 py-1.5 text-xs"
+                    />
+                    <input
+                      name="countries"
+                      placeholder="e.g. US,CA"
+                      defaultValue={(zone.countries as unknown as string[]).join(", ")}
+                      className="w-28 rounded-lg border border-zinc-300 px-2 py-1.5 text-xs"
+                    />
+                    <button
+                      type="submit"
+                      className="rounded-full bg-zinc-700 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-600"
+                    >
+                      Update zone
+                    </button>
+                  </form>
+                  <form
+                    action={async (formData) => {
+                      "use server";
+                      const zoneId = formData.get("zoneId")?.toString();
+                      if (!zoneId) return;
+                      await prisma.shippingZone.delete({
+                        where: { id: zoneId },
+                      });
+                      revalidatePath("/admin/shipping");
+                      redirect("/admin/shipping?saved=1");
+                    }}
+                    className="inline"
+                  >
+                    <input type="hidden" name="zoneId" value={zone.id} />
+                    <button
+                      type="submit"
+                      className="rounded-full border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100"
+                    >
+                      Delete zone
+                    </button>
+                  </form>
                 </div>
               </div>
 

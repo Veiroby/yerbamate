@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { DpdLogo } from "@/app/components/dpd-logo";
-import { DPD_PARCEL_MACHINE_METHOD_ID } from "@/lib/shipping/dpd";
 import { useLocale } from "@/lib/locale-context";
 import { EU_COUNTRIES, CountryCode } from "@/lib/locale-data";
 
@@ -69,9 +67,6 @@ export function CartShippingPreview({ subtotal, currency }: Props) {
               className="flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50/80 px-2.5 py-2"
             >
               <span className="flex items-center gap-2">
-                {method.id === DPD_PARCEL_MACHINE_METHOD_ID && (
-                  <DpdLogo size="sm" className="shrink-0" />
-                )}
                 <span className="text-xs font-medium text-gray-800">
                   {method.name}
                   {method.estimatedDays != null ? (

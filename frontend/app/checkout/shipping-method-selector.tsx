@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { DpdLogo } from "@/app/components/dpd-logo";
 import { DPD_PARCEL_MACHINE_METHOD_ID } from "@/lib/shipping/dpd";
 
 type ShippingOption = {
@@ -323,9 +322,6 @@ export function ShippingMethodSelector({
                 onChange={() => handleMethodChange(method.id)}
                 className="border-gray-300 text-black focus:ring-black"
               />
-              {method.id === DPD_PARCEL_MACHINE_METHOD_ID && (
-                <DpdLogo size="sm" className="shrink-0" />
-              )}
               <span>
                 {method.name}
                 {method.estimatedDays ? (
