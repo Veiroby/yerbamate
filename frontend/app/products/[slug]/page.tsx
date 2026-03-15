@@ -222,7 +222,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </section>
 
         <ProductReviewsSection
-          productSlug={slug}
+          productId={product.id}
           productName={product.name}
           initialReviews={reviewList}
           initialAverage={reviewAverage}

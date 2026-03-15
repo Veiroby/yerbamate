@@ -12,7 +12,7 @@ type ReviewItem = {
 };
 
 type Props = {
-  productSlug: string;
+  productId: string;
   productName: string;
   initialReviews: ReviewItem[];
   initialAverage: number | null;
@@ -42,7 +42,7 @@ function StarDisplay({ rating, size = "md" }: { rating: number; size?: "sm" | "m
 }
 
 export function ProductReviewsSection({
-  productSlug,
+  productId,
   productName,
   initialReviews,
   initialAverage,
@@ -74,7 +74,7 @@ export function ProductReviewsSection({
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/products/${encodeURIComponent(productSlug)}/reviews`, {
+      const res = await fetch(`/api/products/${encodeURIComponent(productId)}/reviews`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

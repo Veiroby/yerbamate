@@ -4,14 +4,14 @@ import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-type GetParams = { params: Promise<{ slug: string }> };
+type GetParams = { params: Promise<{ id: string }> };
 
-/** GET: list approved reviews for a product by slug */
-export async function GET(request: Request, { params }: GetParams) {
-  const { slug } = await params;
-  const decodedSlug = decodeURIComponent(slug).trim();
+/** GET: list approved reviews for a product by id */
+export async function GET(_request: Request, { params }: GetParams) {
+  const { id } = await params;
+
   const product = await prisma.product.findUnique({
-    where: { slug: decodedSlug, active: true },
+    where: { id, active: true },
     select: { id: true },
   });
   if (!product) {
@@ -56,11 +56,10 @@ export async function GET(request: Request, { params }: GetParams) {
 
 /** POST: create a new review (guest or logged-in) */
 export async function POST(request: Request, { params }: GetParams) {
-  const { slug } = await params;
-  const decodedSlug = decodeURIComponent(slug).trim();
+  const { id: productId } = await params;
 
   const product = await prisma.product.findUnique({
-    where: { slug: decodedSlug, active: true },
+    where: { id: productId, active: true },
     select: { id: true, name: true },
   });
   if (!product) {
