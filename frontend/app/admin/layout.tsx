@@ -20,22 +20,22 @@ export default async function AdminLayout({
     <div className="flex min-h-screen bg-zinc-50">
       <SaveNotification />
       <AdminSidebar />
-      <main className="flex-1 overflow-auto">
-        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-zinc-200 bg-white/95 px-6 py-4 backdrop-blur">
-          <div>
-            <h1 className="text-lg font-semibold tracking-tight text-zinc-900">
+      <main className="min-w-0 flex-1 overflow-x-auto pl-14 md:pl-0">
+        <header className="sticky top-0 z-10 flex shrink-0 items-center justify-between gap-2 border-b border-zinc-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 sm:py-4">
+          <div className="min-w-0">
+            <h1 className="truncate text-base font-semibold tracking-tight text-zinc-900 sm:text-lg">
               Admin
             </h1>
-            <p className="text-xs text-zinc-500">{user.email}</p>
+            <p className="truncate text-xs text-zinc-500">{user.email}</p>
           </div>
           <Link
             href="/"
-            className="text-sm font-medium text-zinc-600 hover:text-emerald-600"
+            className="shrink-0 text-sm font-medium text-zinc-600 hover:text-emerald-600"
           >
             View store
           </Link>
         </header>
-        <div className="p-6">{children}</div>
+        <div className="min-w-0 p-4 sm:p-6">{children}</div>
       </main>
     </div>
   );
