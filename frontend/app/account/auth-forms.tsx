@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { useTranslation } from "@/lib/translation-context";
 
 type Props = {
   error?: string;
@@ -16,6 +17,7 @@ function PasswordField(props: {
   onToggle: () => void;
 }) {
   const { id, name, label, visible, onToggle } = props;
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-1">
@@ -33,7 +35,7 @@ function PasswordField(props: {
         <button
           type="button"
           onClick={onToggle}
-          aria-label={visible ? "Hide password" : "Show password"}
+          aria-label={visible ? t("account.hidePassword") : t("account.showPassword")}
           className="absolute inset-y-0 right-0 inline-flex items-center justify-center px-3 text-gray-500 transition hover:text-gray-700"
         >
           {visible ? (
@@ -91,6 +93,7 @@ function EmailField(props: {
   onBlur: () => void;
 }) {
   const { id, helperId, name, label, focused, onFocus, onBlur } = props;
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-1">
@@ -114,7 +117,7 @@ function EmailField(props: {
         id={helperId}
         className={`text-xs transition ${focused ? "text-gray-900" : "text-gray-500"}`}
       >
-        Use a valid email format, for example{" "}
+        {t("account.emailHelper", { example: "example@example.com" })}{" "}
         <span className="font-medium">example@example.com</span>
       </p>
     </div>
@@ -129,44 +132,45 @@ export function AuthForms({ error }: Props) {
   const [focusedEmailField, setFocusedEmailField] = useState<
     "signin" | "signup" | null
   >(null);
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
       {error && (
         <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800">
-          {error === "denied" && "Sign-in was cancelled."}
+          {error === "denied" && t("account.errorSignInCancelled")}
           {error === "oauth" &&
-            "Something went wrong with sign-in. Please try again."}
-          {error === "no_code" && "Missing authorization. Please try again."}
+            t("account.errorSignInOauth")}
+          {error === "no_code" && t("account.errorMissingAuthCode")}
           {error === "invalid_credentials" &&
-            "Invalid email or password. Please check your details and try again."}
+            t("account.errorInvalidCredentials")}
           {error === "missing_fields" &&
-            "Please enter both email and password."}
+            t("account.errorLoginMissingFields")}
           {error === "too_many_attempts" &&
-            "Too many attempts. Please try again later."}
+            t("account.errorTooManyAttempts")}
           {error === "register_missing_fields" &&
-            "Please enter both email and password to create an account."}
+            t("account.errorRegisterMissingFields")}
           {error === "password_too_short" &&
-            "Password must be at least 8 characters."}
+            t("account.errorPasswordTooShort")}
           {error === "password_needs_uppercase" &&
-            "Password must contain an uppercase letter."}
+            t("account.errorPasswordUppercase")}
           {error === "password_needs_lowercase" &&
-            "Password must contain a lowercase letter."}
+            t("account.errorPasswordLowercase")}
           {error === "password_needs_number" &&
-            "Password must contain a number."}
+            t("account.errorPasswordNumber")}
           {error === "email_exists" &&
-            "An account with this email already exists. Please sign in instead."}
+            t("account.errorEmailExists")}
           {![
             "denied", "oauth", "no_code", "invalid_credentials", "missing_fields",
             "too_many_attempts", "register_missing_fields", "password_too_short",
             "password_needs_uppercase", "password_needs_lowercase", "password_needs_number",
             "email_exists"
-          ].includes(error) && "Something went wrong. Please try again."}
+          ].includes(error) && t("account.errorGeneric")}
         </p>
       )}
 
       <section className="space-y-3">
-        <h2 className="text-lg font-bold text-black">Sign in with</h2>
+        <h2 className="text-lg font-bold text-black">{t("account.signInWith")}</h2>
         <div className="grid gap-2">
           <a
             href="/api/auth/google"
@@ -200,20 +204,20 @@ export function AuthForms({ error }: Props) {
           <span className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-white px-2 text-gray-500">or</span>
+          <span className="bg-white px-2 text-gray-500">{t("account.or")}</span>
         </div>
       </div>
 
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-black">
-          Existing customers
+          {t("account.existingCustomers")}
         </h2>
         <form action="/api/auth/login" method="post" className="space-y-4">
           <EmailField
             id="login-email"
             helperId="login-email-helper"
             name="email"
-            label="Email"
+            label={t("common.email")}
             focused={focusedEmailField === "signin"}
             onFocus={() => setFocusedEmailField("signin")}
             onBlur={() => setFocusedEmailField(null)}
@@ -221,7 +225,7 @@ export function AuthForms({ error }: Props) {
           <PasswordField
             id="login-password"
             name="password"
-            label="Password"
+            label={t("account.newPassword")}
             visible={showSignInPassword}
             onToggle={() => setShowSignInPassword((value) => !value)}
           />
@@ -230,23 +234,24 @@ export function AuthForms({ error }: Props) {
               href={localePrefix ? `${localePrefix}/account/forgot-password` : "/account/forgot-password"}
               className="text-xs font-medium text-black underline hover:no-underline"
             >
-              Forgot password?
+              {t("account.forgotPassword")}
             </Link>
           </div>
           <button
             type="submit"
             className="flex w-full items-center justify-center gap-2 rounded-full bg-black px-4 py-3 text-sm font-medium text-white transition hover:bg-gray-800"
           >
-            Sign in
+            {t("account.signIn")}
           </button>
         </form>
       </section>
 
       <section className="space-y-4 border-t border-gray-200 pt-6">
-        <h2 className="text-lg font-bold text-black">New customers</h2>
+        <h2 className="text-lg font-bold text-black">
+          {t("account.newCustomers")}
+        </h2>
         <p className="text-sm text-gray-500">
-          Create an account to save your details and view your order history.
-          Guest orders with the same email will be linked automatically.
+          {t("account.newCustomersIntro")}
         </p>
         <form action="/api/auth/register" method="post" className="space-y-4">
           <div className="space-y-2">
@@ -254,13 +259,13 @@ export function AuthForms({ error }: Props) {
               htmlFor="register-name"
               className="block text-xs font-medium text-gray-600"
             >
-              Name
+              {t("common.name")}
             </label>
             <input
               id="register-name"
               type="text"
               name="name"
-              placeholder="Your full name"
+              placeholder={t("account.nameFullPlaceholder")}
               className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm outline-none transition placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black"
             />
           </div>
@@ -268,7 +273,7 @@ export function AuthForms({ error }: Props) {
             id="register-email"
             helperId="register-email-helper"
             name="email"
-            label="Email"
+            label={t("common.email")}
             focused={focusedEmailField === "signup"}
             onFocus={() => setFocusedEmailField("signup")}
             onBlur={() => setFocusedEmailField(null)}
@@ -276,7 +281,7 @@ export function AuthForms({ error }: Props) {
           <PasswordField
             id="register-password"
             name="password"
-            label="Password"
+            label={t("account.newPassword")}
             visible={showSignUpPassword}
             onToggle={() => setShowSignUpPassword((value) => !value)}
           />
@@ -284,18 +289,18 @@ export function AuthForms({ error }: Props) {
             type="submit"
             className="flex w-full items-center justify-center rounded-full border-2 border-black bg-white px-4 py-3 text-sm font-medium text-black transition hover:bg-gray-50"
           >
-            Create account
+            {t("account.createAccount")}
           </button>
         </form>
       </section>
 
       <p className="text-sm text-gray-500">
-        You can always checkout as a guest from the{" "}
+        {t("account.guestCheckoutHint")}{" "}
         <Link
           href={localePrefix ? `${localePrefix}/checkout` : "/checkout"}
           className="font-medium text-black underline hover:no-underline"
         >
-          checkout page
+          {t("account.checkoutPage")}
         </Link>
         .
       </p>
