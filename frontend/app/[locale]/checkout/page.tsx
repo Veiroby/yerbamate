@@ -85,6 +85,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
   const prefix = `/${locale}`;
   const translations = await getTranslations(locale);
   const t = createT(translations);
+  const makseEnabled = process.env.MAKSEKESKUS_ENABLED === "true";
 
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a]">
@@ -143,7 +144,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
               currency={currency}
               subtotal={subtotal}
               discountCode={appliedDiscountCode}
-              maksekeskusAvailable={isMaksekeskusConfigured()}
+              maksekeskusAvailable={makseEnabled && isMaksekeskusConfigured()}
               locale={locale}
             />
 
