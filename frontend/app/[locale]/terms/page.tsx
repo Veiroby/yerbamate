@@ -20,6 +20,7 @@ export default async function TermsPage({ params }: Props) {
   const user = await getCurrentUser();
   const translations = await getTranslations(locale);
   const t = createT(translations);
+  const prefix = `/${locale}`;
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] text-[#283618]">
