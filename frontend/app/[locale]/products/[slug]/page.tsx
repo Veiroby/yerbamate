@@ -49,7 +49,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
         createdAt: true,
       },
     }),
+    getTranslations(locale),
   ]);
+
+  const t = createT(translations);
 
   if (!product || !product.active) {
     notFound();
