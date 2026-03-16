@@ -58,6 +58,9 @@ export default async function TermsPage({ params }: Props) {
           <h2 className="mt-6 text-base font-bold uppercase tracking-wide text-[#283618]">{t("terms.legalGuarantee")}</h2>
           <p className="mt-2 text-[#606C38]">{t("terms.legalGuaranteeContent")}</p>
 
+          <h2 className="mt-6 text-base font-bold uppercase tracking-wide text-[#283618]">{t("terms.paymentProcessing")}</h2>
+          <p className="mt-2 text-[#606C38]">{t("terms.paymentProcessingContent")}</p>
+
           <h2 className="mt-6 text-base font-bold uppercase tracking-wide text-[#283618]">{t("terms.disputes")}</h2>
           <p className="mt-2 text-[#606C38]">
             {t("terms.disputesContent")}{" "}

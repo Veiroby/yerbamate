@@ -48,6 +48,9 @@ export default async function PrivacyPage({ params }: Props) {
           <h2 className="mt-6 text-base font-bold uppercase tracking-wide text-[#283618]">{t("privacy.retention")}</h2>
           <p className="mt-2 text-[#606C38]">{t("privacy.retentionContent")}</p>
 
+          <h2 className="mt-6 text-base font-bold uppercase tracking-wide text-[#283618]">{t("privacy.paymentProcessing")}</h2>
+          <p className="mt-2 text-[#606C38]">{t("privacy.paymentProcessingContent")}</p>
+
           <h2 className="mt-6 text-base font-bold uppercase tracking-wide text-[#283618]">{t("privacy.yourRights")}</h2>
           <p className="mt-2 text-[#606C38]">
             {t("privacy.yourRightsContent")}{" "}
