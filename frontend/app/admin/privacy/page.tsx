@@ -1,34 +1,54 @@
-import { prisma } from "@/lib/db";
-import type { Locale } from "@/lib/locale";
+import { revalidatePath } from "next/cache";
+import { LOCALES, type Locale } from "@/lib/locale";
+import { getTranslations, createT } from "@/lib/i18n";
+import { getPolicyContent, upsertPolicyContent, type PolicySlug } from "@/lib/policies";
 
-const POLICY_SLUGS = [
-  { slug: "privacy", label: "Privacy policy" },
-  { slug: "terms", label: "Terms & conditions" },
-  { slug: "shipping", label: "Shipping & returns" },
-] as const;
+const POLICY_SLUGS: { slug: PolicySlug; label: string; titleKey: string; contentKey: string }[] = [
+  { slug: "privacy", label: "Privacy policy", titleKey: "privacy.title", contentKey: "privacy.fullText" },
+  { slug: "terms", label: "Terms & conditions", titleKey: "terms.title", contentKey: "terms.fullText" },
+  { slug: "shipping", label: "Shipping & returns", titleKey: "shipping.title", contentKey: "shipping.fullText" },
+];
 
-type PolicyRow = {
-  id: string;
-  slug: string;
-  locale: Locale;
-  title: string;
-  content: string;
-  updatedAt: Date;
-};
+async function savePolicy(formData: FormData) {
+  "use server";
+
+  const slug = formData.get("slug") as PolicySlug;
+  const locale = formData.get("locale") as Locale;
+  const title = (formData.get("title") as string) || "";
+  const content = (formData.get("content") as string) || "";
+
+  if (!slug || !locale) return;
+
+  await upsertPolicyContent(slug, locale, { title, content });
+
+  revalidatePath(`/admin/privacy`);
+  revalidatePath(`/${locale}/${slug === "shipping" ? "shipping-policy" : slug === "terms" ? "terms" : "privacy"}`);
+}
 
 export default async function AdminPrivacyPoliciesPage() {
-  const policies = await prisma.policy.findMany({
-    orderBy: [{ slug: "asc" }, { locale: "asc" }],
-  });
+  const forms = [];
 
-  const rows: PolicyRow[] = policies.map((p) => ({
-    id: p.id,
-    slug: p.slug,
-    locale: p.locale as Locale,
-    title: p.title,
-    content: p.content,
-    updatedAt: p.updatedAt,
-  }));
+  for (const locale of LOCALES) {
+    const tr = await getTranslations(locale);
+    const t = createT(tr);
+
+    for (const def of POLICY_SLUGS) {
+      const defaults = {
+        title: t(def.titleKey),
+        content: t(def.contentKey),
+      };
+
+      const current = await getPolicyContent(def.slug, locale, defaults);
+
+      forms.push({
+        locale,
+        slug: def.slug,
+        label: def.label,
+        title: current.title,
+        content: current.content,
+      });
+    }
+  }
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -41,58 +61,65 @@ export default async function AdminPrivacyPoliciesPage() {
         </p>
       </div>
 
-      <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-        <p className="text-xs font-medium uppercase tracking-wide text-stone-500 mb-3">
-          Existing policies
-        </p>
-        {rows.length === 0 ? (
-          <p className="text-sm text-stone-500">
-            No policy overrides yet. They will appear here once you save content for a locale.
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-stone-200 text-left">
-                  <th className="pb-3 font-medium text-stone-600">Policy</th>
-                  <th className="pb-3 font-medium text-stone-600">Locale</th>
-                  <th className="pb-3 font-medium text-stone-600">Title</th>
-                  <th className="pb-3 font-medium text-stone-600">Last updated</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-stone-100">
-                {rows.map((row) => {
-                  const def = POLICY_SLUGS.find((p) => p.slug === row.slug);
-                  return (
-                    <tr key={row.id}>
-                      <td className="py-2.5 pr-4 text-stone-900">
-                        {def?.label ?? row.slug}
-                      </td>
-                      <td className="py-2.5 pr-4 text-stone-600 uppercase">
-                        {row.locale}
-                      </td>
-                      <td className="py-2.5 pr-4 text-stone-900">
-                        {row.title}
-                      </td>
-                      <td className="py-2.5 pr-4 text-stone-500">
-                        {row.updatedAt.toLocaleDateString(undefined, {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      <div className="space-y-6">
+        {forms.map((form) => (
+          <div
+            key={`${form.slug}-${form.locale}`}
+            className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm"
+          >
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-stone-500">
+                  {form.locale.toUpperCase()}
+                </p>
+                <h2 className="text-sm font-semibold text-stone-900">
+                  {form.label}
+                </h2>
+              </div>
+            </div>
 
-      <p className="text-sm text-stone-500">
-        Note: A follow-up step will add editing forms here so you can change titles and content per policy and locale.
-      </p>
+            <form action={savePolicy} className="space-y-3">
+              <input type="hidden" name="slug" value={form.slug} />
+              <input type="hidden" name="locale" value={form.locale} />
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-stone-700">
+                  Title
+                </label>
+                <input
+                  name="title"
+                  defaultValue={form.title}
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-medium text-stone-700">
+                  Body text
+                </label>
+                <textarea
+                  name="content"
+                  defaultValue={form.content}
+                  rows={10}
+                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm text-stone-900 shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+                <p className="mt-1 text-xs text-stone-500">
+                  Plain text only. Line breaks will be preserved on the public pages.
+                </p>
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  className="inline-flex items-center rounded-full bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2"
+                >
+                  Save changes
+                </button>
+              </div>
+            </form>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
