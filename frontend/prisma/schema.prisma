@@ -260,6 +260,18 @@ model NewsletterSubscriber {
   @@index([email])
 }
 
+model Policy {
+  id        String   @id @default(cuid())
+  slug      String
+  locale    String
+  title     String
+  content   String   @db.Text
+  updatedAt DateTime @updatedAt
+
+  @@unique([slug, locale])
+  @@index([slug])
+}
+
 model CartItem {
   id        String   @id @default(cuid())
   cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
