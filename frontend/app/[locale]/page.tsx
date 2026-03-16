@@ -12,7 +12,7 @@ import { BrandPartners } from "@/app/components/landing/BrandPartners";
 import { BrowseByCategory } from "@/app/components/landing/BrowseByCategory";
 import { FollowSubscribe } from "@/app/components/landing/FollowSubscribe";
 import { Footer } from "@/app/components/landing/Footer";
-import { TestimonialsSection } from "@/app/components/landing/TestimonialsSection";
+import { TestimonialsSection, type Testimonial } from "@/app/components/landing/TestimonialsSection";
 import type { Locale } from "@/lib/i18n";
 import { getTranslations, createT } from "@/lib/i18n";
 
@@ -46,7 +46,7 @@ export default async function HomePage({ params }: Props) {
   const { locale: localeParam } = await params;
   const locale = (localeParam === "lv" || localeParam === "en" ? localeParam : "lv") as Locale;
 
-  const [user, settings, latestProducts, heroStats, translations] = await Promise.all([
+  const [user, settings, latestProducts, heroStats, translations, testimonials] = await Promise.all([
     getCurrentUser(),
     prisma.siteSettings.findUnique({
       where: { id: "default" },
@@ -73,6 +73,18 @@ export default async function HomePage({ params }: Props) {
       return { productCount, brandCount, customerCount };
     })(),
     getTranslations(locale),
+    prisma.review.findMany({
+      where: { status: "APPROVED" },
+      orderBy: { createdAt: "desc" },
+      take: 18,
+      select: {
+        id: true,
+        rating: true,
+        title: true,
+        body: true,
+        authorName: true,
+      },
+    }),
   ]);
   const t = createT(translations);
 
@@ -225,7 +237,7 @@ export default async function HomePage({ params }: Props) {
 
         <BrowseByCategory locale={locale} />
 
-        <TestimonialsSection />
+        <TestimonialsSection testimonials={testimonials as unknown as Testimonial[]} />
 
         <BrandPartners />
 
