@@ -24,7 +24,7 @@ export function PolicyLayout({
   const prefix = `/${locale}`;
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] text-[#283618]">
+    <div className="min-h-screen bg-white text-[#283618]">
       <main className="mx-auto max-w-4xl px-4 py-10 sm:py-12">
         <div className="mb-6 text-xs uppercase tracking-wide text-[#606C38]">
           <Link href={prefix} className="opacity-70 hover:text-[#283618]">
@@ -37,7 +37,7 @@ export function PolicyLayout({
             </>
           )}
         </div>
-        <div className="rounded-2xl border border-stone-200 bg-[#FEFAE0] px-5 py-6 shadow-sm sm:px-8 sm:py-8">
+        <div className="rounded-2xl border border-stone-200 bg-white px-5 py-6 shadow-sm sm:px-8 sm:py-8">
           <h1 className="mb-4 text-2xl font-bold uppercase tracking-tight text-[#283618] sm:text-3xl">
             {title}
           </h1>

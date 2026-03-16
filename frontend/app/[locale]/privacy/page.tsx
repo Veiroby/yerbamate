@@ -21,7 +21,7 @@ export default async function PrivacyPage({ params }: Props) {
   const t = createT(translations);
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] text-[#283618]">
+    <div className="min-h-screen bg-white text-[#283618]">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
       <PolicyLayout
         locale={locale}
