@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
+import { OrderTimeline } from "@/app/account/order-timeline";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -18,15 +19,15 @@ export default async function OrdersPage({ params }: Props) {
 
   const [orders, translations] = await Promise.all([
     prisma.order.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "desc" },
-    include: {
-      items: {
-        include: {
-          product: true,
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
         },
       },
-    },
     }),
     getTranslations(locale),
   ]);
@@ -77,6 +78,14 @@ export default async function OrdersPage({ params }: Props) {
                   </p>
                 </div>
               </div>
+
+              <OrderTimeline
+                createdAt={order.createdAt.toISOString()}
+                dpdLabelCreatedAt={order.dpdLabelCreatedAt?.toISOString() ?? null}
+                dpdSentAt={order.dpdSentAt?.toISOString() ?? null}
+                dpdDeliveredAt={order.dpdDeliveredAt?.toISOString() ?? null}
+                dpdLastStatus={order.dpdLastStatus ?? null}
+              />
 
               <div className="mt-4 space-y-2 border-t border-gray-100 pt-4 text-sm">
                 {order.items.map((item) => (

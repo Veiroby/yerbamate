@@ -319,6 +319,10 @@ model Order {
   dpdTrackingNumber     String?       // DPD tracking number
   dpdLabelPdf           String?       @db.Text // Base64 encoded PDF label
   dpdLabelCreatedAt     DateTime?     // when DPD label was generated
+  dpdSentAt             DateTime?     // when DPD first accepted the parcel / left warehouse
+  dpdDeliveredAt        DateTime?     // when DPD marked the parcel as delivered
+  dpdLastStatus         String?       // last raw status text/code from DPD
+  dpdLastStatusAt       DateTime?     // when last DPD status was recorded
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
