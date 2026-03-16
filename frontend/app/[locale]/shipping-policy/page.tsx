@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { SiteHeader } from "@/app/components/site-header";
-import { SiteFooter } from "@/app/components/site-footer";
+import { Footer } from "@/app/components/landing/Footer";
 import { PolicyLayout } from "@/app/components/PolicyLayout";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
@@ -59,7 +59,7 @@ export default async function ShippingPolicyPage({ params }: Props) {
           <h2 className="mt-6 text-base font-bold uppercase tracking-wide text-[#283618]">{t("shipping.returnsAndRefunds")}</h2>
           <p className="mt-2 text-[#606C38]">{t("shipping.returnsAndRefundsContent")}</p>
       </PolicyLayout>
-      <SiteFooter locale={locale} />
+      <Footer locale={locale} />
     </div>
   );
 }

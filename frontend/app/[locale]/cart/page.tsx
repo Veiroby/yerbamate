@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 import { getCurrentUser } from "@/lib/auth";
 import { SiteHeader } from "@/app/components/site-header";
-import { SiteFooter } from "@/app/components/site-footer";
+import { Footer } from "@/app/components/landing/Footer";
 import { CartOrderSummary } from "@/app/cart/cart-order-summary";
 import { CartItem } from "@/app/cart/cart-item";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
@@ -123,7 +123,7 @@ export default async function CartPage({ params }: Props) {
   const prefix = `/${locale}`;
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] text-[#1a1a1a]">
+    <div className="min-h-screen bg-white text-[#1a1a1a]">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
         <nav className="mb-4 text-sm text-gray-500" aria-label="Breadcrumb">
@@ -203,7 +203,7 @@ export default async function CartPage({ params }: Props) {
           </div>
         )}
       </main>
-      <SiteFooter locale={locale} />
+      <Footer locale={locale} />
     </div>
   );
 }

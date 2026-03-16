@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { SiteHeader } from "@/app/components/site-header";
-import { SiteFooter } from "@/app/components/site-footer";
+import { Footer } from "@/app/components/landing/Footer";
 import { getCurrentUser } from "@/lib/auth";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
@@ -19,7 +19,7 @@ export default async function WireTransferSuccessPage({ params, searchParams }: 
   const t = createT(translations);
 
   return (
-    <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
+    <div className="min-h-screen bg-white text-[#283618]">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
       <main className="mx-auto max-w-2xl px-4 py-16">
         <div className="rounded-2xl border border-[#606C38]/20 bg-[#FEFAE0] p-8 shadow-sm text-center">
@@ -93,7 +93,7 @@ export default async function WireTransferSuccessPage({ params, searchParams }: 
           </Link>
         </div>
       </main>
-      <SiteFooter locale={locale} />
+      <Footer locale={locale} />
     </div>
   );
 }

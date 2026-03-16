@@ -2,7 +2,7 @@ import Link from "next/link";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 import { SiteHeader } from "@/app/components/site-header";
-import { SiteFooter } from "@/app/components/site-footer";
+import { Footer } from "@/app/components/landing/Footer";
 import { getCurrentUser } from "@/lib/auth";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
@@ -62,7 +62,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Prop
   const prefix = `/${locale}`;
 
   return (
-    <div className="min-h-screen bg-[#FEFAE0] text-[#283618]">
+    <div className="min-h-screen bg-white text-[#283618]">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
       <main className="mx-auto max-w-3xl px-4 py-12">
         <div className="rounded-2xl border border-[#606C38]/20 bg-[#FEFAE0] p-6 shadow-sm">
@@ -84,7 +84,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Prop
           </div>
         </div>
       </main>
-      <SiteFooter locale={locale} />
+      <Footer locale={locale} />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { ProductCard } from "@/app/components/product-card";
 import { SiteHeader } from "@/app/components/site-header";
-import { SiteFooter } from "@/app/components/site-footer";
+import { Footer } from "@/app/components/landing/Footer";
 import { ProductFilters, ActiveFilters } from "@/app/components/product-filters";
 import { Prisma } from "@/app/generated/prisma/client";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
@@ -177,7 +177,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   const prefix = `/${locale}`;
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="min-h-screen bg-white text-gray-900">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <header className="mb-10 flex flex-wrap items-end justify-between gap-6 border-b border-gray-200 pb-8">
@@ -250,7 +250,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
           )}
         </div>
       </main>
-      <SiteFooter locale={locale} />
+      <Footer locale={locale} />
     </div>
   );
 }

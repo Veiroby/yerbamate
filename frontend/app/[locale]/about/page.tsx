@@ -1,6 +1,6 @@
 import { getCurrentUser } from "@/lib/auth";
 import { SiteHeader } from "@/app/components/site-header";
-import { SiteFooter } from "@/app/components/site-footer";
+import { Footer } from "@/app/components/landing/Footer";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
 type Props = {
@@ -29,7 +29,7 @@ export default async function AboutPage({ params }: Props) {
           </p>
         </div>
       </main>
-      <SiteFooter locale={locale} />
+      <Footer locale={locale} />
     </div>
   );
 }

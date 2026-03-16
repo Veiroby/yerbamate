@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { SiteHeader } from "@/app/components/site-header";
-import { SiteFooter } from "@/app/components/site-footer";
+import { Footer } from "@/app/components/landing/Footer";
 import { PolicyLayout } from "@/app/components/PolicyLayout";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
@@ -69,7 +69,7 @@ export default async function TermsPage({ params }: Props) {
             <a href="https://ec.europa.eu/consumers/odr" className="text-emerald-700 underline" target="_blank" rel="noopener noreferrer">ec.europa.eu/consumers/odr</a>.
           </p>
       </PolicyLayout>
-      <SiteFooter locale={locale} />
+      <Footer locale={locale} />
     </div>
   );
 }

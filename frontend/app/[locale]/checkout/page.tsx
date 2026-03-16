@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { calculateShippingForOrder } from "@/lib/shipping/service";
 import { SiteHeader } from "@/app/components/site-header";
-import { SiteFooter } from "@/app/components/site-footer";
+import { Footer } from "@/app/components/landing/Footer";
 import { CheckoutForm } from "@/app/checkout/checkout-form";
 import { isMaksekeskusConfigured } from "@/lib/maksekeskus";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
@@ -87,7 +87,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
   const t = createT(translations);
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] text-[#1a1a1a]">
+    <div className="min-h-screen bg-white text-[#1a1a1a]">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
       <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
         <nav className="mb-4 text-sm text-gray-500" aria-label="Breadcrumb">
@@ -216,7 +216,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
           </div>
         )}
       </main>
-      <SiteFooter locale={locale} />
+      <Footer locale={locale} />
     </div>
   );
 }

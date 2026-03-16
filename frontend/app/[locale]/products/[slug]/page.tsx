@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { SiteHeader } from "@/app/components/site-header";
-import { SiteFooter } from "@/app/components/site-footer";
+import { Footer } from "@/app/components/landing/Footer";
 import { AddToCartForm } from "@/app/products/[slug]/add-to-cart-form";
 import { ProductReviewsSection } from "@/app/products/[slug]/product-reviews-section";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
@@ -235,7 +235,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           defaultAuthorName={user?.name}
         />
       </main>
-      <SiteFooter locale={locale} />
+      <Footer locale={locale} />
     </div>
   );
 }
