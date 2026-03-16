@@ -68,6 +68,7 @@ export default async function ShippingPolicyPage({ params }: Props) {
             })}
           </p>
         </div>
+        </div>
       </main>
       <SiteFooter locale={locale} />
     </div>

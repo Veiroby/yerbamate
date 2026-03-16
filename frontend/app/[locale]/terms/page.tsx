@@ -78,6 +78,7 @@ export default async function TermsPage({ params }: Props) {
             })}
           </p>
         </div>
+        </div>
       </main>
       <SiteFooter locale={locale} />
     </div>

@@ -69,6 +69,7 @@ export default async function PrivacyPage({ params }: Props) {
             })}
           </p>
         </div>
+        </div>
       </main>
       <SiteFooter locale={locale} />
     </div>
