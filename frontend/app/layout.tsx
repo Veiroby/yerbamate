@@ -35,9 +35,9 @@ export default function RootLayout({
       >
         <Providers>
           {children}
+          <CookieConsent />
+          <NewsletterPopup />
         </Providers>
-        <CookieConsent />
-        <NewsletterPopup />
         <Toaster 
           position="top-right"
           toastOptions={{
