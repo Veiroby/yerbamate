@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Fraunces, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { CookieConsent } from "@/app/components/cookie-consent";
@@ -33,6 +34,20 @@ export default function RootLayout({
       <body
         className={`${fraunces.variable} ${dmSans.variable} font-sans antialiased bg-white text-gray-900`}
       >
+        {/* Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-GW7CJ00K18"
+          strategy="afterInteractive"
+        />
+        <Script id="ga-gtag" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-GW7CJ00K18');
+          `}
+        </Script>
+
         <Providers>
           {children}
           <CookieConsent />
