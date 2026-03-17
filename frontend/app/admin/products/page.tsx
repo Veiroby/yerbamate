@@ -408,9 +408,8 @@ export default async function AdminProductsPage({
         </div>
         <div className="space-y-3 text-sm">
           {products.map((product) => (
-            <form
+            <div
               key={product.id}
-              action={saveProductInline}
               className="rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4"
             >
               <div className="flex items-start gap-3">
@@ -456,138 +455,143 @@ export default async function AdminProductsPage({
                 </div>
               </div>
 
-              <input type="hidden" name="productId" value={product.id} />
+              <form
+                action={saveProductInline}
+                className="mt-4 space-y-3 text-xs"
+              >
+                <input type="hidden" name="productId" value={product.id} />
 
-              <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-                <div className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2">
-                  <div className="space-y-1 text-xs">
-                    <p className="font-medium text-zinc-700">Stock</p>
-                    <div className="flex items-center gap-2">
-                      <label className="text-[11px] text-zinc-500">Qty</label>
-                      <input
-                        type="number"
-                        name="quantity"
-                        min={0}
-                        defaultValue={totalStock(product.variants)}
-                        className="w-20 rounded-lg border border-zinc-300 px-2 py-1 text-xs"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2">
-                  <div className="space-y-1 text-xs">
-                    <p className="font-medium text-zinc-700">Location</p>
-                    <select
-                      name="stockLocation"
-                      defaultValue={product.stockLocation ?? "instock"}
-                      className="w-full rounded-lg border border-zinc-300 px-2 py-1 text-xs"
-                    >
-                      <option value="instock">In stock</option>
-                      <option value="warehouse">Warehouse</option>
-                    </select>
-                  </div>
-                </div>
-
-                {categoryDelegate && (
+                <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
                   <div className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2">
                     <div className="space-y-1 text-xs">
-                      <p className="font-medium text-zinc-700">Category</p>
+                      <p className="font-medium text-zinc-700">Stock</p>
+                      <div className="flex items-center gap-2">
+                        <label className="text-[11px] text-zinc-500">Qty</label>
+                        <input
+                          type="number"
+                          name="quantity"
+                          min={0}
+                          defaultValue={totalStock(product.variants)}
+                          className="w-20 rounded-lg border border-zinc-300 px-2 py-1 text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2">
+                    <div className="space-y-1 text-xs">
+                      <p className="font-medium text-zinc-700">Location</p>
                       <select
-                        name="categoryId"
-                        defaultValue={product.categoryId ?? ""}
+                        name="stockLocation"
+                        defaultValue={product.stockLocation ?? "instock"}
                         className="w-full rounded-lg border border-zinc-300 px-2 py-1 text-xs"
                       >
-                        <option value="">No category</option>
-                        {categories.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
-                          </option>
-                        ))}
+                        <option value="instock">In stock</option>
+                        <option value="warehouse">Warehouse</option>
                       </select>
                     </div>
                   </div>
-                )}
 
-                <div className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2">
-                  <div className="space-y-1 text-xs">
-                    <p className="font-medium text-zinc-700">Barcode</p>
-                    <input
-                      type="text"
-                      name="barcode"
-                      defaultValue={product.barcode ?? ""}
-                      placeholder="Barcode"
-                      className="w-full rounded-lg border border-zinc-300 px-2 py-1 text-xs"
-                    />
-                  </div>
-                </div>
+                  {categoryDelegate && (
+                    <div className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2">
+                      <div className="space-y-1 text-xs">
+                        <p className="font-medium text-zinc-700">Category</p>
+                        <select
+                          name="categoryId"
+                          defaultValue={product.categoryId ?? ""}
+                          className="w-full rounded-lg border border-zinc-300 px-2 py-1 text-xs"
+                        >
+                          <option value="">No category</option>
+                          {categories.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  )}
 
-                <div className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2">
-                  <div className="space-y-1 text-xs">
-                    <p className="font-medium text-zinc-700">Weight</p>
-                    <input
-                      type="text"
-                      name="weight"
-                      defaultValue={product.weight ?? ""}
-                      placeholder="e.g. 500g"
-                      className="w-full rounded-lg border border-zinc-300 px-2 py-1 text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2">
-                  <div className="space-y-1 text-xs">
-                    <p className="font-medium text-zinc-700">Price</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-zinc-500">
-                        {product.currency}
-                      </span>
+                  <div className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2">
+                    <div className="space-y-1 text-xs">
+                      <p className="font-medium text-zinc-700">Barcode</p>
                       <input
-                        type="number"
-                        name="price"
-                        step="0.01"
-                        min={0}
-                        defaultValue={Number(product.price)}
-                        className="w-24 rounded-lg border border-zinc-300 px-2 py-1 text-xs"
+                        type="text"
+                        name="barcode"
+                        defaultValue={product.barcode ?? ""}
+                        placeholder="Barcode"
+                        className="w-full rounded-lg border border-zinc-300 px-2 py-1 text-xs"
                       />
                     </div>
                   </div>
-                </div>
-              </div>
 
-              <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-3 text-xs">
-                <div className="flex flex-wrap items-center gap-3">
-                  <label className="flex items-center gap-1.5 text-xs text-zinc-600">
-                    <input
-                      type="checkbox"
-                      name="active"
-                      defaultChecked={product.active}
-                      className="h-4 w-4 rounded border-zinc-300"
-                    />
-                    Active
-                  </label>
-                  <Link
-                    href={`/admin/products/${product.id}/edit`}
-                    className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:border-zinc-400 hover:text-zinc-900"
-                  >
-                    Edit details
-                  </Link>
+                  <div className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2">
+                    <div className="space-y-1 text-xs">
+                      <p className="font-medium text-zinc-700">Weight</p>
+                      <input
+                        type="text"
+                        name="weight"
+                        defaultValue={product.weight ?? ""}
+                        placeholder="e.g. 500g"
+                        className="w-full rounded-lg border border-zinc-300 px-2 py-1 text-xs"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-end justify-between gap-2 rounded-xl bg-white px-3 py-2">
+                    <div className="space-y-1 text-xs">
+                      <p className="font-medium text-zinc-700">Price</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-zinc-500">
+                          {product.currency}
+                        </span>
+                        <input
+                          type="number"
+                          name="price"
+                          step="0.01"
+                          min={0}
+                          defaultValue={Number(product.price)}
+                          className="w-24 rounded-lg border border-zinc-300 px-2 py-1 text-xs"
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <DeleteProductButton
-                  productId={product.id}
-                  productName={product.name}
-                  deleteAction={deleteProductAction}
-                />
-              </div>
-              <div className="mt-3 flex justify-end">
-                <button
-                  type="submit"
-                  className="rounded-full bg-emerald-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
-                >
-                  Save all changes
-                </button>
-              </div>
-            </form>
+
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 pt-3 text-xs">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label className="flex items-center gap-1.5 text-xs text-zinc-600">
+                      <input
+                        type="checkbox"
+                        name="active"
+                        defaultChecked={product.active}
+                        className="h-4 w-4 rounded border-zinc-300"
+                      />
+                      Active
+                    </label>
+                    <Link
+                      href={`/admin/products/${product.id}/edit`}
+                      className="rounded-full border border-zinc-300 px-3 py-1 text-xs font-medium text-zinc-700 hover:border-zinc-400 hover:text-zinc-900"
+                    >
+                      Edit details
+                    </Link>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="submit"
+                      className="rounded-full bg-emerald-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
+                    >
+                      Save all changes
+                    </button>
+                    <DeleteProductButton
+                      productId={product.id}
+                      productName={product.name}
+                      deleteAction={deleteProductAction}
+                    />
+                  </div>
+                </div>
+              </form>
+            </div>
           ))}
           {products.length === 0 && (
             <p className="text-sm text-zinc-500">No products yet.</p>
