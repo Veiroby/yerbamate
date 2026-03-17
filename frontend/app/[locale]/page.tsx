@@ -9,7 +9,7 @@ import {
   type CarouselProduct,
 } from "@/app/components/landing/ProductCarouselSection";
 import { BrandPartners } from "@/app/components/landing/BrandPartners";
-import { BrowseByCategory } from "@/app/components/landing/BrowseByCategory";
+import { MateGuideSection } from "@/app/components/landing/MateGuideSection";
 import { FollowSubscribe } from "@/app/components/landing/FollowSubscribe";
 import { Footer } from "@/app/components/landing/Footer";
 import { TestimonialsSection, type Testimonial } from "@/app/components/landing/TestimonialsSection";
@@ -253,7 +253,7 @@ export default async function HomePage({ params }: Props) {
           <ProductCarouselSection products={topSellingCarousel} />
         </section>
 
-        <BrowseByCategory locale={locale} />
+        <MateGuideSection locale={locale} />
 
         <TestimonialsSection testimonials={testimonials as unknown as Testimonial[]} />
 
