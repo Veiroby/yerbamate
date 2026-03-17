@@ -155,8 +155,7 @@ export function ProductCard({ product, showDescription }: Props) {
                     <circle cx="16.5" cy="16.5" r="1.5" fill="currentColor" />
                   </svg>
                   <span>
-                    {t("product.preOrder")}
-                    {locale === "lv" ? " · 5–7 dienas" : ""}
+                    {locale === "lv" ? "5–7 dienas" : t("product.preOrder")}
                   </span>
                 </span>
               )}

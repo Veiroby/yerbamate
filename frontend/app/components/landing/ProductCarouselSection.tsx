@@ -17,6 +17,10 @@ export type CarouselProduct = {
   imageAlt?: string;
   weight?: string | null;
   productId?: string;
+  quantityLeft?: number;
+  /** "in_stock" | "get_in_5_7_days" for display */
+  stockStatus?: string;
+  stockLocation?: string | null;
 };
 
 type Props = {
@@ -27,6 +31,9 @@ type Props = {
 
 function CarouselSectionCard({ p }: { p: CarouselProduct }) {
   const [isFavorited, setIsFavorited] = useState(false);
+  const { t } = useTranslation();
+  const locale: Locale = p.href.startsWith("/en") ? "en" : "lv";
+  const stockStatus = p.stockStatus ?? (p.quantityLeft && p.quantityLeft > 0 ? "in_stock" : "get_in_5_7_days");
 
   return (
     <Link
@@ -65,7 +72,38 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
         {p.weight ? (
           <p className="mt-1 text-sm text-gray-500">{p.weight}</p>
         ) : null}
-        <p className="mt-auto text-base font-semibold text-black sm:text-lg">{p.price}</p>
+        <div className="mt-auto flex items-end justify-between pt-2">
+          <p className="text-base font-semibold text-black sm:text-lg">{p.price}</p>
+          <div className="flex items-center gap-1 text-xs font-semibold">
+            {stockStatus === "in_stock" ? (
+              <span className="text-emerald-600">
+                {t("product.inStock")}
+              </span>
+            ) : (
+              <span className="flex items-center gap-1 text-black">
+                <svg
+                  className="h-3.5 w-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3 7h11v8H3V7zm11 3h3.5L21 12.5V15h-4"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle cx="7.5" cy="16.5" r="1.5" fill="currentColor" />
+                  <circle cx="16.5" cy="16.5" r="1.5" fill="currentColor" />
+                </svg>
+                <span>
+                  {locale === "lv" ? "5–7 dienas" : t("product.preOrder")}
+                </span>
+              </span>
+            )}
+          </div>
+        </div>
       </div>
     </Link>
   );

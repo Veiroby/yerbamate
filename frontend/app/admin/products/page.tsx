@@ -110,14 +110,15 @@ async function saveProductInline(formData: FormData) {
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: { q?: string };
+  searchParams: Promise<{ q?: string }>;
 }) {
   const categoryDelegate =
     "category" in prisma && typeof (prisma as { category?: { findMany: (args: unknown) => Promise<unknown[]> } }).category?.findMany === "function"
       ? (prisma as { category: { findMany: (args: unknown) => Promise<{ id: string; name: string; slug: string }[]> } }).category
       : null;
 
-  const query = searchParams?.q?.toString().trim() || "";
+  const sp = await searchParams;
+  const query = sp?.q?.toString().trim() || "";
 
   const [products, categories] = await Promise.all([
     prisma.product.findMany({
