@@ -576,21 +576,21 @@ export default async function AdminProductsPage({
                       Edit details
                     </Link>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="submit"
-                      className="rounded-full bg-emerald-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
-                    >
-                      Save all changes
-                    </button>
-                    <DeleteProductButton
-                      productId={product.id}
-                      productName={product.name}
-                      deleteAction={deleteProductAction}
-                    />
-                  </div>
+                  <button
+                    type="submit"
+                    className="rounded-full bg-emerald-600 px-4 py-1.5 text-xs font-medium text-white hover:bg-emerald-700"
+                  >
+                    Save all changes
+                  </button>
                 </div>
               </form>
+              <div className="mt-3 flex justify-end text-xs">
+                <DeleteProductButton
+                  productId={product.id}
+                  productName={product.name}
+                  deleteAction={deleteProductAction}
+                />
+              </div>
             </div>
           ))}
           {products.length === 0 && (
