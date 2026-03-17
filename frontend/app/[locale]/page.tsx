@@ -26,6 +26,7 @@ function toCarouselProduct(
     slug: string;
     images: { url: string; altText: string | null }[];
     weight: string | null;
+    stockLocation: string | null;
   },
   locale: Locale
 ): CarouselProduct {
@@ -37,6 +38,7 @@ function toCarouselProduct(
     imageAlt: p.images[0]?.altText ?? p.name,
     weight: p.weight ?? null,
     productId: p.id,
+    stockLocation: p.stockLocation ?? null,
   };
 }
 

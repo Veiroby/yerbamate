@@ -33,7 +33,10 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
   const [isFavorited, setIsFavorited] = useState(false);
   const { t } = useTranslation();
   const locale: Locale = p.href.startsWith("/en") ? "en" : "lv";
-  const stockStatus = p.stockStatus ?? (p.quantityLeft && p.quantityLeft > 0 ? "in_stock" : "get_in_5_7_days");
+  const stockStatus =
+    p.stockLocation === "warehouse"
+      ? "get_in_5_7_days"
+      : "in_stock";
 
   return (
     <Link

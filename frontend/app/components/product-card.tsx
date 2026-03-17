@@ -37,7 +37,10 @@ export function ProductCard({ product, showDescription }: Props) {
   const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
   const locale = localePrefix === "/lv" ? "lv" : "en";
   const productHref = `${localePrefix}/products/${encodeURIComponent(product.slug)}`;
-  const stockStatus = product.stockStatus ?? (product.quantityLeft > 0 ? "in_stock" : "get_in_5_7_days");
+  const stockStatus =
+    product.stockLocation === "warehouse"
+      ? "get_in_5_7_days"
+      : "in_stock";
   const soldOut = product.stockLocation !== "warehouse" && product.quantityLeft <= 0;
   const { addToCart, isLoading } = useCart();
   const [addingToCart, setAddingToCart] = useState(false);
