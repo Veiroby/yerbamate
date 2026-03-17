@@ -69,5 +69,6 @@ export function MateGuideSection({ locale }: Props) {
         </div>
       </div>
     </section>
+  );
 }
 
