@@ -2,11 +2,19 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { useTranslation } from "@/lib/translation-context";
 
 const CONSENT_KEY = "yerbatea_cookie_consent";
 
 export function CookieConsent() {
   const [visible, setVisible] = useState(false);
+  const pathname = usePathname();
+  const { t } = useTranslation();
+
+  const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
+  const termsHref = localePrefix ? `${localePrefix}/terms` : "/terms";
+  const privacyHref = localePrefix ? `${localePrefix}/privacy` : "/privacy";
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -34,15 +42,20 @@ export function CookieConsent() {
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-stone-600">
-          We use essential cookies to run the store and optional cookies to improve your experience. 
-          See our{" "}
+          {t("cookies.bannerText")}{" "}
           <Link
-            href="/privacy"
+            href={termsHref}
             className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800"
           >
-            Privacy policy
+            {t("cookies.terms")}
           </Link>{" "}
-          for details.
+          ·{" "}
+          <Link
+            href={privacyHref}
+            className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800"
+          >
+            {t("cookies.privacy")}
+          </Link>{" "}
         </p>
         <div className="flex shrink-0 gap-3">
           <button
@@ -50,14 +63,14 @@ export function CookieConsent() {
             onClick={reject}
             className="rounded-full border border-stone-300 px-5 py-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
           >
-            Essential only
+            {t("cookies.essentialOnly")}
           </button>
           <button
             type="button"
             onClick={accept}
             className="rounded-full bg-[#344e41] px-5 py-2.5 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
           >
-            Accept all
+            {t("cookies.acceptAll")}
           </button>
         </div>
       </div>

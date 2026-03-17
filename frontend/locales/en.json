@@ -333,4 +333,10 @@
   "shipping.lostOrDamagedContentSuffix": ".",
   "shipping.returnsAndRefunds": "6. Returns and refunds",
   "shipping.returnsAndRefundsContent": "For returns under the 14-day withdrawal right or for non-conforming goods, the cost of returning the goods is generally borne by you unless we have agreed otherwise or failed to inform you of this, as set out in our Terms and conditions. Refunds will be made in accordance with those terms."
+  ,
+  "cookies.bannerText": "We use necessary cookies to run the store, and optional cookies to improve your experience and analytics. By continuing, you agree to our Terms and conditions and Privacy policy.",
+  "cookies.essentialOnly": "Only essential",
+  "cookies.acceptAll": "Accept all",
+  "cookies.terms": "Terms and conditions",
+  "cookies.privacy": "Privacy policy"
 }

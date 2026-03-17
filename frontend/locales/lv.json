@@ -333,4 +333,10 @@
   "shipping.lostOrDamagedContentSuffix": ".",
   "shipping.returnsAndRefunds": "6. Atgriešana un atmaksas",
   "shipping.returnsAndRefundsContent": "Atgriešanai saskaņā ar 14 dienu atteikšanās tiesībām vai par neatbilstošām precēm preču atgriešanas izmaksas parasti sedz jūs, ja vien mēs neesam citādi vienojušies vai neesam par to informējuši, kā norādīts mūsu Noteikumos un nosacījumos. Atmaksas tiks veiktas saskaņā ar šiem noteikumiem."
+  ,
+  "cookies.bannerText": "Mēs izmantojam nepieciešamās sīkdatnes veikala darbībai un papildu sīkdatnes pieredzes un analītikas uzlabošanai. Turpinot lietot vietni, jūs piekrītat mūsu Lietošanas noteikumiem un Privātuma politikai.",
+  "cookies.essentialOnly": "Tikai nepieciešamās",
+  "cookies.acceptAll": "Piekrītu visam",
+  "cookies.terms": "Lietošanas noteikumi",
+  "cookies.privacy": "Privātuma politika"
 }
