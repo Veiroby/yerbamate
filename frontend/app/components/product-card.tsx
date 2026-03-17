@@ -35,6 +35,7 @@ export function ProductCard({ product, showDescription }: Props) {
   const pathname = usePathname();
   const { t } = useTranslation();
   const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
+  const locale = localePrefix === "/lv" ? "lv" : "en";
   const productHref = `${localePrefix}/products/${encodeURIComponent(product.slug)}`;
   const stockStatus = product.stockStatus ?? (product.quantityLeft > 0 ? "in_stock" : "get_in_5_7_days");
   const soldOut = product.stockLocation !== "warehouse" && product.quantityLeft <= 0;
@@ -112,7 +113,7 @@ export function ProductCard({ product, showDescription }: Props) {
           )}
         </div>
 
-        {/* Left-aligned: title, weight, stock; price at bottom-left */}
+        {/* Left-aligned: title, weight, optional description */}
         <div className="flex flex-1 min-h-0 flex-col p-2 text-left">
           <h2 className="line-clamp-2 text-lg font-semibold text-gray-900 transition group-hover:text-black">
             {product.name}
@@ -120,21 +121,47 @@ export function ProductCard({ product, showDescription }: Props) {
           <p className="mt-1.5 text-sm text-gray-500">
             {product.weight ?? "—"}
           </p>
-          <p className="mt-1 text-xs font-medium text-gray-600">
-            {stockStatus === "in_stock" ? (
-              <>{t("product.inStock")}{product.quantityLeft > 0 && product.quantityLeft <= 20 ? ` (${product.quantityLeft})` : ""}</>
-            ) : (
-              <>{t("product.getIn57Days")}</>
-            )}
-          </p>
           {showDescription && product.description ? (
             <p className="mt-2 line-clamp-2 text-xs text-gray-500">
               {product.description}
             </p>
           ) : null}
-          <p className="mt-auto text-lg font-semibold text-black">
-            {product.currency} {product.price.toFixed(2)}
-          </p>
+          <div className="mt-auto flex items-end justify-between pt-2">
+            <p className="text-lg font-semibold text-black">
+              {product.currency} {product.price.toFixed(2)}
+            </p>
+            <div className="flex items-center gap-1 text-xs font-semibold">
+              {stockStatus === "in_stock" ? (
+                <span className="text-emerald-600">
+                  {t("product.inStock")}
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-black">
+                  {/* Simple shipping icon */}
+                  <svg
+                    className="h-3.5 w-3.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M3 7h11v8H3V7zm11 3h3.5L21 12.5V15h-4"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="7.5" cy="16.5" r="1.5" fill="currentColor" />
+                    <circle cx="16.5" cy="16.5" r="1.5" fill="currentColor" />
+                  </svg>
+                  <span>
+                    {t("product.preOrder")}
+                    {locale === "lv" ? " · 5–7 dienas" : ""}
+                  </span>
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </Link>
 
