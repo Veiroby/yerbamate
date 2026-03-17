@@ -20,10 +20,17 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [shippingMethod, setShippingMethod] = useState<string>("standard-flat");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
   const isBusiness = customerType === "BUSINESS";
   const isDpdParcelMachine = shippingMethod === "dpd-parcel-machine";
+  const prefix = locale ? `/${locale}` : "";
+  const isLv = locale === "lv";
+
+  const termsErrorText = isLv
+    ? "Lūdzu, apstipriniet, ka piekrītat lietošanas noteikumiem un privātuma politikai."
+    : "Please confirm you accept the Terms and Conditions and Privacy Policy.";
 
   const getInputValue = (name: string): string => {
     const form = formRef.current;
@@ -71,6 +78,10 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
       if (!getInputValue("vatNumber")) {
         newErrors.vatNumber = "VAT number is required";
       }
+    }
+
+    if (!termsAccepted) {
+      newErrors.terms = termsErrorText;
     }
 
     setErrors(newErrors);
@@ -190,6 +201,69 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
       />
 
       <div className="space-y-3 pt-2">
+        <div className="flex items-start gap-2">
+          <input
+            id="checkout-accept-terms"
+            type="checkbox"
+            checked={termsAccepted}
+            onChange={(e) => setTermsAccepted(e.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-gray-300 text-black focus:ring-black"
+          />
+          <label
+            htmlFor="checkout-accept-terms"
+            className="text-xs text-gray-600"
+          >
+            {isLv ? (
+              <>
+                Es piekrītu{" "}
+                <a
+                  href={`${prefix}/terms`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  lietošanas noteikumiem
+                </a>{" "}
+                un{" "}
+                <a
+                  href={`${prefix}/privacy`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  privātuma politikai
+                </a>
+                .
+              </>
+            ) : (
+              <>
+                I agree to the{" "}
+                <a
+                  href={`${prefix}/terms`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  Terms and Conditions
+                </a>{" "}
+                and{" "}
+                <a
+                  href={`${prefix}/privacy`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  Privacy Policy
+                </a>
+                .
+              </>
+            )}
+          </label>
+        </div>
+        {errors.terms && (
+          <p className="text-xs text-red-600 mt-1">{errors.terms}</p>
+        )}
+
         <button
           type="button"
           onClick={handleStripeSubmit}
