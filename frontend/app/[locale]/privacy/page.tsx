@@ -3,6 +3,8 @@ import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
 import { PolicyLayout } from "@/app/components/PolicyLayout";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
+import type { Locale } from "@/lib/locale";
+import { getPolicyContent } from "@/lib/policies";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -20,14 +22,23 @@ export default async function PrivacyPage({ params }: Props) {
   const translations = await getTranslations(locale);
   const t = createT(translations);
 
+   const policy = await getPolicyContent(
+     "privacy",
+     locale as Locale,
+     {
+       title: t("privacy.title"),
+       content: t("privacy.intro"),
+     },
+   );
+
   return (
     <div className="min-h-screen bg-white text-[#283618]">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
       <PolicyLayout
-        locale={locale}
-        title={t("privacy.title")}
-        breadcrumbLabel={t("privacy.title")}
-        intro={t("privacy.intro")}
+        locale={locale as Locale}
+        title={policy.title}
+        breadcrumbLabel={policy.title}
+        intro={undefined}
         lastUpdatedLabel={t("terms.lastUpdated")}
         lastUpdatedDate={new Date().toLocaleDateString(locale === "lv" ? "lv-LV" : "en-GB", {
           day: "numeric",
@@ -35,29 +46,9 @@ export default async function PrivacyPage({ params }: Props) {
           year: "numeric",
         })}
       >
-          <h2 className="mt-6 text-base font-bold uppercase tracking-wide text-[#283618]">{t("privacy.dataController")}</h2>
-          <p className="mt-2 text-[#606C38]">{t("privacy.dataControllerContent")}</p>
-
-          <h2 className="mt-6 text-base font-bold uppercase tracking-wide text-[#283618]">{t("privacy.purposes")}</h2>
-          <p className="mt-2 text-[#606C38]">{t("privacy.purposesContent")}</p>
-
-          <h2 className="mt-6 text-base font-bold uppercase tracking-wide text-[#283618]">{t("privacy.recipients")}</h2>
-          <p className="mt-2 text-[#606C38]">{t("privacy.recipientsContent")}</p>
-
-          <h2 className="mt-6 text-base font-bold uppercase tracking-wide text-[#283618]">{t("privacy.retention")}</h2>
-          <p className="mt-2 text-[#606C38]">{t("privacy.retentionContent")}</p>
-
-          <h2 className="mt-6 text-base font-bold uppercase tracking-wide text-[#283618]">{t("privacy.paymentProcessing")}</h2>
-          <p className="mt-2 text-[#606C38]">{t("privacy.paymentProcessingContent")}</p>
-
-          <h2 className="mt-6 text-base font-bold uppercase tracking-wide text-[#283618]">{t("privacy.yourRights")}</h2>
-          <p className="mt-2 text-[#606C38]">
-            {t("privacy.yourRightsContent")}{" "}
-            <a href="https://www.dvi.gov.lv/en" className="text-emerald-700 underline">www.dvi.gov.lv</a>.
-          </p>
-
-          <h2 className="mt-6 text-base font-bold uppercase tracking-wide text-[#283618]">{t("privacy.children")}</h2>
-          <p className="mt-2 text-[#606C38]">{t("privacy.childrenContent")}</p>
+          <div className="mt-2 whitespace-pre-line text-sm text-[#606C38]">
+            {policy.content}
+          </div>
       </PolicyLayout>
       <Footer locale={locale} />
     </div>
