@@ -164,8 +164,8 @@ export default async function HomePage({ params }: Props) {
         />
 
         <section className="grid md:grid-cols-2" aria-label="Featured products">
-<PromoBlock
-          title={firstProduct?.name ?? t("home.pureYerbaMate")}
+          <PromoBlock
+            title={firstProduct?.name ?? t("home.pureYerbaMate")}
             price={firstProduct ? `€${Number(firstProduct.price).toFixed(2)}` : "€19.99"}
             href={
               firstProduct
@@ -175,6 +175,7 @@ export default async function HomePage({ params }: Props) {
             imageUrl={firstProduct?.images[0]?.url ?? null}
             imageAlt={firstProduct?.name}
             description={firstProduct?.description ?? null}
+            weight={firstProduct?.weight ?? null}
             backgroundColor="bg-gray-100"
             productId={firstProduct?.id}
             productSlug={firstProduct?.slug}
@@ -190,6 +191,7 @@ export default async function HomePage({ params }: Props) {
             imageUrl={secondProduct?.images[0]?.url ?? null}
             imageAlt={secondProduct?.name}
             description={secondProduct?.description ?? null}
+            weight={secondProduct?.weight ?? null}
             backgroundColor="bg-gray-50"
             productId={secondProduct?.id}
             productSlug={secondProduct?.slug}
@@ -212,6 +214,7 @@ export default async function HomePage({ params }: Props) {
             imageUrl={thirdProduct?.images[0]?.url ?? null}
             imageAlt={thirdProduct?.name}
             description={thirdProduct?.description ?? null}
+            weight={thirdProduct?.weight ?? null}
             backgroundColor="bg-gray-200"
             productId={thirdProduct?.id}
             productSlug={thirdProduct?.slug}
@@ -227,6 +230,7 @@ export default async function HomePage({ params }: Props) {
             imageUrl={fourthProduct?.images[0]?.url ?? null}
             imageAlt={fourthProduct?.name}
             description={fourthProduct?.description ?? null}
+            weight={fourthProduct?.weight ?? null}
             backgroundColor="bg-gray-100"
             productId={fourthProduct?.id}
             productSlug={fourthProduct?.slug}

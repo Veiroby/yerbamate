@@ -11,6 +11,8 @@ export type PromoBlockProps = {
   imageAlt?: string;
   /** Product description – shown below price, Figma style */
   description?: string | null;
+  /** Optional weight, shown under title */
+  weight?: string | null;
   backgroundColor: string;
   textColor?: string;
   /** When set, shows Add to cart + Buy now buttons */
@@ -25,6 +27,7 @@ export function PromoBlock({
   imageUrl = null,
   imageAlt = "",
   description = null,
+  weight = null,
   backgroundColor,
   textColor = "text-gray-900",
   productId,
@@ -77,6 +80,11 @@ export function PromoBlock({
         <h3 className={`text-[1.125rem] font-bold uppercase leading-tight tracking-wide ${textColor} sm:text-xl md:text-2xl`}>
           {title}
         </h3>
+        {weight && (
+          <p className={`mt-0.5 text-sm font-normal normal-case ${textColor} opacity-80`}>
+            {weight}
+          </p>
+        )}
         <p className={`mt-1.5 text-base font-bold ${textColor} sm:text-lg`}>{price}</p>
         {description && (
           <p className={`mt-2 line-clamp-3 text-sm font-normal leading-snug ${textColor} opacity-90`}>
