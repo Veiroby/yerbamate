@@ -6,11 +6,17 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { saveProductImage } from "@/lib/upload";
 import { FocalPointPicker } from "../focal-point-picker";
+import { setProductQuantityWithLocation } from "../../product-quantity";
 
 type Props = {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ saved?: string; updated?: string; error?: string }>;
 };
+
+function toOptionalString(value: FormDataEntryValue | null): string | null {
+  const v = value?.toString().trim() ?? "";
+  return v ? v : null;
+}
 
 async function deleteImageAction(formData: FormData) {
   "use server";
@@ -119,6 +125,61 @@ async function updateProductNameAndSlugAction(formData: FormData) {
   redirect(`/admin/products/${productId}/edit?updated=name`);
 }
 
+async function updateProductDetailsAction(formData: FormData) {
+  "use server";
+  const productId = formData.get("productId")?.toString();
+  if (!productId) redirect("/admin/products");
+
+  const user = await getCurrentUser();
+  if (!user?.isAdmin) notFound();
+
+  const description = toOptionalString(formData.get("description") ?? null);
+  const weight = toOptionalString(formData.get("weight") ?? null);
+  const barcode = toOptionalString(formData.get("barcode") ?? null);
+
+  const priceRaw = formData.get("price")?.toString() ?? "";
+  const price = Number.parseFloat(priceRaw);
+  if (!Number.isFinite(price) || price < 0) {
+    redirect(`/admin/products/${productId}/edit?error=invalid_price`);
+  }
+
+  const stockLocationRaw = formData.get("stockLocation")?.toString();
+  const stockLocation =
+    stockLocationRaw === "warehouse" ? ("warehouse" as const) : ("instock" as const);
+
+  const quantityRaw = formData.get("quantity")?.toString() ?? "0";
+  const quantity = Number.parseInt(quantityRaw, 10);
+  const safeQty = Number.isFinite(quantity) ? Math.max(0, quantity) : 0;
+
+  const active = formData.get("active") === "on";
+
+  const categoryIdRaw = formData.get("categoryId")?.toString() ?? "";
+  const categoryId = categoryIdRaw ? categoryIdRaw : null;
+
+  await prisma.product.update({
+    where: { id: productId },
+    data: {
+      description: description ?? undefined,
+      weight: weight ?? undefined,
+      barcode: barcode ?? undefined,
+      price,
+      stockLocation,
+      active,
+      categoryId: categoryId ?? undefined,
+    },
+  });
+
+  await setProductQuantityWithLocation(
+    productId,
+    safeQty,
+    stockLocation === "warehouse" ? "warehouse" : undefined,
+  );
+
+  revalidatePath(`/admin/products/${productId}/edit`);
+  revalidatePath("/admin/products");
+  redirect(`/admin/products/${productId}/edit?updated=details`);
+}
+
 export default async function AdminProductEditPage({ params, searchParams }: Props) {
   const user = await getCurrentUser();
   if (!user?.isAdmin) notFound();
@@ -127,9 +188,18 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
   const { saved, updated, error: errorParam } = await searchParams;
   const product = await prisma.product.findUnique({
     where: { id },
-    include: { images: { orderBy: { position: "asc" } } },
+    include: {
+      images: { orderBy: { position: "asc" } },
+      variants: { include: { inventoryItems: true } },
+    },
   });
   if (!product) notFound();
+
+  const categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
+  const quantityLeft = product.variants.reduce(
+    (sum, v) => sum + v.inventoryItems.reduce((s, i) => s + i.quantity, 0),
+    0,
+  );
 
   return (
     <div className="space-y-6">
@@ -141,6 +211,11 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
       {updated === "name" && (
         <p className="rounded-xl bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
           Name and slug updated successfully.
+        </p>
+      )}
+      {updated === "details" && (
+        <p className="rounded-xl bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
+          Product details updated successfully.
         </p>
       )}
       {errorParam === "slug_taken" && (
@@ -158,7 +233,13 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
           Name is required.
         </p>
       )}
-      {errorParam && !["slug_taken", "slug_invalid", "name_required"].includes(errorParam) && (
+      {errorParam === "invalid_price" && (
+        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+          Price must be a valid non-negative number.
+        </p>
+      )}
+      {errorParam &&
+        !["slug_taken", "slug_invalid", "name_required", "invalid_price"].includes(errorParam) && (
         <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
           Upload failed. Check file type (JPEG, PNG, WebP, GIF) and size (max 10MB). See terminal for details.
         </p>
@@ -212,6 +293,118 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
         <p className="mt-2 text-xs text-zinc-500">
           Slug is used in the product URL (/products/[slug]). Leave empty to auto-generate from name.
         </p>
+      </section>
+
+      <section className="rounded-2xl border bg-white p-5 shadow-sm">
+        <h3 className="mb-3 text-sm font-semibold text-zinc-900">
+          Product details (description, price, stock)
+        </h3>
+        <form action={updateProductDetailsAction} className="grid gap-4 md:grid-cols-2">
+          <input type="hidden" name="productId" value={product.id} />
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-600 md:col-span-2">
+            Description
+            <textarea
+              name="description"
+              defaultValue={product.description ?? ""}
+              className="min-h-28 rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+              placeholder="Full description"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-600">
+            Price
+            <input
+              type="number"
+              name="price"
+              step="0.01"
+              min={0}
+              defaultValue={Number(product.price).toString()}
+              required
+              className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-600">
+            Weight
+            <input
+              type="text"
+              name="weight"
+              defaultValue={product.weight ?? ""}
+              className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+              placeholder="e.g. 500g"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-600">
+            Barcode
+            <input
+              type="text"
+              name="barcode"
+              defaultValue={product.barcode ?? ""}
+              className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+              placeholder="e.g. 1234567890123"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-600">
+            Stock location
+            <select
+              name="stockLocation"
+              defaultValue={product.stockLocation ?? "instock"}
+              className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+            >
+              <option value="instock">In stock (quantity)</option>
+              <option value="warehouse">In warehouse (get in 5–7 days)</option>
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-600">
+            Quantity
+            <input
+              type="number"
+              name="quantity"
+              min={0}
+              defaultValue={quantityLeft.toString()}
+              className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-600 md:col-span-1">
+            Category
+            <select
+              name="categoryId"
+              defaultValue={product.categoryId ?? ""}
+              className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+            >
+              <option value="">No category</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex items-center gap-2 text-sm text-zinc-700 md:col-span-2">
+            <input
+              type="checkbox"
+              name="active"
+              defaultChecked={product.active}
+              className="h-4 w-4 rounded border-zinc-300"
+            />
+            Active
+          </label>
+
+          <div className="flex items-center justify-start md:col-span-2">
+            <button
+              type="submit"
+              className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+            >
+              Save product details
+            </button>
+          </div>
+        </form>
       </section>
 
       <section className="rounded-2xl border bg-white p-5 shadow-sm">
