@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "@/lib/translation-context";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type HeroProps = {
   productCount: number;
@@ -21,6 +22,34 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
   const { t } = useTranslation();
   const pathname = usePathname();
   const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
+
+  const statCards = useMemo(
+    () => [
+      { value: formatStat(brandCount), label: t("hero.internationalBrands") },
+      { value: formatStat(productCount), label: t("hero.highQualityProducts") },
+      { value: formatStat(customerCount), label: t("hero.happyCustomers") },
+    ],
+    [brandCount, customerCount, productCount, t],
+  );
+
+  const carouselRef = useRef<HTMLDivElement | null>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+
+    const tick = () => {
+      const width = el.clientWidth;
+      if (!width) return;
+      const next = (activeIdx + 1) % statCards.length;
+      el.scrollTo({ left: next * width, behavior: "smooth" });
+      setActiveIdx(next);
+    };
+
+    const id = window.setInterval(tick, 2000);
+    return () => window.clearInterval(id);
+  }, [activeIdx, statCards.length]);
 
   return (
     <section
@@ -46,30 +75,45 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
               {t("hero.shopNow")}
             </Link>
           </div>
-          <div className="flex flex-row flex-nowrap items-start justify-between gap-2 sm:mt-12 sm:grid sm:grid-cols-3 sm:gap-8">
-            <div className="min-w-0 basis-1/3 shrink-0 text-center sm:text-left">
-              <p className="text-base font-bold text-black sm:text-2xl">
-                {formatStat(brandCount)}
-              </p>
-              <p className="mt-0.5 whitespace-nowrap text-[11px] text-gray-600 sm:mt-1 sm:text-sm">
-                {t("hero.internationalBrands")}
-              </p>
+          {/* Mobile: full-width swipeable carousel */}
+          <div className="sm:hidden" aria-label="Hero statistics">
+            <div
+              ref={carouselRef}
+              className="mt-8 flex w-full snap-x snap-mandatory overflow-x-auto scroll-smooth"
+              style={{ scrollbarWidth: "none" } as any}
+            >
+              {statCards.map((c, idx) => (
+                <div key={idx} className="w-full shrink-0 snap-center px-1">
+                  <div className="w-full rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+                    <p className="text-2xl font-bold text-black">{c.value}</p>
+                    <p className="mt-1 text-sm text-gray-600">{c.label}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="min-w-0 basis-1/3 shrink-0 text-center sm:text-left">
-              <p className="text-base font-bold text-black sm:text-2xl">
-                {formatStat(productCount)}
-              </p>
-              <p className="mt-0.5 whitespace-nowrap text-[11px] text-gray-600 sm:mt-1 sm:text-sm">
-                {t("hero.highQualityProducts")}
-              </p>
+            <div className="mt-3 flex justify-center gap-1.5">
+              {statCards.map((_, idx) => (
+                <span
+                  key={idx}
+                  className={`h-1.5 w-1.5 rounded-full ${idx === activeIdx ? "bg-black" : "bg-stone-300"}`}
+                />
+              ))}
             </div>
-            <div className="min-w-0 basis-1/3 shrink-0 text-center sm:text-left">
-              <p className="text-base font-bold text-black sm:text-2xl">
-                {formatStat(customerCount)}
-              </p>
-              <p className="mt-0.5 whitespace-nowrap text-[11px] text-gray-600 sm:mt-1 sm:text-sm">
-                {t("hero.happyCustomers")}
-              </p>
+          </div>
+
+          {/* Desktop: keep existing 3-column stats */}
+          <div className="hidden sm:mt-12 sm:grid sm:grid-cols-3 sm:gap-8">
+            <div className="min-w-0 text-left">
+              <p className="text-2xl font-bold text-black">{formatStat(brandCount)}</p>
+              <p className="mt-1 whitespace-nowrap text-sm text-gray-600">{t("hero.internationalBrands")}</p>
+            </div>
+            <div className="min-w-0 text-left">
+              <p className="text-2xl font-bold text-black">{formatStat(productCount)}</p>
+              <p className="mt-1 whitespace-nowrap text-sm text-gray-600">{t("hero.highQualityProducts")}</p>
+            </div>
+            <div className="min-w-0 text-left">
+              <p className="text-2xl font-bold text-black">{formatStat(customerCount)}</p>
+              <p className="mt-1 whitespace-nowrap text-sm text-gray-600">{t("hero.happyCustomers")}</p>
             </div>
           </div>
         </div>
