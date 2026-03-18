@@ -25,9 +25,9 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
 
   const statCards = useMemo(
     () => [
-      { value: formatStat(brandCount), label: `🌍 ${t("hero.internationalBrands")}` },
-      { value: formatStat(productCount), label: `❤️ ${t("hero.highQualityProducts")}` },
-      { value: formatStat(customerCount), label: `🧉🔥 ${t("hero.happyCustomers")}` },
+      { value: formatStat(brandCount), label: t("hero.internationalBrands"), emoji: "🌍" },
+      { value: formatStat(productCount), label: t("hero.highQualityProducts"), emoji: "❤️" },
+      { value: formatStat(customerCount), label: t("hero.happyCustomers"), emoji: "🔥" },
     ],
     [brandCount, customerCount, productCount, t],
   );
@@ -83,9 +83,14 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
               style={{ scrollbarWidth: "none" } as any}
             >
               {statCards.map((c, idx) => (
-                <div key={idx} className="w-full shrink-0 snap-center">
-                  <div className="w-full rounded-2xl border border-stone-200 bg-white px-7 py-7 text-center shadow-sm">
-                    <p className="text-3xl font-bold text-black">{c.value}</p>
+                <div key={idx} className="w-full shrink-0 snap-center px-4">
+                  <div className="w-full rounded-2xl border border-stone-200 bg-white px-7 py-6 text-center shadow-sm">
+                    <div className="flex items-center justify-center gap-2">
+                      <p className="text-3xl font-bold leading-none text-black">{c.value}</p>
+                      <span className="text-2xl leading-none" aria-hidden="true">
+                        {c.emoji}
+                      </span>
+                    </div>
                     <p className="mt-2 text-base font-medium text-gray-700">{c.label}</p>
                   </div>
                 </div>
