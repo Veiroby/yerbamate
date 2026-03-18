@@ -14,27 +14,43 @@ export function MateGuideSection({ locale }: Props) {
 
   const heading = isLv
     ? "Kā pagatavot yerba mate tēju"
-    : "How to make yerba mate tea";
+    : "How to make yerba mate";
 
   const steps = isLv
     ? [
-        "Pieber 2/3 trauka ar yerba mate tēju.",
-        "Atstāj tēju slīpumā uz 2–3 minūtēm, lai tā piesūcas ar ūdeni.",
-        "Izmantojot plaukstu, sakrata trauku, lai smalkākās lapas nonāk augšpusē.",
-        "Izmantojot salmiņu, sapresē tēju vienā trauka malā.",
-        "Aplej ar 40°–50° siltu ūdeni un pamazām malko.",
-        "Aplej tukšo pusi ar 70°–80° siltu ūdeni un baudi, atkārtojot, kamēr ir jūtama garša.",
-        "Patīkamu yerba mate piedzīvojumu!",
+        { n: 1, text: "Pieber 2/3 trauka ar yerba mate tēju." },
+        {
+          n: 2,
+          text: "Izmantojot plaukstu, sakrata tēju lai smalkākās lapas nonāk augšpusē.",
+        },
+        { n: 3, text: "Aplej ar silto ūdeni." },
+        {
+          n: 4,
+          text: "Atstāj tēju slīpumā uz 2–3 minūtēm, sacietēti.",
+        },
+        { n: 5, text: "Izmantojot salmiņu, sapresē tēju vienā sānā." },
+        {
+          n: 6,
+          text: "Aplej ar 70–80 grādu siltu ūdeni un uzreiz baudi, atkārto kamēr ir jūtama garša.",
+        },
       ]
     : [
-        "Fill 2/3 of the gourd with yerba mate.",
-        "Leave the gourd on a 45° angle for 2–3 minutes so the yerba absorbs water.",
-        "Cover the top with your palm and shake so the finest dust moves to the top.",
-        "Using the straw, press the yerba to one side of the gourd.",
-        "Fill with warm water around 40°–50° C and sip slowly.",
-        "Pour 70°–80° C hot water into the empty side and enjoy, repeating until there is no taste left.",
-        "Enjoy your yerba mate journey!",
+        { n: 1, text: "Fill 2/3 of gourd with yerba mate." },
+        {
+          n: 2,
+          text: "Using palm cover the gourd and shake to collect all the dust from leaves.",
+        },
+        { n: 3, text: "Fill with warm water." },
+        { n: 4, text: "Leave the gourd on 45 degree slant for yerba to absorb water." },
+        { n: 5, text: "Using straw press yerba to the one side of the gourd." },
+        {
+          n: 6,
+          text: "Fill the empty side with 70–80 degree hot water and enjoy straightaway, repeat until no taste.",
+        },
       ];
+
+  const desktopRenderOrder = [1, 4, 2, 5, 3, 6];
+  const stepsByNumber = new Map(steps.map((s) => [s.n, s]));
 
   return (
     <section className="bg-white px-4 py-12 sm:py-16" aria-label={heading}>
@@ -58,15 +74,19 @@ export function MateGuideSection({ locale }: Props) {
           <h2 className="mb-4 text-2xl font-bold uppercase tracking-wide text-black sm:text-3xl">
             {heading}
           </h2>
-          <ol className="space-y-2 text-sm text-gray-700">
-            {steps.map((step, idx) => (
-              <li key={idx} className="flex gap-2">
-                <span className="mt-[2px] inline-flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-black text-xs font-semibold text-white">
-                  {idx + 1}
-                </span>
-                <span>{step}</span>
-              </li>
-            ))}
+          <ol className="grid grid-cols-2 gap-x-10 gap-y-8 text-base text-gray-700">
+            {desktopRenderOrder.map((n) => {
+              const step = stepsByNumber.get(n);
+              if (!step) return null;
+              return (
+                <li key={n}>
+                  <div className="flex flex-col gap-3">
+                    <span className="text-sm font-semibold text-[#b08d59]">{step.n}</span>
+                    <span className="leading-relaxed">{step.text}</span>
+                  </div>
+                </li>
+              );
+            })}
           </ol>
         </div>
       </div>
