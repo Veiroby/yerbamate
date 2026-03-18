@@ -27,6 +27,9 @@ export default async function ContactPage({ params }: Props) {
         <p className="mb-10 text-neutral-600">
           {t("contact.messagePrompt")}
         </p>
+        <p className="mb-8 text-sm text-neutral-700">
+          {t("contact.additionalInfo")}
+        </p>
         <ContactForm />
       </main>
       <Footer locale={locale} />

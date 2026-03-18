@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
 
-const CONTACT_TO = "info@yerbatea.lv";
+const CONTACT_TO = "yerbatealatvia@gmail.com";
 
 function isValidEmail(s: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((s ?? "").trim());
