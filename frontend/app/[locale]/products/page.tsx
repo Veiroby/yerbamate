@@ -130,7 +130,14 @@ export default async function ProductsPage({ params, searchParams }: Props) {
 
   const categoryLabel = category && CATEGORY_KEYS[category] ? t(CATEGORY_KEYS[category]) : category ?? null;
 
-  const productCards = products.map((p) => {
+  const stockRank = (location: string | null | undefined, quantityLeft: number) => {
+    // Instock with quantity first, then instock sold-out, then warehouse last.
+    if (location === "warehouse") return 2;
+    if (quantityLeft > 0) return 0;
+    return 1;
+  };
+
+  const productCardsUnsorted = products.map((p) => {
     const quantityLeft = p.variants.reduce(
       (sum, v) =>
         sum + v.inventoryItems.reduce((s, i) => s + i.quantity, 0),
@@ -166,6 +173,15 @@ export default async function ProductsPage({ params, searchParams }: Props) {
       weight: p.weight ?? null,
     };
   });
+
+  const productCards = productCardsUnsorted
+    .map((c, idx) => ({
+      c,
+      idx,
+      rank: stockRank(c.stockLocation, c.quantityLeft),
+    }))
+    .sort((a, b) => a.rank - b.rank || a.idx - b.idx)
+    .map((x) => x.c);
 
   const getPageTitle = () => {
     if (q) return t("products.searchTitle", { q });
