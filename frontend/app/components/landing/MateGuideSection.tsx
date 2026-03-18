@@ -9,8 +9,8 @@ export function MateGuideSection({ locale }: Props) {
   const isLv = locale === "lv";
 
   const imageSrc = isLv
-    ? "/images/mate-guide-lv.jpg"
-    : "/images/mate-guide-en.jpg";
+    ? "/images/mate-guide-lv.png"
+    : "/images/mate-guide-en.png";
 
   const heading = isLv
     ? "Kā pagatavot yerba mate tēju"
