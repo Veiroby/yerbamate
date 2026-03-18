@@ -51,7 +51,7 @@ export function OrderTimeline({
   return (
     <div className="mt-4 space-y-2">
       {/* Use a fixed-width flex row (no justify-between) so the connecting line stays uniform. */}
-      <div className="flex items-center w-full gap-0">
+      <div className="flex items-start w-full gap-0">
         {steps.map((step, index) => (
           <div key={step.id} className="flex-1">
             <div className="flex items-center w-full">
