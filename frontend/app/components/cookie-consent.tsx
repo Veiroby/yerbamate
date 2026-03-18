@@ -13,6 +13,7 @@ export function CookieConsent() {
   const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
   const termsHref = localePrefix ? `${localePrefix}/terms` : "/terms";
   const privacyHref = localePrefix ? `${localePrefix}/privacy` : "/privacy";
+  const isLv = localePrefix === "/lv";
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -34,45 +35,58 @@ export function CookieConsent() {
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-stone-200 bg-white/95 px-4 py-4 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] backdrop-blur-sm sm:px-6"
+      className="fixed inset-x-0 bottom-0 z-50 px-4 pb-4 sm:px-6 sm:pb-6"
       role="dialog"
       aria-label="Cookie consent"
     >
-      <div className="mx-auto flex max-w-4xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-stone-600">
-          {localePrefix === "/lv"
-            ? "Mēs izmantojam nepieciešamās sīkdatnes veikala darbībai un papildu sīkdatnes pieredzes un analītikas uzlabošanai. Turpinot lietot vietni, jūs piekrītat mūsu Lietošanas noteikumiem un Privātuma politikai."
-            : "We use necessary cookies to run the store, and optional cookies to improve your experience and analytics. By continuing, you agree to our Terms and conditions and Privacy policy."
-          }{" "}
-          <Link
-            href={termsHref}
-            className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800"
-          >
-            {localePrefix === "/lv" ? "Lietošanas noteikumi" : "Terms and conditions"}
-          </Link>{" "}
-          ·{" "}
-          <Link
-            href={privacyHref}
-            className="font-medium text-teal-700 underline underline-offset-2 hover:text-teal-800"
-          >
-            {localePrefix === "/lv" ? "Privātuma politika" : "Privacy policy"}
-          </Link>{" "}
-        </p>
-        <div className="flex shrink-0 gap-3">
-          <button
-            type="button"
-            onClick={reject}
-            className="rounded-full border border-stone-300 px-5 py-2.5 text-sm font-medium text-stone-700 transition hover:bg-stone-100 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-          >
-            {localePrefix === "/lv" ? "Tikai nepieciešamās" : "Only essential"}
-          </button>
-          <button
-            type="button"
-            onClick={accept}
-            className="rounded-full bg-[#344e41] px-5 py-2.5 text-sm font-medium text-[#dad7cd] transition hover:bg-[#24352b] focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2"
-          >
-            {localePrefix === "/lv" ? "Piekrītu visam" : "Accept all"}
-          </button>
+      <div className="mx-auto max-w-4xl">
+        <div className="rounded-2xl border border-stone-200 bg-white/95 p-4 shadow-[0_16px_50px_rgba(0,0,0,0.16)] backdrop-blur sm:p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+                {isLv ? "Sīkdatnes" : "Cookies"}
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-stone-700">
+                {isLv
+                  ? "Mēs izmantojam nepieciešamās sīkdatnes veikala darbībai un papildu sīkdatnes pieredzes un analītikas uzlabošanai."
+                  : "We use necessary cookies to run the store, and optional cookies to improve your experience and analytics."}{" "}
+                <span className="text-stone-600">
+                  {isLv ? "Turpinot lietot vietni, jūs piekrītat " : "By continuing, you agree to our "}
+                </span>
+                <Link
+                  href={termsHref}
+                  className="font-semibold text-[#283618] underline underline-offset-2 hover:text-black"
+                >
+                  {isLv ? "Lietošanas noteikumiem" : "Terms and conditions"}
+                </Link>
+                <span className="text-stone-600"> {isLv ? "un" : "and"} </span>
+                <Link
+                  href={privacyHref}
+                  className="font-semibold text-[#283618] underline underline-offset-2 hover:text-black"
+                >
+                  {isLv ? "Privātuma politikai" : "Privacy policy"}
+                </Link>
+                .
+              </p>
+            </div>
+
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+              <button
+                type="button"
+                onClick={reject}
+                className="inline-flex h-11 items-center justify-center rounded-full border border-stone-300 bg-white px-5 text-sm font-semibold text-stone-800 shadow-sm transition hover:bg-stone-50 focus:outline-none focus:ring-2 focus:ring-[#283618] focus:ring-offset-2"
+              >
+                {isLv ? "Tikai nepieciešamās" : "Only essential"}
+              </button>
+              <button
+                type="button"
+                onClick={accept}
+                className="inline-flex h-11 items-center justify-center rounded-full bg-[#283618] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1f2a12] focus:outline-none focus:ring-2 focus:ring-[#283618] focus:ring-offset-2"
+              >
+                {isLv ? "Piekrītu visam" : "Accept all"}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
