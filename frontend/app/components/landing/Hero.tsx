@@ -53,7 +53,7 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
 
   return (
     <section
-      className="relative overflow-hidden bg-white px-4 py-12 sm:py-16 md:py-20 lg:py-24"
+      className="relative overflow-hidden bg-white px-4 py-6 sm:py-16 md:py-20 lg:py-24"
       aria-labelledby="hero-heading"
     >
       <div className="mx-auto flex max-w-7xl flex-col gap-10 md:flex-row md:items-center md:justify-between md:gap-12">
@@ -79,12 +79,12 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
           <div className="sm:hidden" aria-label="Hero statistics">
             <div
               ref={carouselRef}
-              className="mt-8 flex w-full snap-x snap-mandatory overflow-x-auto scroll-smooth"
+              className="mt-5 flex w-full snap-x snap-mandatory overflow-x-auto scroll-smooth pb-2"
               style={{ scrollbarWidth: "none" } as any}
             >
               {statCards.map((c, idx) => (
                 <div key={idx} className="w-full shrink-0 snap-center px-4">
-                  <div className="w-full rounded-2xl border border-stone-200 bg-white px-7 py-6 text-center shadow-sm">
+                  <div className="w-full rounded-2xl border border-stone-200 bg-white px-7 py-5 text-center shadow-sm">
                     <div className="flex items-center justify-center gap-2">
                       <p className="text-3xl font-bold leading-none text-black">{c.value}</p>
                       <span className="text-2xl leading-none" aria-hidden="true">
