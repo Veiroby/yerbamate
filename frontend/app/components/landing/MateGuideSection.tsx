@@ -1,38 +1,27 @@
 import Image from "next/image";
 import type { Locale } from "@/lib/locale";
+import { createT, getTranslations } from "@/lib/i18n";
 
 type Props = {
   locale: Locale;
 };
 
-export function MateGuideSection({ locale }: Props) {
+export async function MateGuideSection({ locale }: Props) {
+  const translations = await getTranslations(locale);
+  const t = createT(translations);
+
   const isLv = locale === "lv";
 
   const imageSrc = isLv
     ? "/images/mate-guide-lv.png"
     : "/images/mate-guide-en.png";
 
-  const heading = isLv
-    ? "Kā pagatavot yerba mate tēju"
-    : "How to make yerba mate";
+  const heading = t("mateGuide.heading");
 
-  const steps = isLv
-    ? [
-        { n: 1, text: "Pieber 2/3 trauka ar yerba mate tēju." },
-        { n: 2, text: "Izmantojot plaukstu, sakrata tēju, lai smalkākās lapas nonāk augšpusē." },
-        { n: 3, text: "Aplej ar silto ūdeni." },
-        { n: 4, text: "Atstāj tēju slīpumā uz 2–3 minūtēm, sacietēti." },
-        { n: 5, text: "Izmantojot salmiņu, sapresē tēju vienā sānā." },
-        { n: 6, text: "Aplej ar 70–80 grādu siltu ūdeni un uzreiz baudi. Atkārto, kamēr ir jūtama garša." },
-      ]
-    : [
-        { n: 1, text: "Fill 2/3 of gourd with yerba mate." },
-        { n: 2, text: "Using palm cover the gourd and shake to collect all the dust from leaves." },
-        { n: 3, text: "Fill with warm water." },
-        { n: 4, text: "Leave the gourd on 45 degree slant for yerba to absorb water." },
-        { n: 5, text: "Using straw press yerba to the one side of the gourd." },
-        { n: 6, text: "Fill the empty side with 70-80 degree hot water and enjoy straightaway. Repeat until no taste." },
-      ];
+  const steps = Array.from({ length: 6 }, (_, i) => ({
+    n: i + 1,
+    text: t(`mateGuide.step${i + 1}`),
+  }));
 
   const desktopRenderOrder = [1, 4, 2, 5, 3, 6];
   const stepsByNumber = new Map(steps.map((s) => [s.n, s]));
