@@ -136,10 +136,10 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
             <Image
               src="/images/yerbatea-logo.png"
               alt="yerbatea"
-              width={220}
-              height={60}
+              width={1024}
+              height={1024}
               priority
-              className="h-10 w-auto sm:h-12 md:h-14 lg:h-16"
+              className="h-10 w-10 object-contain sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16"
             />
           </Link>
 

@@ -23,10 +23,10 @@ export function Navbar() {
           <Image
             src="/images/yerbatea-logo.png"
             alt="yerbatea"
-            width={220}
-            height={60}
+            width={1024}
+            height={1024}
             priority
-            className="h-9 w-auto sm:h-11 md:h-12"
+            className="h-10 w-10 object-contain sm:h-11 sm:w-11 md:h-12 md:w-12"
           />
         </Link>
 
