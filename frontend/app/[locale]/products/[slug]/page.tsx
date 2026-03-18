@@ -177,11 +177,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
             {product.weight && (
               <p className="mt-1 text-sm text-gray-500">{product.weight}</p>
             )}
-            {localizedDescription && (
-              <p className="mt-4 text-sm leading-relaxed text-gray-600">
-                {localizedDescription}
-              </p>
-            )}
             {product.origin && (
               <p className="mt-2 text-xs text-gray-500">{t("product.origin")}: {product.origin}</p>
             )}

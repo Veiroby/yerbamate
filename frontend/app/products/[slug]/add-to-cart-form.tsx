@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useCart } from "@/lib/cart-context";
+import { useTranslation } from "@/lib/translation-context";
 
 type AddToCartFormProps = {
   productId: string;
@@ -13,6 +14,7 @@ type AddToCartFormProps = {
 
 export function AddToCartForm({ productId, productName, quantityLeft, price, currency }: AddToCartFormProps) {
   const { addToCart, isLoading } = useCart();
+  const { t } = useTranslation();
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
   const [showStickyBar, setShowStickyBar] = useState(false);
@@ -48,7 +50,9 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
     <>
       <div className="mt-6 space-y-4">
         <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">Quantity</p>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+            {t("product.quantity")}
+          </p>
           <div className="flex items-center gap-0 rounded-md border border-gray-300 bg-white">
             <button
               type="button"
@@ -59,7 +63,7 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
             >
               <span className="text-lg font-medium">−</span>
             </button>
-            <span className="flex h-11 min-w-[3rem] items-center justify-center border-x border-gray-200 text-sm font-semibold text-gray-900">
+            <span className="flex h-11 min-w-[3rem] items-center justify-center border-x border-gray-200 text-sm font-semibold text-emerald-600">
               {clampedQty}
             </span>
             <button
@@ -86,10 +90,10 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Adding...
+                {t("product.adding")}
               </span>
             ) : (
-              "Add to cart"
+              t("product.addToCart")
             )}
           </button>
           <button
@@ -98,11 +102,13 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
             disabled={addingToCart || isLoading}
             className="h-12 w-full min-h-[48px] rounded-md border-2 border-gray-900 py-3.5 px-6 text-sm font-semibold uppercase tracking-wide text-gray-900 transition hover:bg-gray-900 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
           >
-            Buy now
+            {t("product.buyNow")}
           </button>
         </div>
         {quantityLeft < 10 && (
-          <p className="text-xs text-gray-500">Only {quantityLeft} left in stock</p>
+          <p className="text-xs font-medium text-emerald-600">
+            {t("product.onlyLeftInStock", { count: quantityLeft })}
+          </p>
         )}
       </div>
 
@@ -122,7 +128,7 @@ export function AddToCartForm({ productId, productName, quantityLeft, price, cur
             disabled={addingToCart || isLoading}
             className="max-w-[200px] flex-1 rounded-md bg-black py-3 text-sm font-semibold uppercase tracking-wide text-white transition hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {addingToCart ? "…" : "Add to cart"}
+            {addingToCart ? "…" : t("product.addToCart")}
           </button>
         </div>
       </div>
