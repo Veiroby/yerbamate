@@ -25,9 +25,9 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
 
   const statCards = useMemo(
     () => [
-      { value: formatStat(brandCount), label: t("hero.internationalBrands") },
-      { value: formatStat(productCount), label: t("hero.highQualityProducts") },
-      { value: formatStat(customerCount), label: t("hero.happyCustomers") },
+      { value: formatStat(brandCount), label: `🌍 ${t("hero.internationalBrands")}` },
+      { value: formatStat(productCount), label: `❤️ ${t("hero.highQualityProducts")}` },
+      { value: formatStat(customerCount), label: `🧉🔥 ${t("hero.happyCustomers")}` },
     ],
     [brandCount, customerCount, productCount, t],
   );
@@ -83,20 +83,12 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
               style={{ scrollbarWidth: "none" } as any}
             >
               {statCards.map((c, idx) => (
-                <div key={idx} className="w-full shrink-0 snap-center px-1">
-                  <div className="w-full rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-                    <p className="text-2xl font-bold text-black">{c.value}</p>
-                    <p className="mt-1 text-sm text-gray-600">{c.label}</p>
+                <div key={idx} className="w-full shrink-0 snap-center">
+                  <div className="w-full rounded-2xl border border-stone-200 bg-white px-7 py-7 text-center shadow-sm">
+                    <p className="text-3xl font-bold text-black">{c.value}</p>
+                    <p className="mt-2 text-base font-medium text-gray-700">{c.label}</p>
                   </div>
                 </div>
-              ))}
-            </div>
-            <div className="mt-3 flex justify-center gap-1.5">
-              {statCards.map((_, idx) => (
-                <span
-                  key={idx}
-                  className={`h-1.5 w-1.5 rounded-full ${idx === activeIdx ? "bg-black" : "bg-stone-300"}`}
-                />
               ))}
             </div>
           </div>
