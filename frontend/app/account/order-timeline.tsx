@@ -50,12 +50,13 @@ export function OrderTimeline({
 
   return (
     <div className="mt-4 space-y-2">
-      <div className="flex items-center justify-between gap-2">
+      {/* Use a fixed-width flex row (no justify-between) so the connecting line stays uniform. */}
+      <div className="flex items-center w-full gap-0">
         {steps.map((step, index) => (
-          <div key={step.id} className="flex-1 last:flex-none">
-            <div className="flex items-center">
+          <div key={step.id} className="flex-1">
+            <div className="flex items-center w-full">
               <div
-                className={`flex h-4 w-4 items-center justify-center rounded-full border text-[10px] ${
+                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px] ${
                   step.done
                     ? "border-emerald-600 bg-emerald-600 text-white"
                     : "border-gray-300 bg-white text-gray-400"
@@ -65,7 +66,7 @@ export function OrderTimeline({
               </div>
               {index < steps.length - 1 && (
                 <div
-                  className={`ml-1 h-[2px] flex-1 ${
+                  className={`h-[2px] flex-1 rounded-full ${
                     steps[index + 1].done ? "bg-emerald-500" : "bg-gray-200"
                   }`}
                 />
