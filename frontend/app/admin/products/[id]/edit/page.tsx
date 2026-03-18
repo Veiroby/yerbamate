@@ -133,7 +133,8 @@ async function updateProductDetailsAction(formData: FormData) {
   const user = await getCurrentUser();
   if (!user?.isAdmin) notFound();
 
-  const description = toOptionalString(formData.get("description") ?? null);
+  const descriptionEn = toOptionalString(formData.get("descriptionEn") ?? null);
+  const descriptionLv = toOptionalString(formData.get("descriptionLv") ?? null);
   const weight = toOptionalString(formData.get("weight") ?? null);
   const barcode = toOptionalString(formData.get("barcode") ?? null);
 
@@ -159,7 +160,10 @@ async function updateProductDetailsAction(formData: FormData) {
   await prisma.product.update({
     where: { id: productId },
     data: {
-      description: description ?? undefined,
+      // Keep `description` (legacy single-language) in sync with English.
+      descriptionEn: descriptionEn ?? undefined,
+      descriptionLv: descriptionLv ?? undefined,
+      description: descriptionEn ?? undefined,
       weight: weight ?? undefined,
       barcode: barcode ?? undefined,
       price,
@@ -302,13 +306,23 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
         <form action={updateProductDetailsAction} className="grid gap-4 md:grid-cols-2">
           <input type="hidden" name="productId" value={product.id} />
 
-          <label className="flex flex-col gap-1 text-xs text-zinc-600 md:col-span-2">
-            Description
+          <label className="flex flex-col gap-1 text-xs text-zinc-600 md:col-span-1">
+            Description (EN)
             <textarea
-              name="description"
-              defaultValue={product.description ?? ""}
+              name="descriptionEn"
+              defaultValue={product.descriptionEn ?? product.description ?? ""}
               className="min-h-28 rounded-xl border border-zinc-300 px-3 py-2 text-sm"
-              placeholder="Full description"
+              placeholder="Full description (English)"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-600 md:col-span-1">
+            Description (LV)
+            <textarea
+              name="descriptionLv"
+              defaultValue={product.descriptionLv ?? ""}
+              className="min-h-28 rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+              placeholder="Full description (Latvian)"
             />
           </label>
 

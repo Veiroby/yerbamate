@@ -21,6 +21,8 @@ export async function GET(request: Request) {
     where.OR = [
       { name: { contains: q, mode: "insensitive" } },
       { description: { contains: q, mode: "insensitive" } },
+      { descriptionEn: { contains: q, mode: "insensitive" } },
+      { descriptionLv: { contains: q, mode: "insensitive" } },
       { brand: { contains: q, mode: "insensitive" } },
       { origin: { contains: q, mode: "insensitive" } },
     ];

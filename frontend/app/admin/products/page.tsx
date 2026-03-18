@@ -152,6 +152,8 @@ export default async function AdminProductsPage({
                 name,
                 slug,
                 price,
+                descriptionEn: description,
+                // Keep legacy single-language column in sync (English).
                 description,
                 barcode: barcode || undefined,
                 weight: weight || undefined,

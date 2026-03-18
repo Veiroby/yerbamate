@@ -134,6 +134,8 @@ model Product {
   slug          String         @unique
   name          String
   description   String?
+  descriptionEn String?       @db.Text
+  descriptionLv String?       @db.Text
   price         Decimal        @db.Decimal(10, 2)
   currency      String         @default("EUR")
   barcode       String?        @unique

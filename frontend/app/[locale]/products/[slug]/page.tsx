@@ -74,6 +74,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const primaryImage = product.images[0];
   const price = Number(product.price);
 
+  const localizedDescription =
+    locale === "lv"
+      ? product.descriptionLv ?? product.descriptionEn ?? product.description ?? null
+      : product.descriptionEn ?? product.descriptionLv ?? product.description ?? null;
+
   const productBundles = bundleOffers.filter(
     (b) => b.productId === product.id || b.productId === null,
   );
@@ -172,9 +177,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
             {product.weight && (
               <p className="mt-1 text-sm text-gray-500">{product.weight}</p>
             )}
-            {product.description && (
+            {localizedDescription && (
               <p className="mt-4 text-sm leading-relaxed text-gray-600">
-                {product.description}
+                {localizedDescription}
               </p>
             )}
             {product.origin && (
@@ -220,7 +225,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <h2 className="text-lg font-bold uppercase tracking-wide text-black">{t("product.productDetails")}</h2>
           <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-6">
             <p className="whitespace-pre-line text-sm leading-relaxed text-gray-700">
-              {product.description ?? t("product.noDescription")}
+              {localizedDescription ?? t("product.noDescription")}
             </p>
           </div>
         </section>

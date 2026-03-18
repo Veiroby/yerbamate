@@ -144,6 +144,11 @@ export default async function ProductsPage({ params, searchParams }: Props) {
           ? "in_stock"
           : "get_in_5_7_days";
     const img = p.images[0];
+
+    const localizedDescription =
+      locale === "lv"
+        ? p.descriptionLv ?? p.descriptionEn ?? p.description ?? null
+        : p.descriptionEn ?? p.descriptionLv ?? p.description ?? null;
     return {
       id: p.id,
       slug: p.slug,
@@ -155,7 +160,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
       quantityLeft,
       stockStatus,
       stockLocation: location,
-      description: p.description,
+      description: localizedDescription,
       brand: p.brand,
       origin: p.origin,
       weight: p.weight ?? null,
