@@ -23,6 +23,10 @@ export const metadata: Metadata = {
   title: "YerbaTea – Premium Yerba Mate & Mate Gourds",
   description: "Premium yerba mate and mate gourds, delivered to your door.",
   metadataBase: new URL("https://www.yerbatea.lv"),
+  icons: {
+    icon: "/images/yerbatea-favicon-32.png",
+    apple: "/images/yerbatea-apple-touch-icon-180.png",
+  },
   openGraph: {
     title: "YerbaTea – Premium Yerba Mate & Mate Gourds",
     description: "Premium yerba mate and mate gourds, delivered to your door.",
