@@ -19,34 +19,19 @@ export function MateGuideSection({ locale }: Props) {
   const steps = isLv
     ? [
         { n: 1, text: "Pieber 2/3 trauka ar yerba mate tēju." },
-        {
-          n: 2,
-          text: "Izmantojot plaukstu, sakrata tēju lai smalkākās lapas nonāk augšpusē.",
-        },
+        { n: 2, text: "Izmantojot plaukstu, sakrata tēju, lai smalkākās lapas nonāk augšpusē." },
         { n: 3, text: "Aplej ar silto ūdeni." },
-        {
-          n: 4,
-          text: "Atstāj tēju slīpumā uz 2–3 minūtēm, sacietēti.",
-        },
+        { n: 4, text: "Atstāj tēju slīpumā uz 2–3 minūtēm, sacietēti." },
         { n: 5, text: "Izmantojot salmiņu, sapresē tēju vienā sānā." },
-        {
-          n: 6,
-          text: "Aplej ar 70–80 grādu siltu ūdeni un uzreiz baudi, atkārto kamēr ir jūtama garša.",
-        },
+        { n: 6, text: "Aplej ar 70–80 grādu siltu ūdeni un uzreiz baudi. Atkārto, kamēr ir jūtama garša." },
       ]
     : [
         { n: 1, text: "Fill 2/3 of gourd with yerba mate." },
-        {
-          n: 2,
-          text: "Using palm cover the gourd and shake to collect all the dust from leaves.",
-        },
+        { n: 2, text: "Using palm cover the gourd and shake to collect all the dust from leaves." },
         { n: 3, text: "Fill with warm water." },
         { n: 4, text: "Leave the gourd on 45 degree slant for yerba to absorb water." },
         { n: 5, text: "Using straw press yerba to the one side of the gourd." },
-        {
-          n: 6,
-          text: "Fill the empty side with 70–80 degree hot water and enjoy straightaway, repeat until no taste.",
-        },
+        { n: 6, text: "Fill the empty side with 70-80 degree hot water and enjoy straightaway. Repeat until no taste." },
       ];
 
   const desktopRenderOrder = [1, 4, 2, 5, 3, 6];
@@ -80,9 +65,9 @@ export function MateGuideSection({ locale }: Props) {
               if (!step) return null;
               return (
                 <li key={n}>
-                  <div className="flex flex-col gap-3">
+                  <div className="flex max-w-[22rem] flex-col gap-4">
                     <span className="text-sm font-semibold text-[#b08d59]">{step.n}</span>
-                    <span className="leading-relaxed">{step.text}</span>
+                    <span className="leading-8">{step.text}</span>
                   </div>
                 </li>
               );
