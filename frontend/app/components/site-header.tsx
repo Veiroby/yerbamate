@@ -15,6 +15,9 @@ type SiteHeaderProps = {
 const navLinkKeys = [
   { path: "", labelKey: "nav.home" },
   { path: "products", labelKey: "nav.products" },
+  { path: "yerba-mate", labelKey: "products.categoryYerbaMate" },
+  { path: "mate-gourds", labelKey: "products.categoryMateGourds" },
+  { path: "accessories", labelKey: "landing.accessories" },
   { path: "about", labelKey: "nav.about" },
   { path: "contact", labelKey: "nav.contact" },
 ] as const;
