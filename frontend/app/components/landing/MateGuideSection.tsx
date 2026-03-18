@@ -46,7 +46,9 @@ export function MateGuideSection({ locale }: Props) {
               alt={heading}
               width={960}
               height={768}
+              sizes="(max-width: 768px) 100vw, 480px"
               className="h-auto w-full object-contain"
+              unoptimized
             />
           </div>
         </div>

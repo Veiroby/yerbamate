@@ -42,6 +42,16 @@ export function Footer({ locale }: { locale: Locale }) {
             <p className="mt-3 max-w-xs text-sm text-gray-600">
               {t("footer.tagline")}
             </p>
+            <div className="mt-5 max-w-xs text-sm text-gray-700">
+              <p className="font-semibold text-gray-900">SIA YerbaTea</p>
+              <p className="mt-1 text-gray-600">
+                IBAN:{" "}
+                <span className="font-mono text-[13px] text-gray-800">
+                  LV30HABA0551057129470
+                </span>{" "}
+                (Swedbank)
+              </p>
+            </div>
           </div>
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-500">

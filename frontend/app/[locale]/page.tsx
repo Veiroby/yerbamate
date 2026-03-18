@@ -101,9 +101,8 @@ export default async function HomePage({ params }: Props) {
 
   const newArrivalsCollectionId = settings?.homeNewArrivalsCollectionId ?? null;
   const topSellingCollectionId = settings?.homeTopSellingCollectionId ?? null;
-  const promoIds = settings?.homePromoProductIds ?? [];
 
-  const [newArrivalsProducts, topSellingProducts, promoProducts] = await Promise.all([
+  const [newArrivalsProducts, topSellingProducts] = await Promise.all([
     newArrivalsCollectionId
       ? prisma.productInCollection
           .findMany({
@@ -132,17 +131,6 @@ export default async function HomePage({ params }: Props) {
           })
           .then((rows) => rows.map((r) => r.product))
       : Promise.resolve(latestProducts.slice(0, 8)),
-    promoIds.length > 0
-      ? prisma.product
-          .findMany({
-            where: { id: { in: promoIds }, active: true },
-            include: { images: { orderBy: { position: "asc" }, take: 1 } },
-          })
-          .then((list) => {
-            const byId = new Map(list.map((p) => [p.id, p]));
-            return promoIds.map((id) => byId.get(id)).filter(Boolean) as typeof list;
-          })
-      : Promise.resolve([]),
   ]);
 
   const newArrivalsCarousel: CarouselProduct[] = newArrivalsProducts.map((p) =>

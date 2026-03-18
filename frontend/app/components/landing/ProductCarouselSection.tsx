@@ -141,7 +141,7 @@ export function ProductCarouselSection({ title, titleKey, products }: Props) {
             href={`/${locale}/products`}
             className="rounded-full border-2 border-gray-900 px-8 py-3 text-sm font-semibold text-gray-900 transition hover:bg-gray-900 hover:text-white"
           >
-            View all
+            {t("home.viewAll")}
           </Link>
         </div>
       </div>
