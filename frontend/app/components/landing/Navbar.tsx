@@ -17,9 +17,9 @@ export function Navbar() {
       >
         <Link
           href="/"
-          className={`text-lg font-semibold ${navText} transition hover:opacity-90`}
+          className={`p-0 text-2xl font-bold leading-none sm:text-3xl ${navText} transition hover:opacity-90`}
         >
-          YerbaTea
+          yerbatea
         </Link>
 
         <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 sm:flex">

@@ -130,9 +130,9 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
         >
           <Link
             href={localePrefix}
-            className="text-xl font-bold uppercase tracking-tight text-black hover:opacity-80"
+            className="p-0 text-5xl font-bold leading-none tracking-tight text-black hover:opacity-80 sm:text-6xl"
           >
-            YerbaTea
+            yerbatea
           </Link>
 
           <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex">
