@@ -2,10 +2,49 @@ import { getCurrentUser } from "@/lib/auth";
 import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
+import type { Metadata } from "next";
 
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+const baseUrl = "https://www.yerbatea.lv";
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale: localeParam } = await params;
+  if (!isValidLocale(localeParam)) return {};
+  const locale = localeParam as "lv" | "en";
+
+  const translations = await getTranslations(locale);
+  const t = createT(translations);
+
+  const title = `${t("about.title")} – YerbaTea`;
+  const description = t("about.intro");
+  const canonical = `${baseUrl}/${locale}/about`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: {
+        lv: `${baseUrl}/lv/about`,
+        en: `${baseUrl}/en/about`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function AboutPage({ params }: Props) {
   const { locale } = await params;

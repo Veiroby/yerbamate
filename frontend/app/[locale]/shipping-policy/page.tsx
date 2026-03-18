@@ -4,15 +4,49 @@ import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
 import { PolicyLayout } from "@/app/components/PolicyLayout";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
+import type { Metadata } from "next";
 
 type Props = {
   params: Promise<{ locale: string }>;
 };
 
-export const metadata = {
-  title: "Shipping policy – YerbaTea",
-  description: "Shipping and delivery policy for YerbaTea.",
-};
+const baseUrl = "https://www.yerbatea.lv";
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale: localeParam } = await params;
+  if (!isValidLocale(localeParam)) return {};
+  const locale = localeParam as "lv" | "en";
+
+  const translations = await getTranslations(locale);
+  const t = createT(translations);
+
+  const title = `${t("shipping.title")} – YerbaTea`;
+  const description = t("shipping.intro");
+  const canonical = `${baseUrl}/${locale}/shipping-policy`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: {
+        lv: `${baseUrl}/lv/shipping-policy`,
+        en: `${baseUrl}/en/shipping-policy`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function ShippingPolicyPage({ params }: Props) {
   const { locale } = await params;

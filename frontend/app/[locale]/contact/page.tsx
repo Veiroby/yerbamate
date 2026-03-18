@@ -3,10 +3,49 @@ import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
 import { ContactForm } from "@/app/contact/contact-form";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
+import type { Metadata } from "next";
 
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+const baseUrl = "https://www.yerbatea.lv";
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale: localeParam } = await params;
+  if (!isValidLocale(localeParam)) return {};
+  const locale = localeParam as "lv" | "en";
+
+  const translations = await getTranslations(locale);
+  const t = createT(translations);
+
+  const title = `${t("contact.title")} – YerbaTea`;
+  const description = t("contact.messagePrompt");
+  const canonical = `${baseUrl}/${locale}/contact`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: {
+        lv: `${baseUrl}/lv/contact`,
+        en: `${baseUrl}/en/contact`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function ContactPage({ params }: Props) {
   const { locale } = await params;

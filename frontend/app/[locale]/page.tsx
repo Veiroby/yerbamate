@@ -12,8 +12,9 @@ import { MateGuideSection } from "@/app/components/landing/MateGuideSection";
 import { FollowSubscribe } from "@/app/components/landing/FollowSubscribe";
 import { Footer } from "@/app/components/landing/Footer";
 import { TestimonialsSection, type Testimonial } from "@/app/components/landing/TestimonialsSection";
+import type { Metadata } from "next";
 import type { Locale } from "@/lib/i18n";
-import { getTranslations, createT } from "@/lib/i18n";
+import { getTranslations, createT, isValidLocale } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,49 @@ function toCarouselProduct(
 }
 
 type Props = { params: Promise<{ locale: string }> };
+
+const baseUrl = "https://www.yerbatea.lv";
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale: localeParam } = await params;
+  if (!isValidLocale(localeParam)) return {};
+  const locale = localeParam as Locale;
+
+  const title =
+    locale === "lv"
+      ? "YerbaTea – Premium yerba mate un mate kalebasi"
+      : "YerbaTea – Premium Yerba Mate & Mate Gourds";
+
+  const description =
+    locale === "lv"
+      ? "Premium yerba mate un mate kalebasi, piegādāti līdz jūsu durvīm."
+      : "Premium yerba mate and mate gourds, delivered to your door.";
+
+  const canonical = `${baseUrl}/${locale}`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: {
+        lv: `${baseUrl}/lv`,
+        en: `${baseUrl}/en`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function HomePage({ params }: Props) {
   const { locale: localeParam } = await params;

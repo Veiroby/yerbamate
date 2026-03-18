@@ -8,12 +8,95 @@ import { Footer } from "@/app/components/landing/Footer";
 import { AddToCartForm } from "@/app/products/[slug]/add-to-cart-form";
 import { ProductReviewsSection } from "@/app/products/[slug]/product-reviews-section";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
 type ProductPageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };
+
+const baseUrl = "https://www.yerbatea.lv";
+
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const { locale: localeParam, slug: rawSlug } = await params;
+  if (!isValidLocale(localeParam)) return {};
+  const locale = localeParam as "lv" | "en";
+  const slug = decodeURIComponent(rawSlug).trim();
+
+  const translations = await getTranslations(locale);
+  const t = createT(translations);
+
+  const product = await prisma.product.findUnique({
+    where: { slug },
+    select: {
+      name: true,
+      active: true,
+      descriptionEn: true,
+      descriptionLv: true,
+      description: true,
+      images: { orderBy: { position: "asc" }, take: 1, select: { url: true, altText: true } },
+      currency: true,
+      price: true,
+    },
+  });
+
+  if (!product || !product.active) {
+    return {
+      title: "YerbaTea",
+      description: "",
+      alternates: {
+        canonical: `${baseUrl}/${locale}/products/${encodeURIComponent(slug)}`,
+        languages: {
+          lv: `${baseUrl}/lv/products/${encodeURIComponent(slug)}`,
+          en: `${baseUrl}/en/products/${encodeURIComponent(slug)}`,
+        },
+      },
+    };
+  }
+
+  const localizedDescription =
+    locale === "lv"
+      ? product.descriptionLv ?? product.descriptionEn ?? product.description ?? null
+      : product.descriptionEn ?? product.descriptionLv ?? product.description ?? null;
+
+  const canonical = `${baseUrl}/${locale}/products/${encodeURIComponent(slug)}`;
+
+  const primaryImage = product.images[0];
+  const openGraphImageUrl =
+    primaryImage?.url && primaryImage.url.startsWith("http")
+      ? primaryImage.url
+      : primaryImage?.url
+        ? `${baseUrl}${primaryImage.url}`
+        : undefined;
+
+  const title = `${product.name} – YerbaTea`;
+  const description = localizedDescription ?? t("product.noDescription");
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: {
+        lv: `${baseUrl}/lv/products/${encodeURIComponent(slug)}`,
+        en: `${baseUrl}/en/products/${encodeURIComponent(slug)}`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: "website",
+      images: openGraphImageUrl ? [{ url: openGraphImageUrl }] : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { locale: localeParam, slug: rawSlug } = await params;

@@ -5,15 +5,49 @@ import { PolicyLayout } from "@/app/components/PolicyLayout";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 import type { Locale } from "@/lib/locale";
 import { getPolicyContent } from "@/lib/policies";
+import type { Metadata } from "next";
 
 type Props = {
   params: Promise<{ locale: string }>;
 };
 
-export const metadata = {
-  title: "Terms and conditions – YerbaTea",
-  description: "Terms and conditions for YerbaTea.",
-};
+const baseUrl = "https://www.yerbatea.lv";
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale: localeParam } = await params;
+  if (!isValidLocale(localeParam)) return {};
+  const locale = localeParam as Locale;
+
+  const translations = await getTranslations(locale);
+  const t = createT(translations);
+
+  const title = `${t("terms.title")} – YerbaTea`;
+  const description = t("terms.intro");
+  const canonical = `${baseUrl}/${locale}/terms`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: {
+        lv: `${baseUrl}/lv/terms`,
+        en: `${baseUrl}/en/terms`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function TermsPage({ params }: Props) {
   const { locale } = await params;

@@ -7,6 +7,7 @@ import { Footer } from "@/app/components/landing/Footer";
 import { ProductFilters, ActiveFilters } from "@/app/components/product-filters";
 import { Prisma } from "@/app/generated/prisma/client";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,62 @@ type Props = {
     sort?: string;
   }>;
 };
+
+const baseUrl = "https://www.yerbatea.lv";
+
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+  const { locale: localeParam } = await params;
+  if (!isValidLocale(localeParam)) return {};
+  const locale = localeParam as "lv" | "en";
+
+  const search = await searchParams;
+  const { q, category } = search;
+
+  const translations = await getTranslations(locale);
+  const t = createT(translations);
+
+  const categoryKey = category && CATEGORY_KEYS[category] ? CATEGORY_KEYS[category] : null;
+  const categoryLabel = categoryKey ? t(categoryKey) : category ?? null;
+
+  const title =
+    q
+      ? t("products.searchTitle", { q })
+      : categoryLabel
+        ? categoryLabel
+        : t("products.allProducts");
+
+  const description =
+    categoryLabel
+      ? t("products.browseCategorySelection", { category: categoryLabel })
+      : q
+        ? t("products.tryAdjustingFilters")
+        : t("products.browseCatalog");
+
+  const canonical = `${baseUrl}/${locale}/products`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical,
+      languages: {
+        lv: `${baseUrl}/lv/products`,
+        en: `${baseUrl}/en/products`,
+      },
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function ProductsPage({ params, searchParams }: Props) {
   const { locale } = await params;
