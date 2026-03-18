@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/lib/cart-context";
@@ -130,9 +131,16 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
         >
           <Link
             href={localePrefix}
-            className="p-0 text-5xl font-bold leading-none tracking-tight text-black hover:opacity-80 sm:text-6xl"
+            className="p-0 hover:opacity-80"
           >
-            yerbatea
+            <Image
+              src="/images/yerbatea-logo.png"
+              alt="yerbatea"
+              width={220}
+              height={60}
+              priority
+              className="h-10 w-auto sm:h-12 md:h-14 lg:h-16"
+            />
           </Link>
 
           <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex">

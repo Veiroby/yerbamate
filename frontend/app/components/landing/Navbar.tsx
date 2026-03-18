@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 
 const navBg = "bg-[#283618]"; /* Black Forest */
@@ -17,9 +18,16 @@ export function Navbar() {
       >
         <Link
           href="/"
-          className={`p-0 text-2xl font-bold leading-none sm:text-3xl ${navText} transition hover:opacity-90`}
+          className={`p-0 transition hover:opacity-90`}
         >
-          yerbatea
+          <Image
+            src="/images/yerbatea-logo.png"
+            alt="yerbatea"
+            width={220}
+            height={60}
+            priority
+            className="h-9 w-auto sm:h-11 md:h-12"
+          />
         </Link>
 
         <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-6 sm:flex">
