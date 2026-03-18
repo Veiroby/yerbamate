@@ -51,6 +51,12 @@ export function Footer({ locale }: { locale: Locale }) {
                 </span>{" "}
                 (Swedbank)
               </p>
+              <p className="mt-2 text-gray-600">
+                Reg. no.: <span className="font-medium text-gray-800">50203504501</span>
+              </p>
+              <p className="mt-1 text-gray-600">
+                Address: <span className="font-medium text-gray-800">Ieriķu iela 66–112, Rīga, LV-1084</span>
+              </p>
             </div>
           </div>
           <div>
