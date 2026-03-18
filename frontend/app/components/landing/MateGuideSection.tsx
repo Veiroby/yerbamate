@@ -59,20 +59,17 @@ export function MateGuideSection({ locale }: Props) {
           <h2 className="mb-4 text-2xl font-bold uppercase tracking-wide text-black sm:text-3xl">
             {heading}
           </h2>
-          <ol className="grid grid-cols-2 gap-x-10 gap-y-8 text-base text-gray-700">
+          <ul className="list-disc space-y-6 pl-6 text-base text-gray-700">
             {desktopRenderOrder.map((n) => {
               const step = stepsByNumber.get(n);
               if (!step) return null;
               return (
-                <li key={n}>
-                  <div className="flex max-w-[22rem] flex-col gap-4">
-                    <span className="text-sm font-semibold text-[#b08d59]">{step.n}</span>
-                    <span className="leading-8">{step.text}</span>
-                  </div>
+                <li key={n} className="leading-8">
+                  {step.text}
                 </li>
               );
             })}
-          </ol>
+          </ul>
         </div>
       </div>
     </section>
