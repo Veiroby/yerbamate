@@ -2,7 +2,6 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { SiteHeader } from "@/app/components/site-header";
 import { Hero } from "@/app/components/landing/Hero";
-import { PromoBlock } from "@/app/components/landing/PromoBlock";
 import { TrendingSection } from "@/app/components/landing/TrendingSection";
 import {
   ProductCarouselSection,
@@ -153,17 +152,6 @@ export default async function HomePage({ params }: Props) {
     toCarouselProduct(p, locale)
   );
 
-  const promoBlocks = [
-    promoProducts[0] ?? latestProducts[0],
-    promoProducts[1] ?? latestProducts[1],
-    promoProducts[2] ?? latestProducts[2],
-    promoProducts[3] ?? latestProducts[3],
-  ];
-  const firstProduct = promoBlocks[0];
-  const secondProduct = promoBlocks[1];
-  const thirdProduct = promoBlocks[2];
-  const fourthProduct = promoBlocks[3];
-
   return (
     <div className="min-h-screen bg-white text-gray-900">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
@@ -175,79 +163,9 @@ export default async function HomePage({ params }: Props) {
           customerCount={heroStats.customerCount}
         />
 
-        <section className="grid md:grid-cols-2" aria-label="Featured products">
-          <PromoBlock
-            title={firstProduct?.name ?? t("home.pureYerbaMate")}
-            price={firstProduct ? `€${Number(firstProduct.price).toFixed(2)}` : "€19.99"}
-            href={
-              firstProduct
-                ? `/${locale}/products/${encodeURIComponent(firstProduct.slug)}`
-                : `/${locale}/products?category=yerba-mate`
-            }
-            imageUrl={firstProduct?.images[0]?.url ?? null}
-            imageAlt={firstProduct?.name}
-            description={firstProduct?.description ?? null}
-            weight={firstProduct?.weight ?? null}
-            backgroundColor="bg-gray-100"
-            productId={firstProduct?.id}
-            productSlug={firstProduct?.slug}
-          />
-          <PromoBlock
-            title={secondProduct?.name ?? t("home.bestBlends")}
-            price={secondProduct ? `€${Number(secondProduct.price).toFixed(2)}` : "€19.99"}
-            href={
-              secondProduct
-                ? `/${locale}/products/${encodeURIComponent(secondProduct.slug)}`
-                : `/${locale}/products`
-            }
-            imageUrl={secondProduct?.images[0]?.url ?? null}
-            imageAlt={secondProduct?.name}
-            description={secondProduct?.description ?? null}
-            weight={secondProduct?.weight ?? null}
-            backgroundColor="bg-gray-50"
-            productId={secondProduct?.id}
-            productSlug={secondProduct?.slug}
-          />
-        </section>
-
-        <TrendingSection />
-
         <ProductCarouselSection titleKey="home.newArrivals" products={newArrivalsCarousel} />
 
-        <section className="grid md:grid-cols-2" aria-label="More products">
-          <PromoBlock
-            title={thirdProduct?.name ?? t("home.classicMate")}
-            price={thirdProduct ? `€${Number(thirdProduct.price).toFixed(2)}` : "€2.32"}
-            href={
-              thirdProduct
-                ? `/${locale}/products/${encodeURIComponent(thirdProduct.slug)}`
-                : `/${locale}/products?category=mate-gourds`
-            }
-            imageUrl={thirdProduct?.images[0]?.url ?? null}
-            imageAlt={thirdProduct?.name}
-            description={thirdProduct?.description ?? null}
-            weight={thirdProduct?.weight ?? null}
-            backgroundColor="bg-gray-200"
-            productId={thirdProduct?.id}
-            productSlug={thirdProduct?.slug}
-          />
-          <PromoBlock
-            title={fourthProduct?.name ?? t("home.herbalBlends")}
-            price={fourthProduct ? `€${Number(fourthProduct.price).toFixed(2)}` : "€19.99"}
-            href={
-              fourthProduct
-                ? `/${locale}/products/${encodeURIComponent(fourthProduct.slug)}`
-                : `/${locale}/products`
-            }
-            imageUrl={fourthProduct?.images[0]?.url ?? null}
-            imageAlt={fourthProduct?.name}
-            description={fourthProduct?.description ?? null}
-            weight={fourthProduct?.weight ?? null}
-            backgroundColor="bg-gray-100"
-            productId={fourthProduct?.id}
-            productSlug={fourthProduct?.slug}
-          />
-        </section>
+        <TrendingSection />
 
         <section aria-label={t("home.topSelling")}>
           <div className="bg-white px-4 pt-12 sm:pt-16">
