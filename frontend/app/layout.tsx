@@ -22,6 +22,17 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "YerbaTea – Premium Yerba Mate & Mate Gourds",
   description: "Premium yerba mate and mate gourds, delivered to your door.",
+  metadataBase: new URL("https://www.yerbatea.lv"),
+  openGraph: {
+    title: "YerbaTea – Premium Yerba Mate & Mate Gourds",
+    description: "Premium yerba mate and mate gourds, delivered to your door.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "YerbaTea – Premium Yerba Mate & Mate Gourds",
+    description: "Premium yerba mate and mate gourds, delivered to your door.",
+  },
 };
 
 export default function RootLayout({

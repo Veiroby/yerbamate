@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { ProductCard } from "@/app/components/product-card";
@@ -11,6 +12,23 @@ export const dynamic = "force-dynamic";
 type Props = {
   params: Promise<{ locale: string }>;
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  if (!isValidLocale(params.locale)) return {};
+
+  const translations = await getTranslations(params.locale as "lv" | "en");
+  const t = createT(translations);
+  const category = t("products.categoryMateGourds");
+
+  return {
+    title: `${category} – YerbaTea`,
+    description: t("products.browseCategorySelection", { category }),
+  };
+}
 
 function stockRank(stockLocation: string | null | undefined, quantityLeft: number) {
   if (stockLocation === "warehouse") return 2;
