@@ -62,16 +62,26 @@ export default async function HomePage({ params }: Props) {
       },
     }),
     (async () => {
-      const [productCount, brands, customerEmails] = await Promise.all([
+      const [productCount, brands, subscriberEmails, userEmails] = await Promise.all([
         prisma.product.count({ where: { active: true } }),
         prisma.product.findMany({
           where: { active: true, brand: { not: null } },
           select: { brand: true },
         }),
-        prisma.order.findMany({ select: { email: true } }),
+        prisma.newsletterSubscriber.findMany({ select: { email: true } }),
+        prisma.user.findMany({ select: { email: true } }),
       ]);
       const brandCount = new Set(brands.map((b) => b.brand).filter(Boolean)).size;
-      const customerCount = new Set(customerEmails.map((o) => o.email)).size;
+      const uniqueEmails = new Set<string>();
+      for (const r of subscriberEmails) {
+        const e = (r.email || "").trim().toLowerCase();
+        if (e) uniqueEmails.add(e);
+      }
+      for (const r of userEmails) {
+        const e = (r.email || "").trim().toLowerCase();
+        if (e) uniqueEmails.add(e);
+      }
+      const customerCount = uniqueEmails.size;
       return { productCount, brandCount, customerCount };
     })(),
     getTranslations(locale),
