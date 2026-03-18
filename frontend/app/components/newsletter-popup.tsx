@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslation } from "@/lib/translation-context";
+import { useOptionalTranslation } from "@/lib/translation-context";
 
 type PopupSettings = {
   popupEnabled: boolean;
@@ -13,7 +13,7 @@ type PopupSettings = {
 };
 
 export function NewsletterPopup() {
-  const { t } = useTranslation();
+  const { t } = useOptionalTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [settings, setSettings] = useState<PopupSettings | null>(null);
   const [email, setEmail] = useState("");
@@ -157,7 +157,7 @@ export function NewsletterPopup() {
                       {t("newsletter.popupCreatingCode")}
                     </>
                   ) : (
-                    {t("newsletter.popupButton", { percent: discountPercent })}
+                    t("newsletter.popupButton", { percent: discountPercent })
                   )}
                 </button>
               </div>

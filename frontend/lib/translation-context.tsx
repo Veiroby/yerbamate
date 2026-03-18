@@ -36,3 +36,14 @@ export function useTranslation() {
   }
   return ctx;
 }
+
+/** Same as `useTranslation`, but does not throw when the provider is missing. */
+export function useOptionalTranslation() {
+  const ctx = useContext(TranslationContext);
+  if (ctx) return ctx;
+  return {
+    locale: "en" as Locale,
+    t: (key: string) => key,
+    translations: {},
+  };
+}
