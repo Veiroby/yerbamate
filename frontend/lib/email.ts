@@ -154,8 +154,10 @@ export async function sendOrderConfirmationEmail(options: {
     phone: options.phone,
   } satisfies InvoiceOrderData);
 
+  const NOTIFY_EMAIL = "yerbatealatvia@gmail.com";
+
   return sendEmail({
-    to: options.email,
+    to: Array.from(new Set([options.email, NOTIFY_EMAIL])),
     subject: `Order ${options.orderNumber} confirmed`,
     html,
     attachments: [
