@@ -25,6 +25,7 @@ export async function getAvailableShippingMethods(
   destination: Destination,
   cart: CartForShipping | null,
   orderSubtotal?: number | null,
+  locale?: "lv" | "en",
 ): Promise<ShippingOption[]> {
   const countryCode = destination.country.toUpperCase();
   const options: ShippingOption[] = [];
@@ -71,7 +72,7 @@ export async function getAvailableShippingMethods(
   if (isDpdAvailableForCountry(countryCode)) {
     options.push({
       id: DPD_PARCEL_MACHINE_METHOD_ID,
-      name: "DPD parcel machine",
+      name: locale === "lv" ? "DPD pakomāts" : "DPD parcel machine",
       amount: freeShippingApplies ? 0 : dpdAmount,
       estimatedDays: 3,
     });
@@ -81,7 +82,10 @@ export async function getAvailableShippingMethods(
   if (countryCode === "LV") {
     options.push({
       id: LOCAL_PICKUP_METHOD_ID,
-      name: "Local pick-up (Stabu iela 53, Rīga)",
+      name:
+        locale === "lv"
+          ? "Saņemšana uz vietas (Stabu iela 53, Rīga)"
+          : "Local pick-up (Stabu iela 53, Rīga)",
       amount: 0,
       estimatedDays: null,
     });

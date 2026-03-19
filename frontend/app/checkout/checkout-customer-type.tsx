@@ -76,7 +76,7 @@ export function CheckoutCustomerType({ onCustomerTypeChange, errors, locale }: P
               name="companyName"
               required
               className={inputClassName("companyName")}
-              placeholder="SIA Example Company"
+              placeholder={isLv ? "SIA Piemēra uzņēmums" : "SIA Example Company"}
             />
             {errors?.companyName && (
               <p className="text-xs text-red-600 mt-1">{errors.companyName}</p>
@@ -91,7 +91,9 @@ export function CheckoutCustomerType({ onCustomerTypeChange, errors, locale }: P
               name="companyAddress"
               required
               className={inputClassName("companyAddress")}
-              placeholder="Street 1, City, LV-1000, Latvia"
+              placeholder={
+                isLv ? "Iela 1, Pilsēta, LV-1000, Latvija" : "Street 1, City, LV-1000, Latvia"
+              }
             />
             {errors?.companyAddress && (
               <p className="text-xs text-red-600 mt-1">{errors.companyAddress}</p>
@@ -122,7 +124,7 @@ export function CheckoutCustomerType({ onCustomerTypeChange, errors, locale }: P
                 name="phone"
                 required
                 className={inputClassName("phone")}
-                placeholder="+371 20000000"
+              placeholder={isLv ? "+371 20000000" : "+371 20000000"}
               />
               {errors?.phone && (
                 <p className="text-xs text-red-600 mt-1">{errors.phone}</p>

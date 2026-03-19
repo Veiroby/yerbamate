@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ShippingMethodSelector } from "./shipping-method-selector";
 import { useLocale } from "@/lib/locale-context";
 import { EU_COUNTRIES } from "@/lib/locale-data";
@@ -18,10 +18,22 @@ export function CheckoutShippingBlock({
   subtotal,
   errors,
   onShippingMethodChange,
+  locale,
 }: Props) {
   const { country: globalCountry } = useLocale();
   const [country, setCountry] = useState(globalCountry);
   const isLv = locale === "lv";
+
+  const regionDisplayNames = useMemo(() => {
+    if (!isLv) return null;
+    const DisplayNamesCtor = (Intl as any).DisplayNames as
+      | undefined
+      | (new (locales: string[], options: { type: string }) => {
+          of: (code: string) => string | undefined;
+        });
+    if (!DisplayNamesCtor) return null;
+    return new DisplayNamesCtor(["lv"], { type: "region" });
+  }, [isLv]);
 
   const inputClassName = (fieldName: string) =>
     `w-full rounded-lg border px-3 py-2.5 text-sm ${
@@ -45,7 +57,7 @@ export function CheckoutShippingBlock({
             name="addressLine1"
             required
             className={inputClassName("addressLine1")}
-            placeholder="Street address"
+            placeholder={isLv ? "Iela un māja" : "Street address"}
           />
           {errors?.addressLine1 && (
             <p className="text-xs text-red-600 mt-1">{errors.addressLine1}</p>
@@ -103,7 +115,7 @@ export function CheckoutShippingBlock({
           >
             {EU_COUNTRIES.map((c) => (
               <option key={c.value} value={c.value}>
-                {c.label}
+                {regionDisplayNames?.of(c.value) ?? c.label}
               </option>
             ))}
           </select>
@@ -114,6 +126,7 @@ export function CheckoutShippingBlock({
         country={country}
         currency={currency}
         subtotal={subtotal}
+        locale={locale}
         onShippingMethodChange={onShippingMethodChange}
       />
     </>

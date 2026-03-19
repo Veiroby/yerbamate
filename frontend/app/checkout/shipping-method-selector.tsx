@@ -26,13 +26,16 @@ function ParcelPicker({
   selectedPickupId,
   onSelect,
   required,
+  locale,
 }: {
   pickupPoints: PickupPoint[];
   pickupLoading: boolean;
   selectedPickupId: string;
   onSelect: (id: string) => void;
   required: boolean;
+  locale?: "lv" | "en";
 }) {
+  const isLv = locale === "lv";
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const [dropdownRect, setDropdownRect] = useState<{
@@ -139,13 +142,15 @@ function ParcelPicker({
   return (
     <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-3">
       <label className="block text-xs font-medium text-gray-700">
-        Choose parcel machine
+        {isLv ? "Izvēlieties pakomātu" : "Choose parcel machine"}
       </label>
       {pickupLoading ? (
-        <p className="mt-1 text-xs text-zinc-500">Loading pickup points…</p>
+        <p className="mt-1 text-xs text-zinc-500">
+          {isLv ? "Notiek piegādes punktu ielāde…" : "Loading pickup points…"}
+        </p>
       ) : pickupPoints.length === 0 ? (
         <p className="mt-1 text-xs text-zinc-500">
-          No pickup points found for this country.
+          {isLv ? "Šai valstij nav atrasti piegādes punkti." : "No pickup points found for this country."}
         </p>
       ) : (
         <div className="relative mt-1" ref={listRef}>
@@ -157,7 +162,11 @@ function ParcelPicker({
             aria-autocomplete="list"
             aria-controls="parcel-list"
             id="parcel-picker-input"
-            placeholder="Type to search or click to browse…"
+            placeholder={
+              isLv
+                ? "Ievadiet, lai meklētu, vai noklikšķiniet, lai pārlūkotu…"
+                : "Type to search or click to browse…"
+            }
             value={open ? filter : displayValue}
             onChange={(e) => {
               setFilter(e.target.value);
@@ -201,7 +210,9 @@ function ParcelPicker({
               >
                 {filtered.length === 0 ? (
                   <div className="px-3 py-4 text-center text-sm text-gray-500">
-                    No matching parcel machines
+                    {isLv
+                      ? "Nav atrastu pakomātu, kas atbilst meklēšanai"
+                      : "No matching parcel machines"}
                   </div>
                 ) : (
                   filtered.map((point) => {
@@ -236,7 +247,7 @@ function ParcelPicker({
       )}
       {required && !selectedPickupId && (
         <p className="mt-1 text-xs text-amber-600">
-          Please select a parcel machine
+          {isLv ? "Lūdzu, izvēlieties pakomātu" : "Please select a parcel machine"}
         </p>
       )}
     </div>
@@ -249,6 +260,7 @@ type Props = {
   subtotal?: number;
   onMethodsLoaded?: (methods: ShippingOption[]) => void;
   onShippingMethodChange?: (methodId: string) => void;
+  locale?: "lv" | "en";
 };
 
 export function ShippingMethodSelector({
@@ -257,6 +269,7 @@ export function ShippingMethodSelector({
   subtotal,
   onMethodsLoaded,
   onShippingMethodChange,
+  locale,
 }: Props) {
   const [methods, setMethods] = useState<ShippingOption[]>([]);
   const [unsupportedCountry, setUnsupportedCountry] = useState(false);
@@ -277,6 +290,7 @@ export function ShippingMethodSelector({
     let cancelled = false;
     setLoading(true);
     const params = new URLSearchParams({ country });
+    if (locale) params.set("locale", locale);
     if (subtotal != null && Number.isFinite(subtotal)) {
       params.set("subtotal", String(subtotal));
     }
@@ -327,16 +341,22 @@ export function ShippingMethodSelector({
 
   if (loading) {
     return (
-      <div className="text-sm text-gray-500">Loading shipping options…</div>
+      <div className="text-sm text-gray-500">
+        {locale === "lv" ? "Notiek piegādes iespēju ielāde…" : "Loading shipping options…"}
+      </div>
     );
   }
 
   if (unsupportedCountry || methods.length === 0) {
     return (
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-black">Shipping method</h2>
+        <h2 className="text-lg font-bold text-black">
+          {locale === "lv" ? "Piegādes metode" : "Shipping method"}
+        </h2>
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-800">
-          Unfortunately we don&apos;t ship to your country.
+          {locale === "lv"
+            ? "Diemžēl mēs nepiegādājam uz jūsu valsti."
+            : "Unfortunately we don&apos;t ship to your country."}
         </p>
       </section>
     );
@@ -344,7 +364,9 @@ export function ShippingMethodSelector({
 
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-bold text-black">Shipping method</h2>
+      <h2 className="text-lg font-bold text-black">
+        {locale === "lv" ? "Piegādes metode" : "Shipping method"}
+      </h2>
       <div className="space-y-2">
         {methods.map((method) => (
           <label
@@ -368,7 +390,9 @@ export function ShippingMethodSelector({
                 {method.name}
                 {method.estimatedDays ? (
                   <span className="ml-1 text-xs text-gray-500">
-                    ({method.estimatedDays} business days)
+                    {locale === "lv"
+                      ? `(${method.estimatedDays} darbadienas)`
+                      : `(${method.estimatedDays} business days)`}
                   </span>
                 ) : null}
               </span>
@@ -387,6 +411,7 @@ export function ShippingMethodSelector({
           selectedPickupId={selectedPickupId}
           onSelect={setSelectedPickupId}
           required={isDpdSelected}
+          locale={locale}
         />
       )}
     </section>

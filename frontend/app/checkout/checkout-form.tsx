@@ -56,13 +56,13 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
 
     if (!isDpdParcelMachine && !isLocalPickup) {
       if (!getInputValue("addressLine1")) {
-        newErrors.addressLine1 = "Address is required";
+        newErrors.addressLine1 = isLv ? "Adrese ir obligāta" : "Address is required";
       }
       if (!getInputValue("city")) {
-        newErrors.city = "City is required";
+        newErrors.city = isLv ? "Pilsēta ir obligāta" : "City is required";
       }
       if (!getInputValue("postalCode")) {
-        newErrors.postalCode = "Postal code is required";
+        newErrors.postalCode = isLv ? "Pasta indekss ir obligāts" : "Postal code is required";
       }
     }
 

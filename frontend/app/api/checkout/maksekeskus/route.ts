@@ -85,20 +85,21 @@ export async function POST(request: Request) {
   const localeRaw = formData.get("locale")?.toString();
   const locale = localeRaw === "lv" || localeRaw === "en" ? localeRaw : "";
   const pathPrefix = locale ? `/${locale}` : "";
+  const isLv = locale === "lv";
 
   const isDpdParcelMachine = shippingOptionId === DPD_PARCEL_MACHINE_METHOD_ID;
   const isLocalPickup = shippingOptionId === LOCAL_PICKUP_METHOD_ID;
 
   if (isDpdParcelMachine && !dpdPickupPointId) {
     return NextResponse.json(
-      { error: "Please select a DPD parcel machine" },
+      { error: isLv ? "Lūdzu, izvēlieties DPD pakomātu" : "Please select a DPD parcel machine" },
       { status: 400 }
     );
   }
 
   if (!email || !name) {
     return NextResponse.json(
-      { error: "Missing required fields" },
+      { error: isLv ? "Trūkst obligāto lauku" : "Missing required fields" },
       { status: 400 }
     );
   }
@@ -106,7 +107,11 @@ export async function POST(request: Request) {
   if (customerType === "BUSINESS") {
     if (!companyName || !companyAddress || !vatNumber || !phone) {
       return NextResponse.json(
-        { error: "Missing required business fields" },
+        {
+          error: isLv
+            ? "Trūkst obligāto biznesa (uzņēmuma) lauku"
+            : "Missing required business fields",
+        },
         { status: 400 }
       );
     }
@@ -114,7 +119,7 @@ export async function POST(request: Request) {
 
   if (!isDpdParcelMachine && !isLocalPickup && (!addressLine1 || !city || !postalCode)) {
     return NextResponse.json(
-      { error: "Missing required address fields" },
+      { error: isLv ? "Trūkst obligāto adreses lauku" : "Missing required address fields" },
       { status: 400 }
     );
   }
@@ -134,7 +139,9 @@ export async function POST(request: Request) {
 
   if (!shipping.option) {
     return NextResponse.json(
-      { error: "Unfortunately we don't ship to your country." },
+      {
+        error: isLv ? "Diemžēl mēs nepiegādājam uz jūsu valsti." : "Unfortunately we don't ship to your country.",
+      },
       { status: 400 }
     );
   }
@@ -216,7 +223,9 @@ export async function POST(request: Request) {
     const point = getDpdPickupPointById(country, dpdPickupPointId);
     if (!point) {
       return NextResponse.json(
-        { error: "Invalid DPD pickup point" },
+        {
+          error: isLv ? "Nederīgs DPD piegādes punkts" : "Invalid DPD pickup point",
+        },
         { status: 400 }
       );
     }
@@ -233,7 +242,9 @@ export async function POST(request: Request) {
   } else if (isLocalPickup) {
     shippingAddress = {
       name,
-      line1: `Local pick-up — ${LOCAL_PICKUP_LOCATION.line1}`,
+      line1: isLv
+        ? `Saņemšana uz vietas — ${LOCAL_PICKUP_LOCATION.line1}`
+        : `Local pick-up — ${LOCAL_PICKUP_LOCATION.line1}`,
       line2: undefined,
       city: LOCAL_PICKUP_LOCATION.city,
       postalCode: LOCAL_PICKUP_LOCATION.postalCode,

@@ -6,6 +6,7 @@ import { getAvailableShippingMethods } from "@/lib/shipping/service";
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const country = url.searchParams.get("country") ?? "US";
+  const locale = url.searchParams.get("locale") as "lv" | "en" | null;
   const subtotalParam = url.searchParams.get("subtotal");
   const orderSubtotal = subtotalParam != null ? Number(subtotalParam) : null;
 
@@ -21,6 +22,7 @@ export async function GET(request: Request) {
     { country },
     cart ? { id: cart.id } : null,
     Number.isFinite(orderSubtotal) ? orderSubtotal : undefined,
+    locale ?? undefined,
   );
 
   return NextResponse.json({
