@@ -99,8 +99,7 @@ export function CheckoutCustomerType({ onCustomerTypeChange, errors, locale }: P
               <p className="text-xs text-red-600 mt-1">{errors.companyAddress}</p>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
+          <div className="space-y-2">
               <label className="block text-xs font-medium text-gray-600">
                 {isLv ? "PVN numurs" : "VAT number"}
               </label>
@@ -114,22 +113,6 @@ export function CheckoutCustomerType({ onCustomerTypeChange, errors, locale }: P
               {errors?.vatNumber && (
                 <p className="text-xs text-red-600 mt-1">{errors.vatNumber}</p>
               )}
-            </div>
-            <div className="space-y-2">
-              <label className="block text-xs font-medium text-gray-600">
-                {isLv ? "Tālruņa numurs" : "Phone number"}
-              </label>
-              <input
-                type="tel"
-                name="phone"
-                required
-                className={inputClassName("phone")}
-              placeholder={isLv ? "+371 20000000" : "+371 20000000"}
-              />
-              {errors?.phone && (
-                <p className="text-xs text-red-600 mt-1">{errors.phone}</p>
-              )}
-            </div>
           </div>
         </div>
       )}

@@ -33,8 +33,35 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
   const getInputValue = (name: string): string => {
     const form = formRef.current;
     if (!form) return "";
-    const input = form.elements.namedItem(name) as HTMLInputElement | null;
-    return input?.value?.trim() ?? "";
+    const field = form.elements.namedItem(name);
+    if (!field) return "";
+
+    if (field instanceof RadioNodeList) {
+      const list = Array.from(
+        field as unknown as ArrayLike<Element>,
+      );
+      for (const element of list) {
+        if (
+          element instanceof HTMLInputElement ||
+          element instanceof HTMLSelectElement ||
+          element instanceof HTMLTextAreaElement
+        ) {
+          const value = element.value?.trim();
+          if (value) return value;
+        }
+      }
+      return "";
+    }
+
+    if (
+      field instanceof HTMLInputElement ||
+      field instanceof HTMLSelectElement ||
+      field instanceof HTMLTextAreaElement
+    ) {
+      return field.value?.trim() ?? "";
+    }
+
+    return "";
   };
 
   const validateForm = (): boolean => {
