@@ -43,20 +43,8 @@ export function Footer({ locale }: { locale: Locale }) {
               {t("footer.tagline")}
             </p>
             <div className="mt-5 max-w-xs text-sm text-gray-700">
-              <p className="font-semibold text-gray-900">SIA YerbaTea</p>
-              <p className="mt-1 text-gray-600">
-                IBAN:{" "}
-                <span className="font-mono text-[13px] text-gray-800">
-                  LV30HABA0551057129470
-                </span>{" "}
-                (Swedbank)
-              </p>
-              <p className="mt-2 text-gray-600">
-                Reg. no.: <span className="font-medium text-gray-800">50203504501</span>
-              </p>
-              <p className="mt-1 text-gray-600">
-                Address: <span className="font-medium text-gray-800">Ieriķu iela 66–112, Rīga, LV-1084</span>
-              </p>
+              <p className="font-semibold text-gray-900">{t("footer.companyName")}</p>
+              <p className="mt-2 text-gray-600">{t("footer.companyBaseInfo")}</p>
             </div>
           </div>
           <div>
