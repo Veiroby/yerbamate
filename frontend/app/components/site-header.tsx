@@ -81,6 +81,19 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const previous = document.body.style.overflow;
+    if (menuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = previous || "";
+    }
+    return () => {
+      document.body.style.overflow = previous || "";
+    };
+  }, [menuOpen]);
+
   const dismissPromo = () => {
     setPromoDismissed(true);
     if (typeof window !== "undefined") {
@@ -129,19 +142,39 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
           className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6"
           aria-label="Main navigation"
         >
-          <Link
-            href={localePrefix}
-            className="p-0 hover:opacity-80"
-          >
-            <Image
-              src="/images/yerbatea-logo.png"
-              alt="yerbatea"
-              width={1024}
-              height={1024}
-              priority
-              className="h-10 w-10 object-contain sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16"
-            />
-          </Link>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              type="button"
+              className="flex h-12 w-12 items-center justify-center text-gray-700 hover:text-black lg:hidden"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-nav"
+            >
+              <span className="sr-only">{menuOpen ? t("nav.closeMenu") : t("nav.openMenu")}</span>
+              {menuOpen ? (
+                <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+            <Link
+              href={localePrefix}
+              className="p-0 hover:opacity-80"
+            >
+              <Image
+                src="/images/yerbatea-logo.png"
+                alt="yerbatea"
+                width={1024}
+                height={1024}
+                priority
+                className="h-11 w-11 object-contain sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16"
+              />
+            </Link>
+          </div>
 
           <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex">
             {navLinkKeys.map(({ path, labelKey }) => {
@@ -158,8 +191,8 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
             })}
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4">
-            <span className="flex items-center gap-1 text-sm font-medium text-gray-600">
+          <div className="flex items-center gap-1 sm:gap-4">
+            <span className="flex items-center gap-1 text-base font-medium text-gray-700 sm:text-sm">
               <Link
                 href={locale === "lv" ? switchLocalePath : switchLocalePath}
                 className={locale === "lv" ? "font-semibold text-black" : "hover:text-black"}
@@ -176,10 +209,10 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
             </span>
             <Link
               href={`/${locale}/cart`}
-              className="relative flex h-10 w-10 items-center justify-center text-gray-700 hover:text-black"
+              className="relative flex h-11 w-11 items-center justify-center text-gray-700 hover:text-black sm:h-10 sm:w-10"
               aria-label={`${t("nav.cart")}${itemCount > 0 ? t("nav.cartWithCount", { count: itemCount }) : ""}`}
             >
-              <CartIcon className="h-5 w-5" />
+              <CartIcon className="h-6 w-6 sm:h-5 sm:w-5" />
               <CartBadge count={itemCount} />
             </Link>
             {user?.isAdmin && (
@@ -193,10 +226,10 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
             {user ? (
               <Link
                 href={`/${locale}/account/profile`}
-                className="flex h-10 w-10 items-center justify-center text-gray-700 hover:text-black"
+                className="flex h-11 w-11 items-center justify-center text-gray-700 hover:text-black sm:h-10 sm:w-10"
                 aria-label={t("nav.account")}
               >
-                <ProfileIcon className="h-5 w-5" />
+                <ProfileIcon className="h-6 w-6 sm:h-5 sm:w-5" />
               </Link>
             ) : (
               <>
@@ -215,37 +248,19 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
               </>
             )}
 
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center text-gray-700 hover:text-black lg:hidden"
-              onClick={() => setMenuOpen((o) => !o)}
-              aria-expanded={menuOpen}
-              aria-controls="mobile-nav"
-            >
-              <span className="sr-only">{menuOpen ? t("nav.closeMenu") : t("nav.openMenu")}</span>
-              {menuOpen ? (
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
           </div>
         </nav>
 
         <div
           id="mobile-nav"
-          className={`border-t border-gray-100 bg-white px-4 py-4 lg:hidden ${menuOpen ? "block" : "hidden"}`}
+          className={`fixed inset-0 z-50 bg-white px-6 pb-8 pt-24 lg:hidden ${menuOpen ? "block" : "hidden"}`}
         >
-          <div className="flex flex-col gap-1">
+          <div className="flex h-full flex-col gap-2 overflow-y-auto">
             {navLinkKeys.map(({ path, labelKey }) => (
               <Link
                 key={labelKey}
                 href={path ? `${localePrefix}/${path}` : localePrefix}
-                className="rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="rounded-lg px-3 py-4 text-2xl font-semibold text-gray-800 hover:bg-gray-50"
                 onClick={() => setMenuOpen(false)}
               >
                 {t(labelKey)}
@@ -255,24 +270,24 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
               {user ? (
                 <Link
                   href={`/${locale}/account/profile`}
-                  className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="flex items-center gap-3 rounded-lg px-3 py-4 text-2xl font-semibold text-gray-800 hover:bg-gray-50"
                   onClick={() => setMenuOpen(false)}
                 >
-                  <ProfileIcon className="h-5 w-5" />
+                  <ProfileIcon className="h-7 w-7" />
                   {t("nav.account")}
                 </Link>
               ) : (
                 <>
                   <Link
                     href={`/${locale}/account/profile`}
-                    className="block rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="block rounded-lg px-3 py-4 text-2xl font-semibold text-gray-800 hover:bg-gray-50"
                     onClick={() => setMenuOpen(false)}
                   >
                     {t("nav.logIn")}
                   </Link>
                   <Link
                     href={`/${locale}/account/profile`}
-                    className="mt-1 block rounded-lg border-2 border-black py-3 text-center text-sm font-semibold text-black hover:bg-black hover:text-white"
+                    className="mt-2 block rounded-lg border-2 border-black py-4 text-center text-xl font-semibold text-black hover:bg-black hover:text-white"
                     onClick={() => setMenuOpen(false)}
                   >
                     {t("nav.signUp")}
