@@ -29,6 +29,7 @@ type ShippingAddress = {
 };
 
 export type InvoiceOrderData = {
+  invoiceNumber: string;
   orderNumber: string;
   email: string;
   currency: string;
@@ -46,8 +47,8 @@ export type InvoiceOrderData = {
   phone?: string;
 };
 
-export function buildInvoiceFilename(orderNumber: string): string {
-  return `invoice-${orderNumber}.pdf`;
+export function buildInvoiceFilename(invoiceNumber: string): string {
+  return `invoice-${invoiceNumber}.pdf`;
 }
 
 export async function generateInvoicePdf(
@@ -115,10 +116,12 @@ export async function generateInvoicePdf(
 
   drawText("Invoice", left, y, { size: 22, bold: true });
   y -= 28;
-  drawText(`Order / Invoice No.: ${order.orderNumber}`, left, y, {
+  drawText(`Invoice No.: ${order.invoiceNumber}`, left, y, {
     size: 11,
     bold: true,
   });
+  y -= 18;
+  drawText(`Order No.: ${order.orderNumber}`, left, y);
   y -= 18;
   drawText(`Issue date: ${formatDate(order.createdAt)}`, left, y);
 

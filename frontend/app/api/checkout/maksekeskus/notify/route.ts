@@ -88,8 +88,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ received: true }, { status: 200 });
   }
 
-  if (isEmailConfigured()) {
+  if (isEmailConfigured() && order.customerType !== "BUSINESS") {
     const result = await sendOrderConfirmationEmail({
+      orderId: order.id,
       orderNumber: order.orderNumber,
       email: order.email,
       total: Number(order.total),
@@ -100,6 +101,11 @@ export async function POST(request: Request) {
       tax: order.tax,
       shippingAddress: order.shippingAddress,
       items: order.items,
+      customerType: order.customerType,
+      companyName: order.companyName ?? undefined,
+      companyAddress: order.companyAddress ?? undefined,
+      vatNumber: order.vatNumber ?? undefined,
+      phone: order.phone ?? undefined,
     });
     if (result.ok) {
       await prisma.order.update({

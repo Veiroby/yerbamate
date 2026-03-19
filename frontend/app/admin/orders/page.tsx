@@ -56,9 +56,11 @@ export default async function AdminOrdersPage() {
                   if (
                     status === "PAID" &&
                     isEmailConfigured() &&
+                    updated.customerType !== "BUSINESS" &&
                     !updated.confirmationEmailSentAt
                   ) {
                     const result = await sendOrderConfirmationEmail({
+                      orderId: updated.id,
                       orderNumber: updated.orderNumber,
                       email: updated.email,
                       total: Number(updated.total),
@@ -69,6 +71,11 @@ export default async function AdminOrdersPage() {
                       tax: updated.tax,
                       shippingAddress: updated.shippingAddress,
                       items: updated.items,
+                      customerType: updated.customerType,
+                      companyName: updated.companyName ?? undefined,
+                      companyAddress: updated.companyAddress ?? undefined,
+                      vatNumber: updated.vatNumber ?? undefined,
+                      phone: updated.phone ?? undefined,
                     });
 
                     if (result.ok) {

@@ -330,11 +330,33 @@ model Order {
 
   items  OrderItem[]
   reviews Review[]
+  invoice Invoice?
 
   @@index([userId])
   @@index([email])
   @@index([status])
   @@index([sessionId])
+}
+
+model InvoiceCounter {
+  id         String   @id @default("default")
+  nextNumber Int      @default(1)
+  updatedAt  DateTime @updatedAt
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  invoiceNumber String   @unique
+  order         Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId       String   @unique
+  customerEmail String
+  customerName  String?
+  phone         String?
+  pdfBase64     String   @db.Text
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([customerEmail])
 }
 
 model Review {

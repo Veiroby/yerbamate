@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { prisma } from "@/lib/db";
 import {
   buildInvoiceFilename,
   generateInvoicePdf,
@@ -106,6 +107,7 @@ type BusinessFields = {
 };
 
 export async function sendOrderConfirmationEmail(options: {
+  orderId: string;
   orderNumber: string;
   email: string;
   total: number | string;
@@ -136,7 +138,8 @@ export async function sendOrderConfirmationEmail(options: {
     siteOrigin,
   });
 
-  const invoicePdf = await generateInvoicePdf({
+  const invoice = await getOrCreateStoredInvoice({
+    orderId: options.orderId,
     orderNumber: options.orderNumber,
     email: options.email,
     currency: options.currency,
@@ -152,7 +155,7 @@ export async function sendOrderConfirmationEmail(options: {
     companyAddress: options.companyAddress,
     vatNumber: options.vatNumber,
     phone: options.phone,
-  } satisfies InvoiceOrderData);
+  });
 
   const NOTIFY_EMAIL = "yerbatealatvia@gmail.com";
 
@@ -162,8 +165,8 @@ export async function sendOrderConfirmationEmail(options: {
     html,
     attachments: [
       {
-        filename: buildInvoiceFilename(options.orderNumber),
-        content: Buffer.from(invoicePdf).toString("base64"),
+        filename: buildInvoiceFilename(invoice.invoiceNumber),
+        content: invoice.pdfBase64,
         contentType: "application/pdf",
       },
     ],
@@ -171,6 +174,7 @@ export async function sendOrderConfirmationEmail(options: {
 }
 
 export async function sendWireTransferInvoiceEmail(options: {
+  orderId: string;
   orderNumber: string;
   email: string;
   total: number | string;
@@ -199,7 +203,8 @@ export async function sendWireTransferInvoiceEmail(options: {
     siteOrigin,
   });
 
-  const invoicePdf = await generateInvoicePdf({
+  const invoice = await getOrCreateStoredInvoice({
+    orderId: options.orderId,
     orderNumber: options.orderNumber,
     email: options.email,
     currency: options.currency,
@@ -215,7 +220,7 @@ export async function sendWireTransferInvoiceEmail(options: {
     companyAddress: options.companyAddress,
     vatNumber: options.vatNumber,
     phone: options.phone,
-  } satisfies InvoiceOrderData);
+  });
 
   return sendEmail({
     to: options.email,
@@ -223,12 +228,76 @@ export async function sendWireTransferInvoiceEmail(options: {
     html,
     attachments: [
       {
-        filename: buildInvoiceFilename(options.orderNumber),
-        content: Buffer.from(invoicePdf).toString("base64"),
+        filename: buildInvoiceFilename(invoice.invoiceNumber),
+        content: invoice.pdfBase64,
         contentType: "application/pdf",
       },
     ],
   });
+}
+
+async function getOrCreateStoredInvoice(
+  order: Omit<InvoiceOrderData, "invoiceNumber"> & { orderId: string },
+): Promise<{ invoiceNumber: string; pdfBase64: string }> {
+  const existing = await prisma.invoice.findUnique({
+    where: { orderId: order.orderId },
+    select: { invoiceNumber: true, pdfBase64: true },
+  });
+  if (existing) return existing;
+
+  const invoiceNumber = await allocateNextInvoiceNumber();
+  const invoicePdf = await generateInvoicePdf({
+    ...order,
+    invoiceNumber,
+  });
+  const pdfBase64 = Buffer.from(invoicePdf).toString("base64");
+
+  try {
+    const created = await prisma.invoice.create({
+      data: {
+        orderId: order.orderId,
+        invoiceNumber,
+        customerEmail: order.email,
+        customerName: resolveCustomerName(order.shippingAddress, order.companyName),
+        phone: order.phone ?? null,
+        pdfBase64,
+      },
+      select: { invoiceNumber: true, pdfBase64: true },
+    });
+    return created;
+  } catch {
+    const raceExisting = await prisma.invoice.findUnique({
+      where: { orderId: order.orderId },
+      select: { invoiceNumber: true, pdfBase64: true },
+    });
+    if (raceExisting) return raceExisting;
+    throw new Error("Failed to create invoice record");
+  }
+}
+
+async function allocateNextInvoiceNumber(): Promise<string> {
+  return prisma.$transaction(async (tx) => {
+    const counter = await tx.invoiceCounter.upsert({
+      where: { id: "default" },
+      update: {},
+      create: { id: "default", nextNumber: 1 },
+      select: { nextNumber: true },
+    });
+    await tx.invoiceCounter.update({
+      where: { id: "default" },
+      data: { nextNumber: { increment: 1 } },
+    });
+    return `LV26-${counter.nextNumber}`;
+  });
+}
+
+function resolveCustomerName(shippingAddress: unknown, companyName?: string): string | null {
+  if (companyName?.trim()) return companyName.trim();
+  if (!shippingAddress || typeof shippingAddress !== "object" || Array.isArray(shippingAddress)) {
+    return null;
+  }
+  const name = (shippingAddress as Record<string, unknown>).name;
+  return typeof name === "string" && name.trim() ? name.trim() : null;
 }
 
 function renderWireTransferInvoiceHtml(options: {

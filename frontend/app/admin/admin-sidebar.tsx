@@ -124,6 +124,7 @@ const navGroups = [
       { href: "/admin/products", label: "Products", icon: IconPackage },
       { href: "/admin/collections", label: "Collections", icon: IconFolder },
       { href: "/admin/orders", label: "Orders", icon: IconShoppingCart },
+      { href: "/admin/invoices", label: "Invoices", icon: IconDocument },
       { href: "/admin/inventory", label: "Inventory", icon: IconCube },
       { href: "/admin/shipping", label: "Shipping", icon: IconTruck },
     ],

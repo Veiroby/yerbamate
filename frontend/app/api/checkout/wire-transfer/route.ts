@@ -304,6 +304,7 @@ export async function POST(request: Request) {
   });
 
   const emailResult = await sendWireTransferInvoiceEmail({
+    orderId: order.id,
     orderNumber: order.orderNumber,
     email: order.email,
     total: Number(order.total),
