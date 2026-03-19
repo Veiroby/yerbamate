@@ -7,6 +7,10 @@ import {
   DPD_PARCEL_MACHINE_METHOD_ID,
   getDpdPickupPointById,
 } from "@/lib/shipping/dpd";
+import {
+  LOCAL_PICKUP_LOCATION,
+  LOCAL_PICKUP_METHOD_ID,
+} from "@/lib/shipping/local-pickup";
 import { sendWireTransferInvoiceEmail } from "@/lib/email";
 
 function getSiteOrigin(request: Request): string {
@@ -73,6 +77,7 @@ export async function POST(request: Request) {
   }
 
   const isDpdParcelMachine = shippingOptionId === DPD_PARCEL_MACHINE_METHOD_ID;
+  const isLocalPickup = shippingOptionId === LOCAL_PICKUP_METHOD_ID;
 
   if (isDpdParcelMachine && !dpdPickupPointId) {
     return NextResponse.json(
@@ -95,7 +100,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!isDpdParcelMachine && (!addressLine1 || !city || !postalCode)) {
+  if (!isDpdParcelMachine && !isLocalPickup && (!addressLine1 || !city || !postalCode)) {
     return NextResponse.json(
       { error: "Missing required address fields" },
       { status: 400 },
@@ -208,6 +213,15 @@ export async function POST(request: Request) {
       country: point.country,
       dpdPickupPointId: point.id,
       dpdPickupPointName: dpdPickupPointName ?? point.name,
+    };
+  } else if (isLocalPickup) {
+    shippingAddress = {
+      name,
+      line1: `Local pick-up — ${LOCAL_PICKUP_LOCATION.line1}`,
+      line2: undefined,
+      city: LOCAL_PICKUP_LOCATION.city,
+      postalCode: LOCAL_PICKUP_LOCATION.postalCode,
+      country: LOCAL_PICKUP_LOCATION.country,
     };
   } else {
     shippingAddress = {

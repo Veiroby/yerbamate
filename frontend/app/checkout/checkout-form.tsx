@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { CheckoutCustomerType } from "./checkout-customer-type";
 import { CheckoutShippingBlock } from "./checkout-shipping-block";
+import { LOCAL_PICKUP_METHOD_ID } from "@/lib/shipping/local-pickup";
 
 type Props = {
   currency: string;
@@ -25,6 +26,7 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
 
   const isBusiness = customerType === "BUSINESS";
   const isDpdParcelMachine = shippingMethod === "dpd-parcel-machine";
+  const isLocalPickup = shippingMethod === LOCAL_PICKUP_METHOD_ID;
   const prefix = locale ? `/${locale}` : "";
   const isLv = locale === "lv";
 
@@ -56,7 +58,7 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
       newErrors.phone = "Phone number is required for delivery";
     }
 
-    if (!isDpdParcelMachine) {
+    if (!isDpdParcelMachine && !isLocalPickup) {
       if (!getInputValue("addressLine1")) {
         newErrors.addressLine1 = "Address is required";
       }

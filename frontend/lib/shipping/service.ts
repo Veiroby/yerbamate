@@ -3,6 +3,7 @@ import {
   DPD_PARCEL_MACHINE_METHOD_ID,
   isDpdAvailableForCountry,
 } from "./dpd";
+import { LOCAL_PICKUP_METHOD_ID } from "./local-pickup";
 import { getShippingSettings } from "./settings";
 
 type Destination = {
@@ -73,6 +74,16 @@ export async function getAvailableShippingMethods(
       name: "DPD parcel machine",
       amount: freeShippingApplies ? 0 : dpdAmount,
       estimatedDays: 3,
+    });
+  }
+
+  // Free local pickup in Riga for Latvia orders.
+  if (countryCode === "LV") {
+    options.push({
+      id: LOCAL_PICKUP_METHOD_ID,
+      name: "Local pick-up (Stabu iela 53, Rīga)",
+      amount: 0,
+      estimatedDays: null,
     });
   }
 
