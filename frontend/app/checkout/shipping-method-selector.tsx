@@ -43,7 +43,6 @@ function ParcelPicker({
     left: number;
     width: number;
     maxHeight: number;
-    openAbove: boolean;
   } | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -84,7 +83,6 @@ function ParcelPicker({
 
   const SAFE_MARGIN = 16;
   const PREFERRED_MAX_HEIGHT = 240;
-  const MIN_SPACE_TO_OPEN_BELOW = 200;
 
   useEffect(() => {
     if (!open) return;
@@ -93,19 +91,13 @@ function ParcelPicker({
     const updateRect = () => {
       const r = el.getBoundingClientRect();
       const spaceBelow = window.innerHeight - r.bottom - SAFE_MARGIN;
-      const spaceAbove = r.top - SAFE_MARGIN;
-      const openAbove =
-        spaceBelow < MIN_SPACE_TO_OPEN_BELOW || spaceBelow < spaceAbove;
-      const maxHeight = Math.min(
-        PREFERRED_MAX_HEIGHT,
-        openAbove ? spaceAbove : spaceBelow
-      );
+      // Always render below the input to avoid "jumping" between top/bottom.
+      const maxHeight = Math.min(PREFERRED_MAX_HEIGHT, Math.max(120, spaceBelow));
       setDropdownRect({
         top: r.bottom + 4,
         left: r.left,
         width: r.width,
-        maxHeight: Math.max(120, maxHeight),
-        openAbove,
+        maxHeight,
       });
     };
     updateRect();
@@ -193,12 +185,7 @@ function ParcelPicker({
                 className="rounded-lg border border-gray-200 bg-white shadow-lg"
                 style={{
                   position: "fixed",
-                  ...(dropdownRect.openAbove
-                    ? {
-                        bottom: window.innerHeight - dropdownRect.top + 4,
-                        top: "auto",
-                      }
-                    : { top: dropdownRect.top }),
+                  top: dropdownRect.top,
                   left: dropdownRect.left,
                   width: dropdownRect.width,
                   maxHeight: dropdownRect.maxHeight,
