@@ -66,7 +66,7 @@ export default async function TermsPage({ params }: Props) {
   );
 
   return (
-    <div className="min-h-screen bg-white text-[#283618]">
+    <div className="min-h-screen bg-white text-black">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
       <PolicyLayout
         locale={locale as Locale}
@@ -80,7 +80,7 @@ export default async function TermsPage({ params }: Props) {
           year: "numeric",
         })}
       >
-          <div className="mt-2 whitespace-pre-line text-sm text-[#606C38]">
+          <div className="mt-2 whitespace-pre-line text-sm text-black">
             {policy.content}
           </div>
       </PolicyLayout>
