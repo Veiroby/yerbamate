@@ -2,12 +2,15 @@
 
 import { useState } from "react";
 
+type Locale = "lv" | "en";
+
 type Props = {
   onCustomerTypeChange?: (type: "INDIVIDUAL" | "BUSINESS") => void;
   errors?: Record<string, string>;
+  locale?: Locale;
 };
 
-export function CheckoutCustomerType({ onCustomerTypeChange, errors }: Props) {
+export function CheckoutCustomerType({ onCustomerTypeChange, errors, locale }: Props) {
   const [customerType, setCustomerType] = useState<"INDIVIDUAL" | "BUSINESS">(
     "INDIVIDUAL",
   );
@@ -18,6 +21,7 @@ export function CheckoutCustomerType({ onCustomerTypeChange, errors }: Props) {
   };
 
   const isBusiness = customerType === "BUSINESS";
+  const isLv = locale === "lv";
 
   const inputClassName = (fieldName: string) =>
     `w-full rounded-lg border px-3 py-2.5 text-sm ${
@@ -28,7 +32,9 @@ export function CheckoutCustomerType({ onCustomerTypeChange, errors }: Props) {
 
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-bold text-black">Customer type</h2>
+      <h2 className="text-lg font-bold text-black">
+        {isLv ? "Pircēja tips" : "Customer type"}
+      </h2>
 
       <div className="flex gap-4">
         <label className="flex cursor-pointer items-center gap-2">
@@ -40,7 +46,9 @@ export function CheckoutCustomerType({ onCustomerTypeChange, errors }: Props) {
             onChange={() => handleTypeChange("INDIVIDUAL")}
             className="h-4 w-4 border-gray-300 text-black focus:ring-black"
           />
-          <span className="text-sm text-gray-700">Individual</span>
+          <span className="text-sm text-gray-700">
+            {isLv ? "Privātpersona" : "Individual"}
+          </span>
         </label>
         <label className="flex cursor-pointer items-center gap-2">
           <input
@@ -51,7 +59,9 @@ export function CheckoutCustomerType({ onCustomerTypeChange, errors }: Props) {
             onChange={() => handleTypeChange("BUSINESS")}
             className="h-4 w-4 border-gray-300 text-black focus:ring-black"
           />
-          <span className="text-sm text-gray-700">Business</span>
+          <span className="text-sm text-gray-700">
+            {isLv ? "Uzņēmums" : "Business"}
+          </span>
         </label>
       </div>
 
@@ -59,7 +69,7 @@ export function CheckoutCustomerType({ onCustomerTypeChange, errors }: Props) {
         <div className="space-y-4 border-t border-gray-100 pt-4">
           <div className="space-y-2">
             <label className="block text-xs font-medium text-gray-600">
-              Company name
+              {isLv ? "Uzņēmuma nosaukums" : "Company name"}
             </label>
             <input
               type="text"
@@ -74,7 +84,7 @@ export function CheckoutCustomerType({ onCustomerTypeChange, errors }: Props) {
           </div>
           <div className="space-y-2">
             <label className="block text-xs font-medium text-gray-600">
-              Company address
+              {isLv ? "Uzņēmuma adrese" : "Company address"}
             </label>
             <input
               type="text"
@@ -90,7 +100,7 @@ export function CheckoutCustomerType({ onCustomerTypeChange, errors }: Props) {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <label className="block text-xs font-medium text-gray-600">
-                VAT number
+                {isLv ? "PVN numurs" : "VAT number"}
               </label>
               <input
                 type="text"
@@ -105,7 +115,7 @@ export function CheckoutCustomerType({ onCustomerTypeChange, errors }: Props) {
             </div>
             <div className="space-y-2">
               <label className="block text-xs font-medium text-gray-600">
-                Phone number
+                {isLv ? "Tālruņa numurs" : "Phone number"}
               </label>
               <input
                 type="tel"

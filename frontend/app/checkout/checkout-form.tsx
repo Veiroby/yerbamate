@@ -30,10 +30,6 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
   const prefix = locale ? `/${locale}` : "";
   const isLv = locale === "lv";
 
-  const termsErrorText = isLv
-    ? "Lūdzu, apstipriniet, ka piekrītat lietošanas noteikumiem un privātuma politikai."
-    : "Please confirm you accept the Terms and Conditions and Privacy Policy.";
-
   const getInputValue = (name: string): string => {
     const form = formRef.current;
     if (!form) return "";
@@ -45,17 +41,17 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
     const newErrors: Record<string, string> = {};
 
     if (!getInputValue("email")) {
-      newErrors.email = "Email is required";
+      newErrors.email = isLv ? "E-pasts ir obligāts" : "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(getInputValue("email"))) {
-      newErrors.email = "Please enter a valid email";
+      newErrors.email = isLv ? "Lūdzu, ievadiet derīgu e-pasta adresi" : "Please enter a valid email";
     }
 
     if (!getInputValue("name")) {
-      newErrors.name = "Full name is required";
+      newErrors.name = isLv ? "Pilns vārds ir obligāts" : "Full name is required";
     }
 
     if (!getInputValue("phone")) {
-      newErrors.phone = "Phone number is required for delivery";
+      newErrors.phone = isLv ? "Piegādei nepieciešams tālruņa numurs" : "Phone number is required for delivery";
     }
 
     if (!isDpdParcelMachine && !isLocalPickup) {
@@ -72,18 +68,20 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
 
     if (isBusiness) {
       if (!getInputValue("companyName")) {
-        newErrors.companyName = "Company name is required";
+        newErrors.companyName = isLv ? "Uzņēmuma nosaukums ir obligāts" : "Company name is required";
       }
       if (!getInputValue("companyAddress")) {
-        newErrors.companyAddress = "Company address is required";
+        newErrors.companyAddress = isLv ? "Uzņēmuma adrese ir obligāta" : "Company address is required";
       }
       if (!getInputValue("vatNumber")) {
-        newErrors.vatNumber = "VAT number is required";
+        newErrors.vatNumber = isLv ? "PVN numurs ir obligāts" : "VAT number is required";
       }
     }
 
     if (!termsAccepted) {
-      newErrors.terms = termsErrorText;
+      newErrors.terms = isLv
+        ? "Lūdzu, apstipriniet, ka piekrītat lietošanas noteikumiem un privātuma politikai."
+        : "Please confirm you accept the Terms and Conditions and Privacy Policy.";
     }
 
     setErrors(newErrors);
@@ -139,15 +137,19 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
       )}
       {Object.keys(errors).length > 0 && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          Please fill in all required fields highlighted below.
+          {isLv
+            ? "Lūdzu, aizpildiet visus obligātos laukus, kas izcelti zemāk."
+            : "Please fill in all required fields highlighted below."}
         </div>
       )}
 
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-black">Contact</h2>
+        <h2 className="text-lg font-bold text-black">
+          {isLv ? "Kontaktinformācija" : "Contact"}
+        </h2>
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-600">
-            Email
+            {isLv ? "E-pasts" : "Email"}
           </label>
           <input
             type="email"
@@ -161,7 +163,7 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
         </div>
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-600">
-            Full name
+            {isLv ? "Pilns vārds" : "Full name"}
           </label>
           <input
             type="text"
@@ -175,7 +177,7 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
         </div>
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-600">
-            Phone number
+            {isLv ? "Tālruņa numurs" : "Phone number"}
           </label>
           <input
             type="tel"
@@ -193,12 +195,14 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
       <CheckoutCustomerType
         onCustomerTypeChange={setCustomerType}
         errors={errors}
+        locale={locale === "lv" || locale === "en" ? locale : undefined}
       />
 
       <CheckoutShippingBlock
         currency={currency}
         subtotal={subtotal}
         errors={errors}
+        locale={locale === "lv" || locale === "en" ? locale : undefined}
         onShippingMethodChange={setShippingMethod}
       />
 
@@ -272,7 +276,13 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
           disabled={isSubmitting}
           className="flex w-full items-center justify-center gap-2 rounded-full bg-black px-4 py-3.5 text-sm font-medium text-white transition hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? "Processing…" : "Pay securely with Stripe"}
+          {isSubmitting
+            ? isLv
+              ? "Apstrādā maksājumu…"
+              : "Processing…"
+            : isLv
+              ? "Drošs maksājums ar Stripe"
+              : "Pay securely with Stripe"}
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
           </svg>
@@ -285,7 +295,13 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
             disabled={isSubmitting}
             className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-black bg-white px-4 py-3 text-sm font-medium text-black transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "Processing…" : "Pay with bank link or card (Maksekeskus)"}
+            {isSubmitting
+              ? isLv
+                ? "Apstrādā maksājumu…"
+                : "Processing…"
+              : isLv
+                ? "Maksāt ar internetbanku vai karti (Maksekeskus)"
+                : "Pay with bank link or card (Maksekeskus)"}
           </button>
         )}
 
@@ -296,17 +312,29 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
             disabled={isSubmitting}
             className="flex w-full items-center justify-center rounded-full border-2 border-black bg-white px-4 py-3 text-sm font-medium text-black transition hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "Processing…" : "Pay with Wire Transfer"}
+            {isSubmitting
+              ? isLv
+                ? "Apstrādā maksājumu…"
+                : "Processing…"
+              : isLv
+                ? "Maksāt ar bankas pārskaitījumu"
+                : "Pay with Wire Transfer"}
           </button>
         )}
       </div>
 
       <p className="text-xs text-gray-500">
         {isBusiness
-          ? "Choose Stripe for instant payment, Wire Transfer for invoice, or Maksekeskus for bank link or card."
+          ? isLv
+            ? "Izvēlieties Stripe tūlītējam maksājumam, bankas pārskaitījumu rēķinam vai Maksekeskus internetbankas saitei vai kartei."
+            : "Choose Stripe for instant payment, Wire Transfer for invoice, or Maksekeskus for bank link or card."
           : maksekeskusAvailable
-            ? "Pay with Stripe (card) or Maksekeskus (bank link, card). You may be redirected to complete payment."
-            : "You will be redirected to a secure Stripe Checkout page to complete your payment."}
+            ? isLv
+              ? "Maksājiet ar Stripe (karte) vai Maksekeskus (internetbanka, karte). Jūs var tikt novirzīts uz maksājumu lapu."
+              : "Pay with Stripe (card) or Maksekeskus (bank link, card). You may be redirected to complete payment."
+            : isLv
+              ? "Jūs tiksiet novirzīts uz drošu Stripe norēķinu lapu, lai pabeigtu maksājumu."
+              : "You will be redirected to a secure Stripe Checkout page to complete your payment."}
       </p>
     </form>
   );

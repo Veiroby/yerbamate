@@ -10,6 +10,7 @@ type Props = {
   subtotal?: number;
   errors?: Record<string, string>;
   onShippingMethodChange?: (methodId: string) => void;
+  locale?: "lv" | "en";
 };
 
 export function CheckoutShippingBlock({
@@ -20,6 +21,7 @@ export function CheckoutShippingBlock({
 }: Props) {
   const { country: globalCountry } = useLocale();
   const [country, setCountry] = useState(globalCountry);
+  const isLv = locale === "lv";
 
   const inputClassName = (fieldName: string) =>
     `w-full rounded-lg border px-3 py-2.5 text-sm ${
@@ -32,11 +34,11 @@ export function CheckoutShippingBlock({
     <>
       <section className="space-y-4">
         <h2 className="text-lg font-bold text-black">
-          Shipping address
+          {isLv ? "Piegādes adrese" : "Shipping address"}
         </h2>
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-600">
-            Address line 1
+            {isLv ? "Adrese (iela un nams)" : "Address line 1"}
           </label>
           <input
             type="text"
@@ -51,7 +53,7 @@ export function CheckoutShippingBlock({
         </div>
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-600">
-            Address line 2 (optional)
+            {isLv ? "Adrese 2 (papildu informācija)" : "Address line 2 (optional)"}
           </label>
           <input
             type="text"
@@ -62,7 +64,7 @@ export function CheckoutShippingBlock({
         <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
             <label className="block text-xs font-medium text-gray-600">
-              City
+              {isLv ? "Pilsēta" : "City"}
             </label>
             <input
               type="text"
@@ -76,7 +78,7 @@ export function CheckoutShippingBlock({
           </div>
           <div className="space-y-2">
             <label className="block text-xs font-medium text-gray-600">
-              Postal code
+              {isLv ? "Pasta indekss" : "Postal code"}
             </label>
             <input
               type="text"
@@ -91,7 +93,7 @@ export function CheckoutShippingBlock({
         </div>
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-600">
-            Country
+            {isLv ? "Valsts" : "Country"}
           </label>
           <select
             name="country"
