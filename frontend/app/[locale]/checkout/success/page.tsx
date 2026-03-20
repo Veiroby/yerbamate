@@ -67,7 +67,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Prop
       <main className="mx-auto max-w-3xl px-4 py-12">
         <div className="rounded-2xl border border-[#606C38]/20 bg-[#FEFAE0] p-6 shadow-sm">
           <h1 className="heading-page">{t("checkout.complete")}</h1>
-          <p className="mt-2 text-sm text-[#606C38]">{message}</p>
+          <p className="mt-2 text-sm text-black">{message}</p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Link
               href={`${prefix}/products`}

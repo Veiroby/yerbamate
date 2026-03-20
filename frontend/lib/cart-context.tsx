@@ -56,9 +56,12 @@ export function CartProvider({ children, initialCount = 0 }: { children: ReactNo
 
       toast.success("Added to cart", {
         description: productName,
+        className: "!text-black",
+        descriptionClassName: "!text-black",
         action: {
           label: "View Cart",
           onClick: () => window.location.href = "/cart",
+          actionButtonStyle: { color: "#000000" },
         },
       });
 

@@ -11,6 +11,7 @@ import {
   LOCAL_PICKUP_LOCATION,
   LOCAL_PICKUP_METHOD_ID,
 } from "@/lib/shipping/local-pickup";
+import { allocateNextInvoiceOrderNumber } from "@/lib/invoice-number";
 import { stripe } from "@/lib/stripe";
 
 function getSiteOrigin(request: Request): string {
@@ -259,7 +260,7 @@ export async function POST(request: Request) {
 
   const order = await prisma.order.create({
     data: {
-      orderNumber: `ORD-${Date.now()}`,
+      orderNumber: await allocateNextInvoiceOrderNumber(),
       email,
       sessionId,
       status: "REQUIRES_PAYMENT",

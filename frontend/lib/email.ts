@@ -245,7 +245,9 @@ async function getOrCreateStoredInvoice(
   });
   if (existing) return existing;
 
-  const invoiceNumber = await allocateNextInvoiceNumber();
+  // `Order.orderNumber` is the source of truth for invoice numbering.
+  // Allocation happens only in checkout create endpoints for new orders.
+  const invoiceNumber = order.orderNumber;
   const invoicePdf = await generateInvoicePdf({
     ...order,
     invoiceNumber,
@@ -273,22 +275,6 @@ async function getOrCreateStoredInvoice(
     if (raceExisting) return raceExisting;
     throw new Error("Failed to create invoice record");
   }
-}
-
-async function allocateNextInvoiceNumber(): Promise<string> {
-  return prisma.$transaction(async (tx) => {
-    const counter = await tx.invoiceCounter.upsert({
-      where: { id: "default" },
-      update: {},
-      create: { id: "default", nextNumber: 1 },
-      select: { nextNumber: true },
-    });
-    await tx.invoiceCounter.update({
-      where: { id: "default" },
-      data: { nextNumber: { increment: 1 } },
-    });
-    return `LV26-${counter.nextNumber}`;
-  });
 }
 
 function resolveCustomerName(shippingAddress: unknown, companyName?: string): string | null {

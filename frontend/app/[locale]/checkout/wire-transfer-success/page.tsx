@@ -19,13 +19,13 @@ export default async function WireTransferSuccessPage({ params, searchParams }: 
   const t = createT(translations);
 
   return (
-    <div className="min-h-screen bg-white text-[#283618]">
+    <div className="min-h-screen bg-white text-black">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
       <main className="mx-auto max-w-2xl px-4 py-16">
         <div className="rounded-2xl border border-[#606C38]/20 bg-[#FEFAE0] p-8 shadow-sm text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#606C38]/20">
             <svg
-              className="h-8 w-8 text-[#606C38]"
+              className="h-8 w-8 text-black"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -42,33 +42,33 @@ export default async function WireTransferSuccessPage({ params, searchParams }: 
           <h1 className="heading-page mb-2">{t("checkout.orderReceived")}</h1>
 
           {orderNumber && (
-            <p className="mb-6 text-[#606C38]">
-              {t("checkout.orderNumber")}: <strong className="text-[#283618]">{orderNumber}</strong>
+            <p className="mb-6 text-black">
+              {t("checkout.orderNumber")}: <strong className="text-black">{orderNumber}</strong>
             </p>
           )}
 
           <div className="mb-6 rounded-xl bg-[#606C38]/10 p-6 text-left">
-            <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-[#283618]">
+            <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-black">
               {t("checkout.wireTransferInstructions")}
             </h2>
             <dl className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <dt className="text-[#606C38]">{t("checkout.bank")}</dt>
-                <dd className="font-medium text-[#283618]">Swedbank</dd>
+                <dt className="text-black">{t("checkout.bank")}</dt>
+                <dd className="font-medium text-black">Swedbank</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-[#606C38]">{t("checkout.iban")}</dt>
-                <dd className="font-mono font-medium text-[#283618]">
+                <dt className="text-black">{t("checkout.iban")}</dt>
+                <dd className="font-mono font-medium text-black">
                   LV30HABA0551057129470
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-[#606C38]">{t("checkout.beneficiary")}</dt>
-                <dd className="font-medium text-[#283618]">SIA YerbaTea</dd>
+                <dt className="text-black">{t("checkout.beneficiary")}</dt>
+                <dd className="font-medium text-black">SIA YerbaTea</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-[#606C38]">{t("checkout.reference")}</dt>
-                <dd className="font-mono font-medium text-[#283618]">
+                <dt className="text-black">{t("checkout.reference")}</dt>
+                <dd className="font-mono font-medium text-black">
                   {orderNumber || t("checkout.yourOrderNumber")}
                 </dd>
               </div>
@@ -76,12 +76,12 @@ export default async function WireTransferSuccessPage({ params, searchParams }: 
           </div>
 
           <div className="mb-6 rounded-xl border border-[#DDA15E]/50 bg-[#DDA15E]/15 p-4">
-            <p className="text-sm text-[#283618]">
+            <p className="text-sm text-black">
               {t("checkout.wireTransferImportant")}
             </p>
           </div>
 
-          <p className="mb-6 text-sm text-[#606C38]">
+          <p className="mb-6 text-sm text-black">
             {t("checkout.wireTransferReference", { orderNumber: orderNumber || t("checkout.wireTransferReferenceFallback") })}
           </p>
 

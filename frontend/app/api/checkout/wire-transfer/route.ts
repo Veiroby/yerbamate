@@ -12,6 +12,7 @@ import {
   LOCAL_PICKUP_METHOD_ID,
 } from "@/lib/shipping/local-pickup";
 import { sendWireTransferInvoiceEmail } from "@/lib/email";
+import { allocateNextInvoiceOrderNumber } from "@/lib/invoice-number";
 
 function getSiteOrigin(request: Request): string {
   const configured = process.env.NEXT_PUBLIC_APP_ORIGIN?.trim();
@@ -249,7 +250,7 @@ export async function POST(request: Request) {
 
   const order = await prisma.order.create({
     data: {
-      orderNumber: `ORD-${Date.now()}`,
+      orderNumber: await allocateNextInvoiceOrderNumber(),
       email,
       sessionId,
       status: "PENDING",
