@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
 
@@ -56,8 +57,12 @@ export function CartProvider({ children, initialCount = 0 }: { children: ReactNo
 
       toast.success("Added to cart", {
         description: productName,
-        className: "!text-black",
-        descriptionClassName: "!text-black",
+        style: { ["--normal-text" as any]: "#000000" } as CSSProperties,
+        classNames: {
+          title: "!text-black",
+          description: "!text-black",
+          actionButton: "!text-black",
+        },
         action: {
           label: "View Cart",
           onClick: () => window.location.href = "/cart",
