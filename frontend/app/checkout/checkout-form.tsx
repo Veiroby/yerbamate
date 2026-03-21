@@ -94,31 +94,74 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleStripeSubmit = () => {
+  /**
+   * POST checkout via fetch so CSP `form-action` does not block same-origin
+   * submissions (HTML form submit is subject to form-action; fetch uses connect-src).
+   */
+  const submitCheckoutViaFetch = async (actionPath: string) => {
     if (!formRef.current) return;
     if (!validateForm()) return;
 
-    formRef.current.action = "/api/stripe/checkout";
+    setErrors((prev) => {
+      const { _submit: _s, ...rest } = prev;
+      return rest;
+    });
     setIsSubmitting(true);
-    formRef.current.submit();
+    try {
+      const formData = new FormData(formRef.current);
+      const res = await fetch(actionPath, {
+        method: "POST",
+        body: formData,
+        credentials: "same-origin",
+        redirect: "manual",
+      });
+
+      if (res.status === 302 || res.status === 303 || res.status === 307 || res.status === 308) {
+        const loc = res.headers.get("Location");
+        if (loc) {
+          window.location.href = loc;
+          return;
+        }
+      }
+
+      if (res.ok) {
+        const data = await res.json().catch(() => null);
+        if (data?.error) {
+          setErrors((prev) => ({ ...prev, _submit: data.error }));
+        }
+        return;
+      }
+
+      const data = await res.json().catch(() => ({}));
+      setErrors((prev) => ({
+        ...prev,
+        _submit:
+          typeof data.error === "string"
+            ? data.error
+            : isLv
+              ? "Neizdevās apstrādāt pasūtījumu. Lūdzu, mēģiniet vēlreiz."
+              : "Could not process checkout. Please try again.",
+      }));
+    } catch {
+      setErrors((prev) => ({
+        ...prev,
+        _submit: isLv ? "Tīkla kļūda. Lūdzu, mēģiniet vēlreiz." : "Network error. Please try again.",
+      }));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleStripeSubmit = () => {
+    void submitCheckoutViaFetch("/api/stripe/checkout");
   };
 
   const handleWireTransferSubmit = () => {
-    if (!formRef.current) return;
-    if (!validateForm()) return;
-
-    formRef.current.action = "/api/checkout/wire-transfer";
-    setIsSubmitting(true);
-    formRef.current.submit();
+    void submitCheckoutViaFetch("/api/checkout/wire-transfer");
   };
 
   const handleMaksekeskusSubmit = () => {
-    if (!formRef.current) return;
-    if (!validateForm()) return;
-
-    formRef.current.action = "/api/checkout/maksekeskus";
-    setIsSubmitting(true);
-    formRef.current.submit();
+    void submitCheckoutViaFetch("/api/checkout/maksekeskus");
   };
 
   const inputClassName = (fieldName: string) =>
@@ -141,7 +184,12 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
       {locale && (
         <input type="hidden" name="locale" value={locale} />
       )}
-      {Object.keys(errors).length > 0 && (
+      {errors._submit && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {errors._submit}
+        </div>
+      )}
+      {Object.keys(errors).filter((k) => k !== "_submit").length > 0 && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
           {isLv
             ? "Lūdzu, aizpildiet visus obligātos laukus, kas izcelti zemāk."
