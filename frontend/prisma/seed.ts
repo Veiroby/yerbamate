@@ -11,7 +11,7 @@ if (!connectionString) {
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({ adapter });
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@example.com";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "alise@yerbatea.lv";
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const BCRYPT_ROUNDS = 12;
 
@@ -30,6 +30,11 @@ async function main() {
       passwordHash,
       isAdmin: true,
     },
+  });
+  // Only one admin account: demote everyone else (credential rotation / email change).
+  await prisma.user.updateMany({
+    where: { email: { not: ADMIN_EMAIL } },
+    data: { isAdmin: false },
   });
   console.log(`Admin user ready: ${ADMIN_EMAIL}`);
 }

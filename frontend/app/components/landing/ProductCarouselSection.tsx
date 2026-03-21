@@ -27,6 +27,8 @@ type Props = {
   title?: string;
   titleKey?: string;
   products: CarouselProduct[];
+  /** No top padding/margin — e.g. first carousel directly under hero */
+  compactTop?: boolean;
 };
 
 function CarouselSectionCard({ p }: { p: CarouselProduct }) {
@@ -112,7 +114,7 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
   );
 }
 
-export function ProductCarouselSection({ title, titleKey, products }: Props) {
+export function ProductCarouselSection({ title, titleKey, products, compactTop }: Props) {
   const { t } = useTranslation();
   const pathname = usePathname();
   const displayTitle = titleKey ? t(titleKey) : (title ?? "");
@@ -123,7 +125,10 @@ export function ProductCarouselSection({ title, titleKey, products }: Props) {
   const sectionId = displayTitle.replace(/\s/g, "-").toLowerCase();
 
   return (
-    <section className="bg-white px-4 py-12 sm:py-16" aria-labelledby={`carousel-${sectionId}`}>
+    <section
+      className={`bg-white px-4 ${compactTop ? "pt-0 mt-0 pb-12 sm:pb-16" : "py-12 sm:py-16"}`}
+      aria-labelledby={`carousel-${sectionId}`}
+    >
       <div className="mx-auto max-w-6xl">
         <h2
           id={`carousel-${sectionId}`}

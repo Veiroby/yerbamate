@@ -195,7 +195,11 @@ export default async function HomePage({ params }: Props) {
           customerCount={heroStats.customerCount}
         />
 
-        <ProductCarouselSection titleKey="home.newArrivals" products={newArrivalsCarousel} />
+        <ProductCarouselSection
+          titleKey="home.newArrivals"
+          products={newArrivalsCarousel}
+          compactTop
+        />
 
         <TrendingSection />
 
