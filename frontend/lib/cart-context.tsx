@@ -1,8 +1,9 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
 import { toast } from "sonner";
+import { AddedToCartToast } from "@/app/components/added-to-cart-toast";
+import { getAddToCartToastCopy } from "@/lib/cart-toast-copy";
 
 type CartContextType = {
   itemCount: number;
@@ -48,31 +49,36 @@ export function CartProvider({ children, initialCount = 0 }: { children: ReactNo
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        toast.error(data.error || "Failed to add item to cart");
+        const { addError } = getAddToCartToastCopy();
+        toast.error(typeof data.error === "string" && data.error.trim() ? data.error : addError);
         return false;
       }
 
       const data = await res.json();
       setItemCount(data.cartItemCount ?? itemCount + quantity);
 
-      toast.success("Added to cart", {
-        description: productName,
-        style: { ["--normal-text" as any]: "#000000" } as CSSProperties,
-        classNames: {
-          title: "!text-black",
-          description: "!text-black",
-          actionButton: "!text-black",
+      const { title, viewCart, cartHref } = getAddToCartToastCopy();
+      toast.custom(
+        (id) => (
+          <AddedToCartToast
+            toastId={id}
+            title={title}
+            productName={productName}
+            viewCartLabel={viewCart}
+            cartHref={cartHref}
+          />
+        ),
+        {
+          duration: 5000,
+          unstyled: true,
+          className: "!bg-transparent !border-0 !p-0 !shadow-none",
         },
-        action: {
-          label: "View Cart",
-          onClick: () => window.location.href = "/cart",
-          actionButtonStyle: { color: "#000000" },
-        },
-      });
+      );
 
       return true;
     } catch {
-      toast.error("Failed to add item to cart");
+      const { addError } = getAddToCartToastCopy();
+      toast.error(addError);
       return false;
     } finally {
       setIsLoading(false);
