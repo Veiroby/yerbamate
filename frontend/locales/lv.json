@@ -141,6 +141,7 @@
   "checkout.beforeCheckingOut": "pirms norēķina.",
   "checkout.orderSummary": "Pasūtījuma kopsavilkums",
   "checkout.complete": "Norēķins pabeigts",
+  "checkout.successModalTitle": "Paldies par pirkumu!",
   "checkout.thanksMessage": "Paldies! Ja maksājums bija veiksmīgs, drīz saņemsiet apstiprinājuma e-pastu.",
   "checkout.orderReceivedMessage": "Pasūtījums {orderNumber} saņemts. Apstiprinājuma e-pastu saņemsit pēc maksājuma apstiprināšanas.",
   "checkout.paymentConfirmedOrder": "Maksājums apstiprināts. Jūsu pasūtījuma numurs ir {orderNumber}.",

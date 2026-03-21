@@ -10,15 +10,24 @@ export default async function AdminDashboardPage() {
     lowStockCount,
     recentOrders,
   ] = await Promise.all([
-    prisma.order.count(),
-    prisma.order.count({ where: { status: { in: ["PAID", "PROCESSING", "SHIPPED"] } } }),
+    prisma.order.count({ where: { archived: false } }),
+    prisma.order.count({
+      where: {
+        archived: false,
+        status: { in: ["PAID", "PROCESSING", "SHIPPED"] },
+      },
+    }),
     prisma.order.aggregate({
-      where: { status: { in: ["PAID", "PROCESSING", "SHIPPED"] } },
+      where: {
+        archived: false,
+        status: { in: ["PAID", "PROCESSING", "SHIPPED"] },
+      },
       _sum: { total: true },
     }),
     prisma.product.count({ where: { active: true } }),
     prisma.inventoryItem.count({ where: { quantity: { lte: 5 } } }),
     prisma.order.findMany({
+      where: { archived: false },
       take: 8,
       orderBy: { createdAt: "desc" },
       include: {

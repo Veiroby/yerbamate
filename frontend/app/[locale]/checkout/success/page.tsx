@@ -3,6 +3,7 @@ import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
+import { CheckoutSuccessConfirmation } from "@/app/components/checkout/CheckoutSuccessConfirmation";
 import { getCurrentUser } from "@/lib/auth";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
@@ -63,6 +64,15 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Prop
 
   return (
     <div className="min-h-screen bg-white text-[#283618]">
+      <CheckoutSuccessConfirmation
+        title={t("checkout.successModalTitle")}
+        message={message}
+        continueLabel={t("checkout.continueShopping")}
+        homeLabel={t("common.home")}
+        continueHref={`${prefix}/products`}
+        homeHref={prefix}
+        closeAriaLabel={t("common.close")}
+      />
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
       <main className="mx-auto max-w-3xl px-4 py-12">
         <div className="rounded-2xl border border-[#606C38]/20 bg-[#FEFAE0] p-6 shadow-sm">

@@ -141,6 +141,7 @@
   "checkout.beforeCheckingOut": "before checking out.",
   "checkout.orderSummary": "Order summary",
   "checkout.complete": "Checkout complete",
+  "checkout.successModalTitle": "Thank you for your purchase!",
   "checkout.thanksMessage": "Thanks! If your payment was successful, you will receive a confirmation email shortly.",
   "checkout.orderReceivedMessage": "Order {orderNumber} received. You will receive a confirmation email once the payment is confirmed.",
   "checkout.paymentConfirmedOrder": "Payment confirmed. Your order number is {orderNumber}.",

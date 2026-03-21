@@ -325,6 +325,7 @@ model Order {
   dpdDeliveredAt        DateTime?     // when DPD marked the parcel as delivered
   dpdLastStatus         String?       // last raw status text/code from DPD
   dpdLastStatusAt       DateTime?     // when last DPD status was recorded
+  archived              Boolean       @default(false)
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
@@ -336,6 +337,7 @@ model Order {
   @@index([email])
   @@index([status])
   @@index([sessionId])
+  @@index([archived])
 }
 
 model InvoiceCounter {

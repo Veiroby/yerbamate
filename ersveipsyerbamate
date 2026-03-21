@@ -1,0 +1,597 @@
+[1mdiff --git a/frontend/app/api/checkout/maksekeskus/route.ts b/frontend/app/api/checkout/maksekeskus/route.ts[m
+[1mindex a475bd5..08c5ac0 100644[m
+[1m--- a/frontend/app/api/checkout/maksekeskus/route.ts[m
+[1m+++ b/frontend/app/api/checkout/maksekeskus/route.ts[m
+[36m@@ -85,20 +85,21 @@[m [mexport async function POST(request: Request) {[m
+   const localeRaw = formData.get("locale")?.toString();[m
+   const locale = localeRaw === "lv" || localeRaw === "en" ? localeRaw : "";[m
+   const pathPrefix = locale ? `/${locale}` : "";[m
+[32m+[m[32m  const isLv = locale === "lv";[m
+ [m
+   const isDpdParcelMachine = shippingOptionId === DPD_PARCEL_MACHINE_METHOD_ID;[m
+   const isLocalPickup = shippingOptionId === LOCAL_PICKUP_METHOD_ID;[m
+ [m
+   if (isDpdParcelMachine && !dpdPickupPointId) {[m
+     return NextResponse.json([m
+[31m-      { error: "Please select a DPD parcel machine" },[m
+[32m+[m[32m      { error: isLv ? "Lūdzu, izvēlieties DPD pakomātu" : "Please select a DPD parcel machine" },[m
+       { status: 400 }[m
+     );[m
+   }[m
+ [m
+   if (!email || !name) {[m
+     return NextResponse.json([m
+[31m-      { error: "Missing required fields" },[m
+[32m+[m[32m      { error: isLv ? "Trūkst obligāto lauku" : "Missing required fields" },[m
+       { status: 400 }[m
+     );[m
+   }[m
+[36m@@ -106,7 +107,11 @@[m [mexport async function POST(request: Request) {[m
+   if (customerType === "BUSINESS") {[m
+     if (!companyName || !companyAddress || !vatNumber || !phone) {[m
+       return NextResponse.json([m
+[31m-        { error: "Missing required business fields" },[m
+[32m+[m[32m        {[m
+[32m+[m[32m          error: isLv[m
+[32m+[m[32m            ? "Trūkst obligāto biznesa (uzņēmuma) lauku"[m
+[32m+[m[32m            : "Missing required business fields",[m
+[32m+[m[32m        },[m
+         { status: 400 }[m
+       );[m
+     }[m
+[36m@@ -114,7 +119,7 @@[m [mexport async function POST(request: Request) {[m
+ [m
+   if (!isDpdParcelMachine && !isLocalPickup && (!addressLine1 || !city || !postalCode)) {[m
+     return NextResponse.json([m
+[31m-      { error: "Missing required address fields" },[m
+[32m+[m[32m      { error: isLv ? "Trūkst obligāto adreses lauku" : "Missing required address fields" },[m
+       { status: 400 }[m
+     );[m
+   }[m
+[36m@@ -134,7 +139,9 @@[m [mexport async function POST(request: Request) {[m
+ [m
+   if (!shipping.option) {[m
+     return NextResponse.json([m
+[31m-      { error: "Unfortunately we don't ship to your country." },[m
+[32m+[m[32m      {[m
+[32m+[m[32m        error: isLv ? "Diemžēl mēs nepiegādājam uz jūsu valsti." : "Unfortunately we don't ship to your country.",[m
+[32m+[m[32m      },[m
+       { status: 400 }[m
+     );[m
+   }[m
+[36m@@ -216,7 +223,9 @@[m [mexport async function POST(request: Request) {[m
+     const point = getDpdPickupPointById(country, dpdPickupPointId);[m
+     if (!point) {[m
+       return NextResponse.json([m
+[31m-        { error: "Invalid DPD pickup point" },[m
+[32m+[m[32m        {[m
+[32m+[m[32m          error: isLv ? "Nederīgs DPD piegādes punkts" : "Invalid DPD pickup point",[m
+[32m+[m[32m        },[m
+         { status: 400 }[m
+       );[m
+     }[m
+[36m@@ -233,7 +242,9 @@[m [mexport async function POST(request: Request) {[m
+   } else if (isLocalPickup) {[m
+     shippingAddress = {[m
+       name,[m
+[31m-      line1: `Local pick-up — ${LOCAL_PICKUP_LOCATION.line1}`,[m
+[32m+[m[32m      line1: isLv[m
+[32m+[m[32m        ? `Saņemšana uz vietas — ${LOCAL_PICKUP_LOCATION.line1}`[m
+[32m+[m[32m        : `Local pick-up — ${LOCAL_PICKUP_LOCATION.line1}`,[m
+       line2: undefined,[m
+       city: LOCAL_PICKUP_LOCATION.city,[m
+       postalCode: LOCAL_PICKUP_LOCATION.postalCode,[m
+[1mdiff --git a/frontend/app/api/checkout/wire-transfer/route.ts b/frontend/app/api/checkout/wire-transfer/route.ts[m
+[1mindex 7ff3f22..3c4668e 100644[m
+[1m--- a/frontend/app/api/checkout/wire-transfer/route.ts[m
+[1m+++ b/frontend/app/api/checkout/wire-transfer/route.ts[m
+[36m@@ -68,10 +68,15 @@[m [mexport async function POST(request: Request) {[m
+   const localeRaw = formData.get("locale")?.toString();[m
+   const locale = localeRaw === "lv" || localeRaw === "en" ? localeRaw : "";[m
+   const pathPrefix = locale ? `/${locale}` : "";[m
+[32m+[m[32m  const isLv = locale === "lv";[m
+ [m
+   if (customerType !== "BUSINESS") {[m
+     return NextResponse.json([m
+[31m-      { error: "Wire transfer is only available for business customers" },[m
+[32m+[m[32m      {[m
+[32m+[m[32m        error: isLv[m
+[32m+[m[32m          ? "Bankas pārskaitījums pieejams tikai uzņēmumiem"[m
+[32m+[m[32m          : "Wire transfer is only available for business customers",[m
+[32m+[m[32m      },[m
+       { status: 400 },[m
+     );[m
+   }[m
+[36m@@ -81,28 +86,32 @@[m [mexport async function POST(request: Request) {[m
+ [m
+   if (isDpdParcelMachine && !dpdPickupPointId) {[m
+     return NextResponse.json([m
+[31m-      { error: "Please select a DPD parcel machine" },[m
+[32m+[m[32m      { error: isLv ? "Lūdzu, izvēlieties DPD pakomātu" : "Please select a DPD parcel machine" },[m
+       { status: 400 },[m
+     );[m
+   }[m
+ [m
+   if (!email || !name) {[m
+     return NextResponse.json([m
+[31m-      { error: "Missing required fields" },[m
+[32m+[m[32m      { error: isLv ? "Trūkst obligāto lauku" : "Missing required fields" },[m
+       { status: 400 },[m
+     );[m
+   }[m
+ [m
+   if (!companyName || !companyAddress || !vatNumber || !phone) {[m
+     return NextResponse.json([m
+[31m-      { error: "Missing required business fields" },[m
+[32m+[m[32m      {[m
+[32m+[m[32m        error: isLv[m
+[32m+[m[32m          ? "Trūkst obligāto biznesa (uzņēmuma) lauku"[m
+[32m+[m[32m          : "Missing required business fields",[m
+[32m+[m[32m      },[m
+       { status: 400 },[m
+     );[m
+   }[m
+ [m
+   if (!isDpdParcelMachine && !isLocalPickup && (!addressLine1 || !city || !postalCode)) {[m
+     return NextResponse.json([m
+[31m-      { error: "Missing required address fields" },[m
+[32m+[m[32m      { error: isLv ? "Trūkst obligāto adreses lauku" : "Missing required address fields" },[m
+       { status: 400 },[m
+     );[m
+   }[m
+[36m@@ -122,7 +131,9 @@[m [mexport async function POST(request: Request) {[m
+ [m
+   if (!shipping.option) {[m
+     return NextResponse.json([m
+[31m-      { error: "Unfortunately we don't ship to your country." },[m
+[32m+[m[32m      {[m
+[32m+[m[32m        error: isLv ? "Diemžēl mēs nepiegādājam uz jūsu valsti." : "Unfortunately we don't ship to your country.",[m
+[32m+[m[32m      },[m
+       { status: 400 },[m
+     );[m
+   }[m
+[36m@@ -200,7 +211,7 @@[m [mexport async function POST(request: Request) {[m
+     const point = getDpdPickupPointById(country, dpdPickupPointId);[m
+     if (!point) {[m
+       return NextResponse.json([m
+[31m-        { error: "Invalid DPD pickup point" },[m
+[32m+[m[32m        { error: isLv ? "Nederīgs DPD piegādes punkts" : "Invalid DPD pickup point" },[m
+         { status: 400 },[m
+       );[m
+     }[m
+[36m@@ -217,7 +228,9 @@[m [mexport async function POST(request: Request) {[m
+   } else if (isLocalPickup) {[m
+     shippingAddress = {[m
+       name,[m
+[31m-      line1: `Local pick-up — ${LOCAL_PICKUP_LOCATION.line1}`,[m
+[32m+[m[32m      line1: isLv[m
+[32m+[m[32m        ? `Saņemšana uz vietas — ${LOCAL_PICKUP_LOCATION.line1}`[m
+[32m+[m[32m        : `Local pick-up — ${LOCAL_PICKUP_LOCATION.line1}`,[m
+       line2: undefined,[m
+       city: LOCAL_PICKUP_LOCATION.city,[m
+       postalCode: LOCAL_PICKUP_LOCATION.postalCode,[m
+[1mdiff --git a/frontend/app/api/shipping/methods/route.ts b/frontend/app/api/shipping/methods/route.ts[m
+[1mindex be8b74e..802fef2 100644[m
+[1m--- a/frontend/app/api/shipping/methods/route.ts[m
+[1m+++ b/frontend/app/api/shipping/methods/route.ts[m
+[36m@@ -6,6 +6,7 @@[m [mimport { getAvailableShippingMethods } from "@/lib/shipping/service";[m
+ export async function GET(request: Request) {[m
+   const url = new URL(request.url);[m
+   const country = url.searchParams.get("country") ?? "US";[m
+[32m+[m[32m  const locale = url.searchParams.get("locale") as "lv" | "en" | null;[m
+   const subtotalParam = url.searchParams.get("subtotal");[m
+   const orderSubtotal = subtotalParam != null ? Number(subtotalParam) : null;[m
+ [m
+[36m@@ -21,6 +22,7 @@[m [mexport async function GET(request: Request) {[m
+     { country },[m
+     cart ? { id: cart.id } : null,[m
+     Number.isFinite(orderSubtotal) ? orderSubtotal : undefined,[m
+[32m+[m[32m    locale ?? undefined,[m
+   );[m
+ [m
+   return NextResponse.json({[m
+[1mdiff --git a/frontend/app/api/stripe/checkout/route.ts b/frontend/app/api/stripe/checkout/route.ts[m
+[1mindex 8927c71..326bb76 100644[m
+[1m--- a/frontend/app/api/stripe/checkout/route.ts[m
+[1m+++ b/frontend/app/api/stripe/checkout/route.ts[m
+[36m@@ -83,20 +83,23 @@[m [mexport async function POST(request: Request) {[m
+   const localeRaw = formData.get("locale")?.toString();[m
+   const locale = localeRaw === "lv" || localeRaw === "en" ? localeRaw : "";[m
+   const pathPrefix = locale ? `/${locale}` : "";[m
+[32m+[m[32m  const isLv = locale === "lv";[m
+ [m
+   const isDpdParcelMachine = shippingOptionId === DPD_PARCEL_MACHINE_METHOD_ID;[m
+   const isLocalPickup = shippingOptionId === LOCAL_PICKUP_METHOD_ID;[m
+ [m
+   if (isDpdParcelMachine && !dpdPickupPointId) {[m
+     return NextResponse.json([m
+[31m-      { error: "Please select a DPD parcel machine" },[m
+[32m+[m[32m      { error: isLv ? "Lūdzu, izvēlieties DPD pakomātu" : "Please select a DPD parcel machine" },[m
+       { status: 400 },[m
+     );[m
+   }[m
+ [m
+   if (!email || !name) {[m
+     return NextResponse.json([m
+[31m-      { error: "Missing required fields" },[m
+[32m+[m[32m      {[m
+[32m+[m[32m        error: isLv ? "Trūkst obligāto lauku" : "Missing required fields",[m
+[32m+[m[32m      },[m
+       { status: 400 },[m
+     );[m
+   }[m
+[36m@@ -104,7 +107,11 @@[m [mexport async function POST(request: Request) {[m
+   if (customerType === "BUSINESS") {[m
+     if (!companyName || !companyAddress || !vatNumber || !phone) {[m
+       return NextResponse.json([m
+[31m-        { error: "Missing required business fields" },[m
+[32m+[m[32m        {[m
+[32m+[m[32m          error: isLv[m
+[32m+[m[32m            ? "Trūkst obligāto biznesa (uzņēmuma) lauku"[m
+[32m+[m[32m            : "Missing required business fields",[m
+[32m+[m[32m        },[m
+         { status: 400 },[m
+       );[m
+     }[m
+[36m@@ -112,7 +119,7 @@[m [mexport async function POST(request: Request) {[m
+ [m
+   if (!isDpdParcelMachine && !isLocalPickup && (!addressLine1 || !city || !postalCode)) {[m
+     return NextResponse.json([m
+[31m-      { error: "Missing required address fields" },[m
+[32m+[m[32m      { error: isLv ? "Trūkst obligāto adreses lauku" : "Missing required address fields" },[m
+       { status: 400 },[m
+     );[m
+   }[m
+[36m@@ -132,7 +139,9 @@[m [mexport async function POST(request: Request) {[m
+ [m
+   if (!shipping.option) {[m
+     return NextResponse.json([m
+[31m-      { error: "Unfortunately we don't ship to your country." },[m
+[32m+[m[32m      {[m
+[32m+[m[32m        error: isLv ? "Diemžēl mēs nepiegādājam uz jūsu valsti." : "Unfortunately we don't ship to your country.",[m
+[32m+[m[32m      },[m
+       { status: 400 },[m
+     );[m
+   }[m
+[36m@@ -210,7 +219,9 @@[m [mexport async function POST(request: Request) {[m
+     const point = getDpdPickupPointById(country, dpdPickupPointId);[m
+     if (!point) {[m
+       return NextResponse.json([m
+[31m-        { error: "Invalid DPD pickup point" },[m
+[32m+[m[32m        {[m
+[32m+[m[32m          error: isLv ? "Nederīgs DPD piegādes punkts" : "Invalid DPD pickup point",[m
+[32m+[m[32m        },[m
+         { status: 400 },[m
+       );[m
+     }[m
+[36m@@ -227,7 +238,9 @@[m [mexport async function POST(request: Request) {[m
+   } else if (isLocalPickup) {[m
+     shippingAddress = {[m
+       name,[m
+[31m-      line1: `Local pick-up — ${LOCAL_PICKUP_LOCATION.line1}`,[m
+[32m+[m[32m      line1: isLv[m
+[32m+[m[32m        ? `Saņemšana uz vietas — ${LOCAL_PICKUP_LOCATION.line1}`[m
+[32m+[m[32m        : `Local pick-up — ${LOCAL_PICKUP_LOCATION.line1}`,[m
+       line2: undefined,[m
+       city: LOCAL_PICKUP_LOCATION.city,[m
+       postalCode: LOCAL_PICKUP_LOCATION.postalCode,[m
+[36m@@ -310,7 +323,7 @@[m [mexport async function POST(request: Request) {[m
+         currency,[m
+         unit_amount: Math.round(shippingAmount * 100),[m
+         product_data: {[m
+[31m-          name: shipping.option?.name ?? "Shipping",[m
+[32m+[m[32m          name: shipping.option?.name ?? (isLv ? "Piegāde" : "Shipping"),[m
+         },[m
+       },[m
+     });[m
+[36m@@ -341,7 +354,7 @@[m [mexport async function POST(request: Request) {[m
+ [m
+   if (!session.url) {[m
+     return NextResponse.json([m
+[31m-      { error: "Unable to create checkout session" },[m
+[32m+[m[32m      { error: isLv ? "Neizdevās izveidot Stripe norēķinu sesiju" : "Unable to create checkout session" },[m
+       { status: 500 },[m
+     );[m
+   }[m
+[1mdiff --git a/frontend/app/checkout/checkout-customer-type.tsx b/frontend/app/checkout/checkout-customer-type.tsx[m
+[1mindex 8ee2f9f..9128182 100644[m
+[1m--- a/frontend/app/checkout/checkout-customer-type.tsx[m
+[1m+++ b/frontend/app/checkout/checkout-customer-type.tsx[m
+[36m@@ -76,7 +76,7 @@[m [mexport function CheckoutCustomerType({ onCustomerTypeChange, errors, locale }: P[m
+               name="companyName"[m
+               required[m
+               className={inputClassName("companyName")}[m
+[31m-              placeholder="SIA Example Company"[m
+[32m+[m[32m              placeholder={isLv ? "SIA Piemēra uzņēmums" : "SIA Example Company"}[m
+             />[m
+             {errors?.companyName && ([m
+               <p className="text-xs text-red-600 mt-1">{errors.companyName}</p>[m
+[36m@@ -91,7 +91,9 @@[m [mexport function CheckoutCustomerType({ onCustomerTypeChange, errors, locale }: P[m
+               name="companyAddress"[m
+               required[m
+               className={inputClassName("companyAddress")}[m
+[31m-              placeholder="Street 1, City, LV-1000, Latvia"[m
+[32m+[m[32m              placeholder={[m
+[32m+[m[32m                isLv ? "Iela 1, Pilsēta, LV-1000, Latvija" : "Street 1, City, LV-1000, Latvia"[m
+[32m+[m[32m              }[m
+             />[m
+             {errors?.companyAddress && ([m
+               <p className="text-xs text-red-600 mt-1">{errors.companyAddress}</p>[m
+[36m@@ -122,7 +124,7 @@[m [mexport function CheckoutCustomerType({ onCustomerTypeChange, errors, locale }: P[m
+                 name="phone"[m
+                 required[m
+                 className={inputClassName("phone")}[m
+[31m-                placeholder="+371 20000000"[m
+[32m+[m[32m              placeholder={isLv ? "+371 20000000" : "+371 20000000"}[m
+               />[m
+               {errors?.phone && ([m
+                 <p className="text-xs text-red-600 mt-1">{errors.phone}</p>[m
+[1mdiff --git a/frontend/app/checkout/checkout-form.tsx b/frontend/app/checkout/checkout-form.tsx[m
+[1mindex a0288c8..fd42461 100644[m
+[1m--- a/frontend/app/checkout/checkout-form.tsx[m
+[1m+++ b/frontend/app/checkout/checkout-form.tsx[m
+[36m@@ -56,13 +56,13 @@[m [mexport function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai[m
+ [m
+     if (!isDpdParcelMachine && !isLocalPickup) {[m
+       if (!getInputValue("addressLine1")) {[m
+[31m-        newErrors.addressLine1 = "Address is required";[m
+[32m+[m[32m        newErrors.addressLine1 = isLv ? "Adrese ir obligāta" : "Address is required";[m
+       }[m
+       if (!getInputValue("city")) {[m
+[31m-        newErrors.city = "City is required";[m
+[32m+[m[32m        newErrors.city = isLv ? "Pilsēta ir obligāta" : "City is required";[m
+       }[m
+       if (!getInputValue("postalCode")) {[m
+[31m-        newErrors.postalCode = "Postal code is required";[m
+[32m+[m[32m        newErrors.postalCode = isLv ? "Pasta indekss ir obligāts" : "Postal code is required";[m
+       }[m
+     }[m
+ [m
+[1mdiff --git a/frontend/app/checkout/checkout-shipping-block.tsx b/frontend/app/checkout/checkout-shipping-block.tsx[m
+[1mindex cba3798..faa5f1d 100644[m
+[1m--- a/frontend/app/checkout/checkout-shipping-block.tsx[m
+[1m+++ b/frontend/app/checkout/checkout-shipping-block.tsx[m
+[36m@@ -1,6 +1,6 @@[m
+ "use client";[m
+ [m
+[31m-import { useState } from "react";[m
+[32m+[m[32mimport { useMemo, useState } from "react";[m
+ import { ShippingMethodSelector } from "./shipping-method-selector";[m
+ import { useLocale } from "@/lib/locale-context";[m
+ import { EU_COUNTRIES } from "@/lib/locale-data";[m
+[36m@@ -18,11 +18,23 @@[m [mexport function CheckoutShippingBlock({[m
+   subtotal,[m
+   errors,[m
+   onShippingMethodChange,[m
+[32m+[m[32m  locale,[m
+ }: Props) {[m
+   const { country: globalCountry } = useLocale();[m
+   const [country, setCountry] = useState(globalCountry);[m
+   const isLv = locale === "lv";[m
+ [m
+[32m+[m[32m  const regionDisplayNames = useMemo(() => {[m
+[32m+[m[32m    if (!isLv) return null;[m
+[32m+[m[32m    const DisplayNamesCtor = (Intl as any).DisplayNames as[m
+[32m+[m[32m      | undefined[m
+[32m+[m[32m      | (new (locales: string[], options: { type: string }) => {[m
+[32m+[m[32m          of: (code: string) => string | undefined;[m
+[32m+[m[32m        });[m
+[32m+[m[32m    if (!DisplayNamesCtor) return null;[m
+[32m+[m[32m    return new DisplayNamesCtor(["lv"], { type: "region" });[m
+[32m+[m[32m  }, [isLv]);[m
+[32m+[m
+   const inputClassName = (fieldName: string) =>[m
+     `w-full rounded-lg border px-3 py-2.5 text-sm ${[m
+       errors?.[fieldName][m
+[36m@@ -45,7 +57,7 @@[m [mexport function CheckoutShippingBlock({[m
+             name="addressLine1"[m
+             required[m
+             className={inputClassName("addressLine1")}[m
+[31m-            placeholder="Street address"[m
+[32m+[m[32m            placeholder={isLv ? "Iela un māja" : "Street address"}[m
+           />[m
+           {errors?.addressLine1 && ([m
+             <p className="text-xs text-red-600 mt-1">{errors.addressLine1}</p>[m
+[36m@@ -103,7 +115,7 @@[m [mexport function CheckoutShippingBlock({[m
+           >[m
+             {EU_COUNTRIES.map((c) => ([m
+               <option key={c.value} value={c.value}>[m
+[31m-                {c.label}[m
+[32m+[m[32m                {regionDisplayNames?.of(c.value) ?? c.label}[m
+               </option>[m
+             ))}[m
+           </select>[m
+[36m@@ -114,6 +126,7 @@[m [mexport function CheckoutShippingBlock({[m
+         country={country}[m
+         currency={currency}[m
+         subtotal={subtotal}[m
+[32m+[m[32m        locale={locale}[m
+         onShippingMethodChange={onShippingMethodChange}[m
+       />[m
+     </>[m
+[1mdiff --git a/frontend/app/checkout/shipping-method-selector.tsx b/frontend/app/checkout/shipping-method-selector.tsx[m
+[1mindex 7b9426a..ee65a4b 100644[m
+[1m--- a/frontend/app/checkout/shipping-method-selector.tsx[m
+[1m+++ b/frontend/app/checkout/shipping-method-selector.tsx[m
+[36m@@ -26,13 +26,16 @@[m [mfunction ParcelPicker({[m
+   selectedPickupId,[m
+   onSelect,[m
+   required,[m
+[32m+[m[32m  locale,[m
+ }: {[m
+   pickupPoints: PickupPoint[];[m
+   pickupLoading: boolean;[m
+   selectedPickupId: string;[m
+   onSelect: (id: string) => void;[m
+   required: boolean;[m
+[32m+[m[32m  locale?: "lv" | "en";[m
+ }) {[m
+[32m+[m[32m  const isLv = locale === "lv";[m
+   const [open, setOpen] = useState(false);[m
+   const [filter, setFilter] = useState("");[m
+   const [dropdownRect, setDropdownRect] = useState<{[m
+[36m@@ -139,13 +142,15 @@[m [mfunction ParcelPicker({[m
+   return ([m
+     <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-3">[m
+       <label className="block text-xs font-medium text-gray-700">[m
+[31m-        Choose parcel machine[m
+[32m+[m[32m        {isLv ? "Izvēlieties pakomātu" : "Choose parcel machine"}[m
+       </label>[m
+       {pickupLoading ? ([m
+[31m-        <p className="mt-1 text-xs text-zinc-500">Loading pickup points…</p>[m
+[32m+[m[32m        <p className="mt-1 text-xs text-zinc-500">[m
+[32m+[m[32m          {isLv ? "Notiek piegādes punktu ielāde…" : "Loading pickup points…"}[m
+[32m+[m[32m        </p>[m
+       ) : pickupPoints.length === 0 ? ([m
+         <p className="mt-1 text-xs text-zinc-500">[m
+[31m-          No pickup points found for this country.[m
+[32m+[m[32m          {isLv ? "Šai valstij nav atrasti piegādes punkti." : "No pickup points found for this country."}[m
+         </p>[m
+       ) : ([m
+         <div className="relative mt-1" ref={listRef}>[m
+[36m@@ -157,7 +162,11 @@[m [mfunction ParcelPicker({[m
+             aria-autocomplete="list"[m
+             aria-controls="parcel-list"[m
+             id="parcel-picker-input"[m
+[31m-            placeholder="Type to search or click to browse…"[m
+[32m+[m[32m            placeholder={[m
+[32m+[m[32m              isLv[m
+[32m+[m[32m                ? "Ievadiet, lai meklētu, vai noklikšķiniet, lai pārlūkotu…"[m
+[32m+[m[32m                : "Type to search or click to browse…"[m
+[32m+[m[32m            }[m
+             value={open ? filter : displayValue}[m
+             onChange={(e) => {[m
+               setFilter(e.target.value);[m
+[36m@@ -201,7 +210,9 @@[m [mfunction ParcelPicker({[m
+               >[m
+                 {filtered.length === 0 ? ([m
+                   <div className="px-3 py-4 text-center text-sm text-gray-500">[m
+[31m-                    No matching parcel machines[m
+[32m+[m[32m                    {isLv[m
+[32m+[m[32m                      ? "Nav atrastu pakomātu, kas atbilst meklēšanai"[m
+[32m+[m[32m                      : "No matching parcel machines"}[m
+                   </div>[m
+                 ) : ([m
+                   filtered.map((point) => {[m
+[36m@@ -236,7 +247,7 @@[m [mfunction ParcelPicker({[m
+       )}[m
+       {required && !selectedPickupId && ([m
+         <p className="mt-1 text-xs text-amber-600">[m
+[31m-          Please select a parcel machine[m
+[32m+[m[32m          {isLv ? "Lūdzu, izvēlieties pakomātu" : "Please select a parcel machine"}[m
+         </p>[m
+       )}[m
+     </div>[m
+[36m@@ -249,6 +260,7 @@[m [mtype Props = {[m
+   subtotal?: number;[m
+   onMethodsLoaded?: (methods: ShippingOption[]) => void;[m
+   onShippingMethodChange?: (methodId: string) => void;[m
+[32m+[m[32m  locale?: "lv" | "en";[m
+ };[m
+ [m
+ export function ShippingMethodSelector({[m
+[36m@@ -257,6 +269,7 @@[m [mexport function ShippingMethodSelector({[m
+   subtotal,[m
+   onMethodsLoaded,[m
+   onShippingMethodChange,[m
+[32m+[m[32m  locale,[m
+ }: Props) {[m
+   const [methods, setMethods] = useState<ShippingOption[]>([]);[m
+   const [unsupportedCountry, setUnsupportedCountry] = useState(false);[m
+[36m@@ -277,6 +290,7 @@[m [mexport function ShippingMethodSelector({[m
+     let cancelled = false;[m
+     setLoading(true);[m
+     const params = new URLSearchParams({ country });[m
+[32m+[m[32m    if (locale) params.set("locale", locale);[m
+     if (subtotal != null && Number.isFinite(subtotal)) {[m
+       params.set("subtotal", String(subtotal));[m
+     }[m
+[36m@@ -327,16 +341,22 @@[m [mexport function ShippingMethodSelector({[m
+ [m
+   if (loading) {[m
+     return ([m
+[31m-      <div className="text-sm text-gray-500">Loading shipping options…</div>[m
+[32m+[m[32m      <div className="text-sm text-gray-500">[m
+[32m+[m[32m        {locale === "lv" ? "Notiek piegādes iespēju ielāde…" : "Loading shipping options…"}[m
+[32m+[m[32m      </div>[m
+     );[m
+   }[m
+ [m
+   if (unsupportedCountry || methods.length === 0) {[m
+     return ([m
+       <section className="space-y-4">[m
+[31m-        <h2 className="text-lg font-bold text-black">Shipping method</h2>[m
+[32m+[m[32m        <h2 className="text-lg font-bold text-black">[m
+[32m+[m[32m          {locale === "lv" ? "Piegādes metode" : "Shipping method"}[m
+[32m+[m[32m        </h2>[m
+         <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-800">[m
+[31m-          Unfortunately we don&apos;t ship to your country.[m
+[32m+[m[32m          {locale === "lv"[m
+[32m+[m[32m            ? "Diemžēl mēs nepiegādājam uz jūsu valsti."[m
+[32m+[m[32m            : "Unfortunately we don&apos;t ship to your country."}[m
+         </p>[m
+       </section>[m
+     );[m
+[36m@@ -344,7 +364,9 @@[m [mexport function ShippingMethodSelector({[m
+ [m
+   return ([m
+     <section className="space-y-4">[m
+[31m-      <h2 className="text-lg font-bold text-black">Shipping method</h2>[m
+[32m+[m[32m      <h2 className="text-lg font-bold text-black">[m
+[32m+[m[32m        {locale === "lv" ? "Piegādes metode" : "Shipping method"}[m
+[32m+[m[32m      </h2>[m
+       <div className="space-y-2">[m
+         {methods.map((method) => ([m
+           <label[m
+[36m@@ -368,7 +390,9 @@[m [mexport function ShippingMethodSelector({[m
+                 {method.name}[m
+                 {method.estimatedDays ? ([m
+                   <span className="ml-1 text-xs text-gray-500">[m
+[31m-                    ({method.estimatedDays} business days)[m
+[32m+[m[32m                    {locale === "lv"[m
+[32m+[m[32m                      ? `(${method.estimatedDays} darbadienas)`[m
+[32m+[m[32m                      : `(${method.estimatedDays} business days)`}[m
+                   </span>[m
+                 ) : null}[m
+               </span>[m
+[36m@@ -387,6 +411,7 @@[m [mexport function ShippingMethodSelector({[m
+           selectedPickupId={selectedPickupId}[m
+           onSelect={setSelectedPickupId}[m
+           required={isDpdSelected}[m
+[32m+[m[32m          locale={locale}[m
+         />[m
+       )}[m
+     </section>[m
+[1mdiff --git a/frontend/lib/shipping/service.ts b/frontend/lib/shipping/service.ts[m
+[1mindex 31cf584..51cb212 100644[m
+[1m--- a/frontend/lib/shipping/service.ts[m
+[1m+++ b/frontend/lib/shipping/service.ts[m
+[36m@@ -25,6 +25,7 @@[m [mexport async function getAvailableShippingMethods([m
+   destination: Destination,[m
+   cart: CartForShipping | null,[m
+   orderSubtotal?: number | null,[m
+[32m+[m[32m  locale?: "lv" | "en",[m
+ ): Promise<ShippingOption[]> {[m
+   const countryCode = destination.country.toUpperCase();[m
+   const options: ShippingOption[] = [];[m
+[36m@@ -71,7 +72,7 @@[m [mexport async function getAvailableShippingMethods([m
+   if (isDpdAvailableForCountry(countryCode)) {[m
+     options.push({[m
+       id: DPD_PARCEL_MACHINE_METHOD_ID,[m
+[31m-      name: "DPD parcel machine",[m
+[32m+[m[32m      name: locale === "lv" ? "DPD pakomāts" : "DPD parcel machine",[m
+       amount: freeShippingApplies ? 0 : dpdAmount,[m
+       estimatedDays: 3,[m
+     });[m
+[36m@@ -81,7 +82,10 @@[m [mexport async function getAvailableShippingMethods([m
+   if (countryCode === "LV") {[m
+     options.push({[m
+       id: LOCAL_PICKUP_METHOD_ID,[m
+[31m-      name: "Local pick-up (Stabu iela 53, Rīga)",[m
+[32m+[m[32m      name:[m
+[32m+[m[32m        locale === "lv"[m
+[32m+[m[32m          ? "Saņemšana uz vietas (Stabu iela 53, Rīga)"[m
+[32m+[m[32m          : "Local pick-up (Stabu iela 53, Rīga)",[m
+       amount: 0,[m
+       estimatedDays: null,[m
+     });[m
