@@ -97,7 +97,7 @@ export default async function HomePage({ params }: Props) {
       where: { id: "default" },
     }),
     prisma.product.findMany({
-      where: { active: true },
+      where: { active: true, archived: false },
       orderBy: { createdAt: "desc" },
       take: 12,
       include: {
@@ -106,9 +106,9 @@ export default async function HomePage({ params }: Props) {
     }),
     (async () => {
       const [productCount, brands, subscriberEmails, userEmails] = await Promise.all([
-        prisma.product.count({ where: { active: true } }),
+        prisma.product.count({ where: { active: true, archived: false } }),
         prisma.product.findMany({
-          where: { active: true, brand: { not: null } },
+          where: { active: true, archived: false, brand: { not: null } },
           select: { brand: true },
         }),
         prisma.newsletterSubscriber.findMany({ select: { email: true } }),

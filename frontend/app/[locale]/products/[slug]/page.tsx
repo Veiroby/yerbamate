@@ -32,6 +32,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     select: {
       name: true,
       active: true,
+      archived: true,
       descriptionEn: true,
       descriptionLv: true,
       description: true,
@@ -41,7 +42,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     },
   });
 
-  if (!product || !product.active) {
+  if (!product || !product.active || product.archived) {
     return {
       title: "YerbaTea",
       description: "",
@@ -137,7 +138,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const t = createT(translations);
 
-  if (!product || !product.active) {
+  if (!product || !product.active || product.archived) {
     notFound();
   }
 

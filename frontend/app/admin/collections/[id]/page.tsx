@@ -32,7 +32,7 @@ export default async function AdminCollectionEditPage({ params }: Props) {
       },
     }),
     prisma.product.findMany({
-      where: { active: true },
+      where: { active: true, archived: false },
       orderBy: { name: "asc" },
       include: { images: { orderBy: { position: "asc" }, take: 1 } },
     }),

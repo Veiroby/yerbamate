@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     where: { id: productId },
   });
 
-  if (!product || !product.active) {
+  if (!product || !product.active || product.archived) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }
 

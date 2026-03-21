@@ -147,7 +147,7 @@ export async function POST(request: Request) {
           })
         : null;
 
-      if (!product || !product.active) {
+      if (!product || !product.active || product.archived) {
         throw new Error("Product no longer available");
       }
 

@@ -6,6 +6,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminInventoryPage() {
   const products = await prisma.product.findMany({
+    where: { archived: false },
     orderBy: { name: "asc" },
     select: { id: true, name: true, barcode: true },
   });

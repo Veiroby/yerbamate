@@ -8,7 +8,7 @@ export async function GET() {
       select: { slug: true, name: true },
     }),
     prisma.product.findMany({
-      where: { active: true },
+      where: { active: true, archived: false },
       select: { brand: true, origin: true, price: true },
     }),
   ]);

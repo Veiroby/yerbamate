@@ -22,7 +22,7 @@ async function deleteProductAction(formData: FormData) {
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; view?: string }>;
 }) {
   const categoryDelegate =
     "category" in prisma && typeof (prisma as { category?: { findMany: (args: unknown) => Promise<unknown[]> } }).category?.findMany === "function"
@@ -31,18 +31,22 @@ export default async function AdminProductsPage({
 
   const sp = await searchParams;
   const query = sp?.q?.toString().trim() || "";
+  const archivedView = sp?.view === "archived";
 
   const [products, categories] = await Promise.all([
     prisma.product.findMany({
-      where: query
-        ? {
-            OR: [
-              { name: { contains: query, mode: "insensitive" } },
-              { slug: { contains: query, mode: "insensitive" } },
-              { barcode: { contains: query, mode: "insensitive" } },
-            ],
-          }
-        : undefined,
+      where: {
+        archived: archivedView,
+        ...(query
+          ? {
+              OR: [
+                { name: { contains: query, mode: "insensitive" } },
+                { slug: { contains: query, mode: "insensitive" } },
+                { barcode: { contains: query, mode: "insensitive" } },
+              ],
+            }
+          : {}),
+      },
       orderBy: { createdAt: "desc" },
       include: {
         images: { orderBy: { position: "asc" } },
@@ -57,7 +61,10 @@ export default async function AdminProductsPage({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-2xl border bg-white p-5 shadow-sm">
+      <section
+        id="admin-product-categories"
+        className="scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm"
+      >
         <h2 className="mb-3 text-sm font-semibold text-zinc-900">
           Categories
         </h2>
@@ -118,7 +125,10 @@ export default async function AdminProductsPage({
         )}
       </section>
 
-      <section className="rounded-2xl border bg-white p-5 shadow-sm">
+      <section
+        id="admin-product-add"
+        className="scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm"
+      >
         <h2 className="mb-3 text-sm font-semibold text-zinc-900">
           Add product
         </h2>
@@ -293,8 +303,12 @@ export default async function AdminProductsPage({
         </form>
       </section>
 
-      <section className="rounded-2xl border bg-white p-5 shadow-sm">
+      <section
+        id="admin-product-list"
+        className="scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5"
+      >
         <AdminProductsEditor
+          listView={archivedView ? "archived" : "active"}
           products={products.map((p) => ({
             id: p.id,
             name: p.name,
@@ -304,8 +318,10 @@ export default async function AdminProductsPage({
             weight: p.weight ?? null,
             barcode: p.barcode ?? null,
             active: p.active,
+            archived: p.archived,
+            createdAt: p.createdAt.toISOString(),
             categoryId: p.categoryId ?? null,
-            category: (p as any).category ?? null,
+            category: (p as { category?: { name: string } | null }).category ?? null,
             stockLocation:
               p.stockLocation === "warehouse"
                 ? "warehouse"

@@ -145,6 +145,8 @@ model Product {
   /// "instock" = use quantity, show "In stock" or "Get in 5-7 days"; "warehouse" = show "Get in 5-7 days"
   stockLocation String?        @default("instock")
   active        Boolean        @default(true)
+  /// Hidden from default admin list; excluded from storefront when true
+  archived      Boolean        @default(false)
   categoryId    String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -161,6 +163,7 @@ model Product {
 
   @@index([slug])
   @@index([active])
+  @@index([archived])
   @@index([barcode])
   @@index([categoryId])
   @@index([brand])

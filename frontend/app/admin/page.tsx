@@ -24,7 +24,7 @@ export default async function AdminDashboardPage() {
       },
       _sum: { total: true },
     }),
-    prisma.product.count({ where: { active: true } }),
+    prisma.product.count({ where: { active: true, archived: false } }),
     prisma.inventoryItem.count({ where: { quantity: { lte: 5 } } }),
     prisma.order.findMany({
       where: { archived: false },

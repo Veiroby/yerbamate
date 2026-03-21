@@ -11,10 +11,10 @@ export async function GET(_request: Request, { params }: GetParams) {
   const { id } = await params;
 
   const product = await prisma.product.findUnique({
-    where: { id, active: true },
-    select: { id: true },
+    where: { id },
+    select: { id: true, active: true, archived: true },
   });
-  if (!product) {
+  if (!product || !product.active || product.archived) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }
 
@@ -59,10 +59,10 @@ export async function POST(request: Request, { params }: GetParams) {
   const { id: productId } = await params;
 
   const product = await prisma.product.findUnique({
-    where: { id: productId, active: true },
-    select: { id: true, name: true },
+    where: { id: productId },
+    select: { id: true, name: true, active: true, archived: true },
   });
-  if (!product) {
+  if (!product || !product.active || product.archived) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }
 

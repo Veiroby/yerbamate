@@ -95,6 +95,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
 
   const where: Prisma.ProductWhereInput = {
     active: true,
+    archived: false,
   };
 
   if (q) {
@@ -163,7 +164,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
       select: { slug: true, name: true },
     }),
     prisma.product.findMany({
-      where: { active: true },
+      where: { active: true, archived: false },
       select: { brand: true, origin: true, price: true },
     }),
     getTranslations(locale),

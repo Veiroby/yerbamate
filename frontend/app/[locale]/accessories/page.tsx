@@ -48,6 +48,7 @@ export default async function AccessoriesPage({ params }: Props) {
     prisma.product.findMany({
       where: {
         active: true,
+        archived: false,
         category: { slug: { in: categorySlugs } },
       },
       orderBy: { createdAt: "desc" },

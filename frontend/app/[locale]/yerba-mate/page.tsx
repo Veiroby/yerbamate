@@ -44,7 +44,7 @@ export default async function YerbaMatePage({ params }: Props) {
     getCurrentUser(),
     getTranslations(locale),
     prisma.product.findMany({
-      where: { active: true, category: { slug: "yerba-mate" } },
+      where: { active: true, archived: false, category: { slug: "yerba-mate" } },
       orderBy: { createdAt: "desc" },
       include: {
         images: { orderBy: { position: "asc" }, take: 1 },

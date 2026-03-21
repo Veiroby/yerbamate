@@ -3,7 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
 import { setProductQuantityWithLocation } from "./product-quantity";
+
+async function requireAdmin() {
+  const user = await getCurrentUser();
+  if (!user?.isAdmin) throw new Error("Unauthorized");
+}
 
 export type BulkProductUpdate = {
   id: string;
@@ -17,6 +23,7 @@ export type BulkProductUpdate = {
 };
 
 export async function bulkUpdateProducts(updates: BulkProductUpdate[]) {
+  await requireAdmin();
   if (!Array.isArray(updates) || updates.length === 0) return;
 
   const normalized = updates
@@ -80,7 +87,19 @@ export async function bulkUpdateProducts(updates: BulkProductUpdate[]) {
   revalidatePath("/admin/inventory");
 }
 
+export async function setProductArchived(productId: string, archived: boolean) {
+  await requireAdmin();
+  await prisma.product.update({
+    where: { id: productId },
+    data: { archived },
+  });
+  revalidatePath("/admin/products");
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin");
+}
+
 export async function deleteProductAction(formData: FormData) {
+  await requireAdmin();
   const productId = formData.get("productId")?.toString();
   if (!productId) return;
 

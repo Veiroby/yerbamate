@@ -18,7 +18,7 @@ export async function GET(_req: NextRequest, { params }: RouteParams) {
     },
   });
 
-  if (!product) {
+  if (!product || product.archived) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

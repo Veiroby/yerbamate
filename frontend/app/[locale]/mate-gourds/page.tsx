@@ -44,7 +44,7 @@ export default async function MateGourdsPage({ params }: Props) {
     getCurrentUser(),
     getTranslations(locale),
     prisma.product.findMany({
-      where: { active: true, category: { slug: "mate-gourds" } },
+      where: { active: true, archived: false, category: { slug: "mate-gourds" } },
       orderBy: { createdAt: "desc" },
       include: {
         images: { orderBy: { position: "asc" }, take: 1 },

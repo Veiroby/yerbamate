@@ -33,9 +33,9 @@ export async function POST(request: Request) {
   }
   const product = await prisma.product.findUnique({
     where: { id: productId },
-    select: { id: true },
+    select: { id: true, active: true, archived: true },
   });
-  if (!product) {
+  if (!product || !product.active || product.archived) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }
   await prisma.wishlistItem.upsert({
