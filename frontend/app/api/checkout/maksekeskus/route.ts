@@ -349,5 +349,8 @@ export async function POST(request: Request) {
     data: { maksekeskusTransactionId: result.transaction.id },
   });
 
+  if (request.headers.get("accept")?.includes("application/json")) {
+    return NextResponse.json({ url: redirectUrl });
+  }
   return NextResponse.redirect(redirectUrl, { status: 303 });
 }

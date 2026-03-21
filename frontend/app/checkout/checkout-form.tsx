@@ -113,34 +113,28 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
         method: "POST",
         body: formData,
         credentials: "same-origin",
-        redirect: "manual",
+        headers: {
+          Accept: "application/json",
+        },
       });
 
-      if (res.status === 302 || res.status === 303 || res.status === 307 || res.status === 308) {
-        const loc = res.headers.get("Location");
-        if (loc) {
-          window.location.href = loc;
-          return;
-        }
-      }
+      const data = await res.json().catch(() => ({} as { url?: string; error?: string }));
 
-      if (res.ok) {
-        const data = await res.json().catch(() => null);
-        if (data?.error) {
-          setErrors((prev) => ({ ...prev, _submit: data.error }));
-        }
+      if (res.ok && typeof data.url === "string" && data.url.length > 0) {
+        window.location.href = data.url;
         return;
       }
 
-      const data = await res.json().catch(() => ({}));
+      if (typeof data.error === "string" && data.error.length > 0) {
+        setErrors((prev) => ({ ...prev, _submit: data.error }));
+        return;
+      }
+
       setErrors((prev) => ({
         ...prev,
-        _submit:
-          typeof data.error === "string"
-            ? data.error
-            : isLv
-              ? "Neizdevās apstrādāt pasūtījumu. Lūdzu, mēģiniet vēlreiz."
-              : "Could not process checkout. Please try again.",
+        _submit: isLv
+          ? "Neizdevās apstrādāt pasūtījumu. Lūdzu, mēģiniet vēlreiz."
+          : "Could not process checkout. Please try again.",
       }));
     } catch {
       setErrors((prev) => ({

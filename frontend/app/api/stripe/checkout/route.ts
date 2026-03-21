@@ -360,6 +360,12 @@ export async function POST(request: Request) {
     );
   }
 
+  // fetch() + redirect:manual cannot read Location for cross-origin Stripe URLs (opaque response).
+  // Clients that send Accept: application/json get the URL in the body and navigate in JS.
+  if (request.headers.get("accept")?.includes("application/json")) {
+    return NextResponse.json({ url: session.url });
+  }
+
   return NextResponse.redirect(session.url, {
     status: 303,
   });

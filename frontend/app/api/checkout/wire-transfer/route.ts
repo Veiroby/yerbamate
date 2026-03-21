@@ -335,5 +335,8 @@ export async function POST(request: Request) {
   await prisma.cart.delete({ where: { id: cart.id } });
 
   const redirectUrl = `${getSiteOrigin(request)}${pathPrefix}/checkout/wire-transfer-success?orderNumber=${encodeURIComponent(order.orderNumber)}`;
+  if (request.headers.get("accept")?.includes("application/json")) {
+    return NextResponse.json({ url: redirectUrl });
+  }
   return NextResponse.redirect(redirectUrl, { status: 303 });
 }
