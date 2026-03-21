@@ -354,6 +354,8 @@ export function ShippingMethodSelector({
       <h2 className="text-lg font-bold text-black">
         {locale === "lv" ? "Piegādes metode" : "Shipping method"}
       </h2>
+      {/* Single hidden field so fetch/FormData always sends the selected method (radios alone can omit name in edge cases). */}
+      <input type="hidden" name="shippingOptionId" value={selectedId ?? ""} />
       <div className="space-y-2">
         {methods.map((method) => (
           <label
@@ -367,7 +369,7 @@ export function ShippingMethodSelector({
             <span className="flex items-center gap-2">
               <input
                 type="radio"
-                name="shippingOptionId"
+                name="shippingMethodUi"
                 value={method.id}
                 checked={selectedId === method.id}
                 onChange={() => handleMethodChange(method.id)}

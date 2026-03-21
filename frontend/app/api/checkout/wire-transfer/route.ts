@@ -5,7 +5,7 @@ import { recordEvent } from "@/lib/analytics";
 import { calculateShippingForOrder } from "@/lib/shipping/service";
 import {
   DPD_PARCEL_MACHINE_METHOD_ID,
-  getDpdPickupPointById,
+  resolveDpdPickupPointById,
 } from "@/lib/shipping/dpd";
 import {
   LOCAL_PICKUP_LOCATION,
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
   const postalCode = formData.get("postalCode")?.toString();
   const country = (formData.get("country")?.toString() ?? "US").toUpperCase();
   const shippingOptionId =
-    formData.get("shippingOptionId")?.toString() ?? "standard-flat";
+    formData.get("shippingOptionId")?.toString().trim() || "standard-flat";
   const dpdPickupPointId = formData.get("dpdPickupPointId")?.toString();
   const dpdPickupPointName = formData.get("dpdPickupPointName")?.toString();
 
@@ -209,7 +209,7 @@ export async function POST(request: Request) {
   };
 
   if (isDpdParcelMachine && dpdPickupPointId) {
-    const point = getDpdPickupPointById(country, dpdPickupPointId);
+    const point = await resolveDpdPickupPointById(country, dpdPickupPointId);
     if (!point) {
       return NextResponse.json(
         { error: isLv ? "Nederīgs DPD piegādes punkts" : "Invalid DPD pickup point" },

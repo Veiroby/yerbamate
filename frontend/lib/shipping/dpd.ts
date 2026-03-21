@@ -548,6 +548,22 @@ export function getDpdPickupPointById(
   return points.find((p) => p.id === id) ?? null;
 }
 
+/**
+ * Resolve a parcel machine by ID using the same sources as GET /api/shipping/dpd/pickup-points
+ * (live DPD API first, then static fallback). Checkout must use this — static-only lookup fails
+ * when the UI shows API locker IDs that are not in the bundled list.
+ */
+export async function resolveDpdPickupPointById(
+  country: string,
+  id: string,
+): Promise<DpdPickupPoint | null> {
+  if (!id?.trim()) return null;
+  const fromApi = await fetchDpdPickupPointsFromApi(country);
+  const hit = fromApi.find((p) => p.id === id);
+  if (hit) return hit;
+  return getDpdPickupPointById(country, id);
+}
+
 /** Seller/sender details for DPD shipments */
 export const DPD_SENDER_DETAILS = {
   name: "SIA YerbaTea",
