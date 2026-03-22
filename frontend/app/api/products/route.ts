@@ -12,6 +12,14 @@ export async function GET(request: Request) {
   const minPrice = searchParams.get("minPrice");
   const maxPrice = searchParams.get("maxPrice");
   const sort = searchParams.get("sort");
+  const limitRaw = searchParams.get("limit");
+  let take: number | undefined;
+  if (limitRaw != null && limitRaw !== "") {
+    const n = parseInt(limitRaw, 10);
+    if (!Number.isNaN(n) && n > 0) {
+      take = Math.min(n, 50);
+    }
+  }
 
   const where: Prisma.ProductWhereInput = {
     active: true,
@@ -74,6 +82,7 @@ export async function GET(request: Request) {
   const products = await prisma.product.findMany({
     where,
     orderBy,
+    ...(take != null ? { take } : {}),
     include: {
       category: true,
       images: {

@@ -7,6 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/lib/cart-context";
 import { useTranslation } from "@/lib/translation-context";
 import type { Locale } from "@/lib/locale";
+import { MobileProductSearch } from "@/app/components/mobile-product-search";
 
 type SiteHeaderProps = {
   user: { isAdmin: boolean } | null;
@@ -250,6 +251,10 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
 
           </div>
         </nav>
+
+        <div className="border-t border-gray-100 bg-white px-4 pb-3 pt-2 lg:hidden">
+          <MobileProductSearch locale={locale} />
+        </div>
 
         <div
           id="mobile-nav"
