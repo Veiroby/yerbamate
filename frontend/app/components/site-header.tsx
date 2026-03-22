@@ -252,7 +252,7 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
           </div>
         </nav>
 
-        <div className="border-t border-gray-100 bg-white px-4 pb-3 pt-2 lg:hidden">
+        <div className="bg-white px-4 pb-3 pt-2 lg:hidden">
           <MobileProductSearch locale={locale} />
         </div>
 
