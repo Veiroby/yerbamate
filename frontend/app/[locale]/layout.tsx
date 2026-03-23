@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { getTranslations } from "@/lib/i18n";
 import { TranslationProvider } from "@/lib/translation-context";
+import { NewsletterPopup } from "@/app/components/newsletter-popup";
 import type { Locale } from "@/lib/i18n";
 
 type Props = {
@@ -18,6 +19,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   return (
     <TranslationProvider locale={locale} translations={translations}>
       {children}
+      <NewsletterPopup />
     </TranslationProvider>
   );
 }
