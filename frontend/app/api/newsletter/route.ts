@@ -41,6 +41,33 @@ async function createUniqueDiscountCode(): Promise<string> {
   throw new Error("Failed to generate unique discount code");
 }
 
+async function createUniqueDiscountCodeTx(tx: typeof prisma): Promise<string> {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const code = generateDiscountCode();
+    try {
+      await tx.discountCode.create({
+        data: {
+          code,
+          type: "PERCENTAGE",
+          value: 10,
+          maxUses: 1,
+          active: true,
+          expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        },
+      });
+      return code;
+    } catch (err: unknown) {
+      const isDuplicate =
+        err &&
+        typeof err === "object" &&
+        "code" in err &&
+        (err as { code?: string }).code === "P2002";
+      if (!isDuplicate) throw err;
+    }
+  }
+  throw new Error("Failed to generate unique discount code");
+}
+
 function sendWelcomeEmail(email: string, discountCode: string): Promise<{ ok: boolean; error?: string }> {
   const siteOrigin = process.env.NEXT_PUBLIC_APP_ORIGIN || "https://yerbatea.lv";
   const html = `
@@ -104,31 +131,42 @@ export async function POST(request: Request) {
     const existing = await prisma.newsletterSubscriber.findUnique({
       where: { email },
     });
-    if (existing) {
-      return NextResponse.json({
-        ok: true,
-        message: "You're already subscribed.",
-      });
-    }
 
     let discountCode: string | null = null;
 
-    try {
-      await prisma.newsletterSubscriber.create({
-        data: { email },
-      });
-
+    if (existing) {
+      // Already subscribed users may request a fresh code from popup/account flows.
       discountCode = await createUniqueDiscountCode();
+    } else {
+      try {
+        discountCode = await prisma.$transaction(async (tx) => {
+          await tx.newsletterSubscriber.create({
+            data: { email },
+          });
+          return createUniqueDiscountCodeTx(tx as typeof prisma);
+        });
+      } catch (dbErr: unknown) {
+        const isDuplicate =
+          dbErr &&
+          typeof dbErr === "object" &&
+          "code" in dbErr &&
+          (dbErr as { code?: string }).code === "P2002";
+        if (isDuplicate) {
+          // Race condition: subscriber was created in parallel; still issue a code.
+          discountCode = await createUniqueDiscountCode();
+        } else {
+          throw dbErr;
+        }
+      }
+    }
 
-      if (isEmailConfigured()) {
-        await sendWelcomeEmail(email, discountCode);
+    let emailSent = false;
+    if (discountCode && isEmailConfigured()) {
+      const emailResult = await sendWelcomeEmail(email, discountCode);
+      emailSent = emailResult.ok;
+      if (!emailResult.ok) {
+        console.error("[newsletter] welcome email failed:", emailResult.error);
       }
-    } catch (dbErr: unknown) {
-      const isDuplicate = dbErr && typeof dbErr === "object" && "code" in dbErr && (dbErr as { code?: string }).code === "P2002";
-      if (isDuplicate) {
-        return NextResponse.json({ ok: true, message: "You're already subscribed." });
-      }
-      throw dbErr;
     }
 
     try {
@@ -139,9 +177,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       ok: true,
-      message: "Thanks for subscribing!",
+      message: existing ? "You're already subscribed. New code generated." : "Thanks for subscribing!",
       discountCode,
       discountPercent: 10,
+      emailSent,
     });
   } catch (err) {
     console.error("[newsletter] subscribe failed", err);
