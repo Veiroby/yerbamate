@@ -53,12 +53,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title =
     locale === "lv"
-      ? "YerbaTea – Premium yerba mate un mate kalebasi"
+      ? "YerbaTea – Premium yerba mate un mate trauciņi"
       : "YerbaTea – Premium Yerba Mate & Mate Gourds";
 
   const description =
     locale === "lv"
-      ? "Premium yerba mate un mate kalebasi, piegādāti līdz jūsu durvīm."
+      ? "Premium yerba mate un mate trauciņi, piegādāti līdz jūsu durvīm."
       : "Premium yerba mate and mate gourds, delivered to your door.";
 
   const canonical = `${baseUrl}/${locale}`;
