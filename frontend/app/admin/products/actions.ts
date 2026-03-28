@@ -18,6 +18,8 @@ export type BulkProductUpdate = {
   categoryId?: string | null;
   barcode?: string | null;
   weight?: string | null;
+  /** Per unit, kg; used for EU postal quotes */
+  shippingWeightKg?: number | null;
   price?: number;
   active?: boolean;
 };
@@ -38,6 +40,7 @@ export async function bulkUpdateProducts(updates: BulkProductUpdate[]) {
       categoryId: u.categoryId ?? undefined,
       barcode: u.barcode ?? undefined,
       weight: u.weight ?? undefined,
+      shippingWeightKg: u.shippingWeightKg,
       price:
         typeof u.price === "number" && Number.isFinite(u.price) && u.price >= 0
           ? u.price
@@ -59,6 +62,10 @@ export async function bulkUpdateProducts(updates: BulkProductUpdate[]) {
     }
     if (u.weight !== undefined) {
       data.weight = u.weight || undefined;
+    }
+    if (u.shippingWeightKg !== undefined) {
+      data.shippingWeightKg =
+        u.shippingWeightKg === null ? null : u.shippingWeightKg;
     }
     if (u.price !== undefined) {
       data.price = u.price;

@@ -142,6 +142,8 @@ model Product {
   brand         String?
   origin        String?
   weight        String?
+  /// Shipping weight per unit (kg), used for EU postal quotes. Optional; falls back to parsing `weight` text.
+  shippingWeightKg Decimal? @db.Decimal(10, 3)
   /// "instock" = use quantity, show "In stock" or "Get in 5-7 days"; "warehouse" = show "Get in 5-7 days"
   stockLocation String?        @default("instock")
   active        Boolean        @default(true)
@@ -441,11 +443,13 @@ model ShippingMethod {
 
 /// Single-row settings: free shipping threshold and DPD parcel price per country.
 model ShippingSettings {
-  id                    String   @id @default("default")
-  freeShippingThreshold Decimal? @db.Decimal(10, 2)
-  freeShippingCurrency  String?  @default("EUR")
-  dpdPriceByCountry     Json?    // e.g. { "LV": 4.99, "EE": 5.99, "LT": 4.99 }
-  updatedAt             DateTime @updatedAt
+  id                       String   @id @default("default")
+  freeShippingThreshold    Decimal? @db.Decimal(10, 2)
+  freeShippingCurrency     String?  @default("EUR")
+  dpdPriceByCountry        Json?    // e.g. { "LV": 4.99, "EE": 5.99, "LT": 4.99 }
+  /// Optional override for EU registered parcel matrix { "DE": { "baseUnder1kg": 17.89, "additionalPerKg": 2.37 }, ... }
+  euRegisteredParcelRates  Json?
+  updatedAt                DateTime @updatedAt
 }
 
 model Session {

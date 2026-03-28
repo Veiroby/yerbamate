@@ -299,7 +299,7 @@ export function ShippingMethodSelector({
     return () => {
       cancelled = true;
     };
-  }, [country, subtotal, onMethodsLoaded, onShippingMethodChange]);
+  }, [country, subtotal, locale, onMethodsLoaded, onShippingMethodChange]);
 
   useEffect(() => {
     if (!isDpdSelected || !country) {

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { getAvailableShippingMethods } from "./service";
+import { LP_REGISTERED_PREFIX } from "./latvijas-pasts-eu-rates";
 
 vi.mock("@/lib/db", () => {
   return {
@@ -26,6 +27,18 @@ vi.mock("@/lib/db", () => {
           },
         ]),
       },
+      shippingSettings: {
+        findUnique: vi.fn().mockResolvedValue({
+          id: "default",
+          freeShippingThreshold: null,
+          freeShippingCurrency: "EUR",
+          dpdPriceByCountry: { LV: 4.99, EE: 5.99, LT: 4.99 },
+          euRegisteredParcelRates: null,
+        }),
+      },
+      cartItem: {
+        findMany: vi.fn().mockResolvedValue([]),
+      },
     },
   };
 });
@@ -45,14 +58,25 @@ describe("shipping service", () => {
     });
   });
 
-  it("falls back to default flat rate when no zone matches", async () => {
+  it("returns no methods for unsupported countries (e.g. GB)", async () => {
     const methods = await getAvailableShippingMethods(
       { country: "GB" },
       { id: "cart1" },
     );
 
-    expect(methods.length).toBeGreaterThanOrEqual(1);
-    expect(methods[0].amount).toBeGreaterThan(0);
+    expect(methods).toHaveLength(0);
+  });
+
+  it("adds Latvijas Pasts registered option for Germany with default 1 kg billing weight", async () => {
+    const methods = await getAvailableShippingMethods(
+      { country: "DE" },
+      { id: "cart1" },
+      null,
+      "en",
+    );
+
+    const lp = methods.find((m) => m.id === `${LP_REGISTERED_PREFIX}DE`);
+    expect(lp).toBeDefined();
+    expect(lp?.amount).toBe(17.89);
   });
 });
-

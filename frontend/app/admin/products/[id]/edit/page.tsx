@@ -136,12 +136,26 @@ async function updateProductDetailsAction(formData: FormData) {
   const descriptionEn = toOptionalString(formData.get("descriptionEn") ?? null);
   const descriptionLv = toOptionalString(formData.get("descriptionLv") ?? null);
   const weight = toOptionalString(formData.get("weight") ?? null);
+  const shippingWeightKgRaw = formData.get("shippingWeightKg")?.toString().trim() ?? "";
+  let shippingWeightKg: number | null = null;
+  if (shippingWeightKgRaw !== "") {
+    shippingWeightKg = Number.parseFloat(shippingWeightKgRaw);
+  }
   const barcode = toOptionalString(formData.get("barcode") ?? null);
 
   const priceRaw = formData.get("price")?.toString() ?? "";
   const price = Number.parseFloat(priceRaw);
   if (!Number.isFinite(price) || price < 0) {
     redirect(`/admin/products/${productId}/edit?error=invalid_price`);
+  }
+
+  if (
+    shippingWeightKgRaw !== "" &&
+    (shippingWeightKg === null ||
+      !Number.isFinite(shippingWeightKg) ||
+      shippingWeightKg < 0)
+  ) {
+    redirect(`/admin/products/${productId}/edit?error=invalid_shipping_weight`);
   }
 
   const stockLocationRaw = formData.get("stockLocation")?.toString();
@@ -165,6 +179,7 @@ async function updateProductDetailsAction(formData: FormData) {
       descriptionLv: descriptionLv ?? undefined,
       description: descriptionEn ?? undefined,
       weight: weight ?? undefined,
+      shippingWeightKg: shippingWeightKgRaw === "" ? null : shippingWeightKg,
       barcode: barcode ?? undefined,
       price,
       stockLocation,
@@ -242,8 +257,19 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
           Price must be a valid non-negative number.
         </p>
       )}
+      {errorParam === "invalid_shipping_weight" && (
+        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+          Shipping weight must be empty or a valid non-negative number (kg).
+        </p>
+      )}
       {errorParam &&
-        !["slug_taken", "slug_invalid", "name_required", "invalid_price"].includes(errorParam) && (
+        ![
+          "slug_taken",
+          "slug_invalid",
+          "name_required",
+          "invalid_price",
+          "invalid_shipping_weight",
+        ].includes(errorParam) && (
         <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
           Upload failed. Check file type (JPEG, PNG, WebP, GIF) and size (max 10MB). See terminal for details.
         </p>
@@ -347,6 +373,23 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
               defaultValue={product.weight ?? ""}
               className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
               placeholder="e.g. 500g"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-600">
+            Shipping weight (kg per unit)
+            <input
+              type="number"
+              name="shippingWeightKg"
+              step="0.001"
+              min={0}
+              defaultValue={
+                product.shippingWeightKg != null
+                  ? Number(product.shippingWeightKg).toString()
+                  : ""
+              }
+              className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+              placeholder="for EU postal quotes"
             />
           </label>
 

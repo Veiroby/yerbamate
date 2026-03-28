@@ -316,6 +316,8 @@ export default async function AdminProductsPage({
             currency: p.currency,
             price: Number(p.price),
             weight: p.weight ?? null,
+            shippingWeightKg:
+              p.shippingWeightKg != null ? Number(p.shippingWeightKg) : null,
             barcode: p.barcode ?? null,
             active: p.active,
             archived: p.archived,

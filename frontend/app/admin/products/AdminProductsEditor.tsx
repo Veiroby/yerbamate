@@ -22,6 +22,7 @@ type ProductRow = {
   currency: string;
   price: number;
   weight: string | null;
+  shippingWeightKg: number | null;
   barcode: string | null;
   active: boolean;
   archived: boolean;
@@ -254,6 +255,10 @@ export function AdminProductsEditor({
         {products.map((product) => {
           const d = dirty[product.id] ?? {};
           const displayWeight = d.weight ?? product.weight ?? "";
+          const displayShippingKg =
+            d.shippingWeightKg !== undefined
+              ? d.shippingWeightKg
+              : product.shippingWeightKg;
           const displayBarcode = d.barcode ?? product.barcode ?? "";
           const displayCategoryId = d.categoryId ?? product.categoryId ?? "";
           const displayLocation = (d.stockLocation ?? product.stockLocation ?? "instock") as
@@ -436,6 +441,33 @@ export function AdminProductsEditor({
                           setField(product.id, { weight: e.target.value || null })
                         }
                         placeholder="e.g. 500g"
+                        className="w-full rounded-lg border border-zinc-300 px-2 py-1 text-xs"
+                      />
+                    </div>
+
+                    <div className="rounded-xl bg-white px-3 py-2 shadow-sm ring-1 ring-zinc-100">
+                      <p className="mb-1 text-xs font-medium text-zinc-700">Ship weight (kg)</p>
+                      <input
+                        type="number"
+                        step="0.001"
+                        min={0}
+                        value={
+                          displayShippingKg != null && Number.isFinite(displayShippingKg)
+                            ? String(displayShippingKg)
+                            : ""
+                        }
+                        onChange={(e) => {
+                          const v = e.target.value.trim();
+                          if (!v) {
+                            setField(product.id, { shippingWeightKg: null });
+                            return;
+                          }
+                          const n = Number.parseFloat(v);
+                          setField(product.id, {
+                            shippingWeightKg: Number.isFinite(n) && n >= 0 ? n : null,
+                          });
+                        }}
+                        placeholder="per unit, EU postal"
                         className="w-full rounded-lg border border-zinc-300 px-2 py-1 text-xs"
                       />
                     </div>

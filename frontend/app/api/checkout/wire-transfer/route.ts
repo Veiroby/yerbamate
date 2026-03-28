@@ -128,9 +128,20 @@ export async function POST(request: Request) {
     { id: cart.id },
     shippingOptionId,
     preliminarySubtotal,
+    locale === "lv" || locale === "en" ? locale : undefined,
   );
 
   if (!shipping.option) {
+    if (shipping.invalidSelection) {
+      return NextResponse.json(
+        {
+          error: isLv
+            ? "Nederīga piegādes izvēle. Lūdzu, atsvaidziniet lapu un mēģiniet vēlreiz."
+            : "Invalid shipping selection. Please refresh the page and try again.",
+        },
+        { status: 400 },
+      );
+    }
     return NextResponse.json(
       {
         error: isLv ? "Diemžēl mēs nepiegādājam uz jūsu valsti." : "Unfortunately we don't ship to your country.",

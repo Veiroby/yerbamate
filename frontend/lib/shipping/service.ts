@@ -3,8 +3,15 @@ import {
   DPD_PARCEL_MACHINE_METHOD_ID,
   isDpdAvailableForCountry,
 } from "./dpd";
+import { getCartBillingWeightKg } from "./cart-weight";
 import { LOCAL_PICKUP_METHOD_ID } from "./local-pickup";
 import { getShippingSettings } from "./settings";
+import {
+  computeRegisteredParcelEur,
+  isEuLatvijasPastsPostalDestination,
+  LP_REGISTERED_PREFIX,
+  roundShippingEur,
+} from "./latvijas-pasts-eu-rates";
 
 type Destination = {
   country: string;
@@ -44,8 +51,6 @@ export async function getAvailableShippingMethods(
       return countries.includes(countryCode);
     }) ?? null;
 
-  // Rates are determined by country: zone methods for that country, or DPD for Baltics.
-  // If the country is in no zone and not DPD-eligible, we do not ship there.
   if (matchingZone) {
     const methods = await prisma.shippingMethod.findMany({
       where: {
@@ -78,7 +83,6 @@ export async function getAvailableShippingMethods(
     });
   }
 
-  // Free local pickup in Riga for Latvia orders.
   if (countryCode === "LV") {
     options.push({
       id: LOCAL_PICKUP_METHOD_ID,
@@ -91,35 +95,72 @@ export async function getAvailableShippingMethods(
     });
   }
 
-  // No fallback for unsupported countries: return empty so UI can show "we don't ship to your country"
+  if (isEuLatvijasPastsPostalDestination(countryCode)) {
+    const pair = settings.euRegisteredParcelRates[countryCode];
+    if (pair) {
+      const billingKg = await getCartBillingWeightKg(cart?.id);
+      const rawEur = computeRegisteredParcelEur(pair, billingKg);
+      const amount = roundShippingEur(rawEur);
+      options.push({
+        id: `${LP_REGISTERED_PREFIX}${countryCode}`,
+        name:
+          locale === "lv"
+            ? `Latvijas Pasts — reģistrēta paka (${countryCode})`
+            : `Latvijas Pasts — registered parcel (${countryCode})`,
+        amount: freeShippingApplies ? 0 : amount,
+        estimatedDays: 7,
+      });
+    }
+  }
+
   return options;
 }
+
+export type ShippingOrderCalculation = {
+  option: ShippingOption | null;
+  amount: number;
+  /** True when destination has no shipping methods at all. */
+  noMethods?: boolean;
+  /** True when client sent a shipping option id that is not valid for this destination/cart. */
+  invalidSelection?: boolean;
+};
 
 export async function calculateShippingForOrder(
   destination: Destination,
   cart: CartForShipping | null,
   selectedOptionId?: string | null,
   orderSubtotal?: number | null,
-) {
+  locale?: "lv" | "en",
+): Promise<ShippingOrderCalculation> {
   const options = await getAvailableShippingMethods(
     destination,
     cart,
     orderSubtotal,
+    locale,
   );
 
   if (options.length === 0) {
     return {
       option: null,
       amount: 0,
+      noMethods: true,
     };
   }
 
-  const chosen =
-    options.find((opt) => opt.id === selectedOptionId) ?? options[0];
+  if (selectedOptionId) {
+    const found = options.find((opt) => opt.id === selectedOptionId);
+    if (!found) {
+      return { option: null, amount: 0, invalidSelection: true };
+    }
+    return {
+      option: found,
+      amount: found.amount,
+    };
+  }
 
+  const chosen = options[0];
   return {
     option: chosen,
     amount: chosen.amount,
   };
 }
-

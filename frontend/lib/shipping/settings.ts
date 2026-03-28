@@ -1,4 +1,7 @@
+import { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/db";
+import type { EuRegisteredParcelRate } from "./latvijas-pasts-eu-rates";
+import { mergeEuRegisteredParcelRates } from "./latvijas-pasts-eu-rates";
 
 export type DpdPriceByCountry = Record<string, number>;
 
@@ -6,6 +9,10 @@ export type ShippingSettingsResult = {
   freeShippingThreshold: number | null;
   freeShippingCurrency: string;
   dpdPriceByCountry: DpdPriceByCountry;
+  /** Raw DB JSON; null means use built-in Latvijas Pasts defaults only. */
+  euRegisteredParcelRatesRaw: unknown | null;
+  /** Effective per-country registered parcel rates (defaults + validated merge). */
+  euRegisteredParcelRates: Record<string, EuRegisteredParcelRate>;
 };
 
 const DPD_DEFAULT_PRICE = 4.99;
@@ -29,13 +36,22 @@ export async function getShippingSettings(): Promise<ShippingSettingsResult> {
       }
     }
   }
-  return { freeShippingThreshold: threshold, freeShippingCurrency: currency, dpdPriceByCountry };
+  const euRaw = row?.euRegisteredParcelRates ?? null;
+  const euRegisteredParcelRates = mergeEuRegisteredParcelRates(euRaw);
+  return {
+    freeShippingThreshold: threshold,
+    freeShippingCurrency: currency,
+    dpdPriceByCountry,
+    euRegisteredParcelRatesRaw: euRaw,
+    euRegisteredParcelRates,
+  };
 }
 
 export async function saveShippingSettings(data: {
   freeShippingThreshold: number | null;
   freeShippingCurrency: string;
   dpdPriceByCountry: DpdPriceByCountry;
+  euRegisteredParcelRates: Record<string, EuRegisteredParcelRate> | null;
 }): Promise<void> {
   await prisma.shippingSettings.upsert({
     where: { id: "default" },
@@ -44,11 +60,19 @@ export async function saveShippingSettings(data: {
       freeShippingThreshold: data.freeShippingThreshold,
       freeShippingCurrency: data.freeShippingCurrency || "EUR",
       dpdPriceByCountry: data.dpdPriceByCountry as object,
+      euRegisteredParcelRates:
+        data.euRegisteredParcelRates != null
+          ? (data.euRegisteredParcelRates as Prisma.InputJsonValue)
+          : undefined,
     },
     update: {
       freeShippingThreshold: data.freeShippingThreshold,
       freeShippingCurrency: data.freeShippingCurrency || "EUR",
       dpdPriceByCountry: data.dpdPriceByCountry as object,
+      euRegisteredParcelRates:
+        data.euRegisteredParcelRates != null
+          ? (data.euRegisteredParcelRates as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
     },
   });
 }

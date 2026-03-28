@@ -54,6 +54,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
     cart,
     null,
     subtotal,
+    locale,
   );
 
   let discountAmount = 0;

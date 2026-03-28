@@ -6,8 +6,14 @@ import {
   saveShippingSettings,
 } from "@/lib/shipping/settings";
 import { DPD_BALTIC_COUNTRIES } from "@/lib/shipping/dpd";
+import { parseEuRegisteredParcelRatesJsonOrThrow } from "@/lib/shipping/latvijas-pasts-eu-rates";
 
-export default async function AdminShippingPage() {
+type AdminShippingPageProps = {
+  searchParams?: Promise<{ saved?: string; error?: string }>;
+};
+
+export default async function AdminShippingPage({ searchParams }: AdminShippingPageProps) {
+  const sp = searchParams ? await searchParams : {};
   const [zones, settings] = await Promise.all([
     prisma.shippingZone.findMany({
       include: {
@@ -23,8 +29,20 @@ export default async function AdminShippingPage() {
     LT: "Lithuania",
   };
 
+  const euRatesTextareaDefault = JSON.stringify(settings.euRegisteredParcelRates, null, 2);
+
   return (
     <div className="space-y-6">
+      {sp.saved === "1" && (
+        <p className="rounded-xl bg-emerald-50 px-4 py-2 text-sm text-emerald-800">
+          Shipping settings saved.
+        </p>
+      )}
+      {sp.error === "invalid_eu_json" && (
+        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+          EU postal rates JSON is invalid. Fix the syntax and try again.
+        </p>
+      )}
       <section className="rounded-2xl border bg-white p-5 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-zinc-900">
           Shipping settings
@@ -49,12 +67,26 @@ export default async function AdminShippingPage() {
               const num = val ? Number.parseFloat(val) : NaN;
               dpdPriceByCountry[code] = Number.isFinite(num) ? num : 4.99;
             }
+            const euJsonRaw = formData.get("euRegisteredParcelRates")?.toString() ?? "";
+            const euJsonTrimmed = euJsonRaw.trim();
+            let euRegisteredParcelRates: Record<
+              string,
+              { baseUnder1kg: number; additionalPerKg: number }
+            > | null = null;
+            if (euJsonTrimmed) {
+              try {
+                euRegisteredParcelRates = parseEuRegisteredParcelRatesJsonOrThrow(euJsonTrimmed);
+              } catch {
+                redirect("/admin/shipping?error=invalid_eu_json");
+              }
+            }
             await saveShippingSettings({
               freeShippingThreshold: Number.isFinite(freeShippingThreshold)
                 ? freeShippingThreshold
                 : null,
               freeShippingCurrency,
               dpdPriceByCountry,
+              euRegisteredParcelRates,
             });
             revalidatePath("/admin/shipping");
             redirect("/admin/shipping?saved=1");
@@ -111,6 +143,27 @@ export default async function AdminShippingPage() {
                 </label>
               ))}
             </div>
+          </div>
+          <div>
+            <p className="mb-1 text-xs font-medium text-zinc-700">
+              EU postal — registered parcel by weight (Latvijas Pasts tariff model)
+            </p>
+            <p className="mb-2 text-xs text-zinc-500">
+              JSON object per ISO country code:{" "}
+              <code className="rounded bg-zinc-100 px-1">
+                {"{ \"DE\": { \"baseUnder1kg\": 17.89, \"additionalPerKg\": 2.37 } }"}
+              </code>
+              . Price = base for the first kg, then + additionalPerKg for each extra kg. Clear the
+              field entirely and save to reset to built-in defaults (LV, EE, LT use DPD, not this
+              table).
+            </p>
+            <textarea
+              name="euRegisteredParcelRates"
+              rows={14}
+              defaultValue={euRatesTextareaDefault}
+              spellCheck={false}
+              className="w-full min-h-[200px] rounded-xl border border-zinc-300 px-3 py-2 font-mono text-xs text-zinc-800"
+            />
           </div>
           <button
             type="submit"
