@@ -149,13 +149,11 @@ export default async function AdminShippingPage({ searchParams }: AdminShippingP
               EU postal — registered parcel by weight (Latvijas Pasts tariff model)
             </p>
             <p className="mb-2 text-xs text-zinc-500">
-              JSON object per ISO country code:{" "}
-              <code className="rounded bg-zinc-100 px-1">
-                {"{ \"DE\": { \"baseUnder1kg\": 17.89, \"additionalPerKg\": 2.37 } }"}
-              </code>
-              . Price = base for the first kg, then + additionalPerKg for each extra kg. Clear the
-              field entirely and save to reset to built-in defaults (LV, EE, LT use DPD, not this
-              table).
+              JSON per ISO code. Use{" "}
+              <code className="rounded bg-zinc-100 px-1">baseUnder1kg</code> for 501 g–1000 g, optional{" "}
+              <code className="rounded bg-zinc-100 px-1">upTo500g</code> for līdz 500 g, and{" "}
+              <code className="rounded bg-zinc-100 px-1">additionalPerKg</code> for each kg above the
+              first. Clear the field and save to reset to built-in defaults (LV, EE, LT use DPD).
             </p>
             <textarea
               name="euRegisteredParcelRates"

@@ -1,6 +1,21 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { prisma } from "@/lib/db";
 import { getAvailableShippingMethods } from "./service";
 import { LP_REGISTERED_PREFIX } from "./latvijas-pasts-eu-rates";
+
+vi.mock("./settings", async () => {
+  const { mergeEuRegisteredParcelRates } = await import("./latvijas-pasts-eu-rates");
+  return {
+    getShippingSettings: vi.fn(async () => ({
+      freeShippingThreshold: null,
+      freeShippingCurrency: "EUR",
+      dpdPriceByCountry: { LV: 4.99, EE: 5.99, LT: 4.99 },
+      euRegisteredParcelRatesRaw: null,
+      euRegisteredParcelRates: mergeEuRegisteredParcelRates(null),
+    })),
+    saveShippingSettings: vi.fn(),
+  };
+});
 
 vi.mock("@/lib/db", () => {
   return {
@@ -27,15 +42,6 @@ vi.mock("@/lib/db", () => {
           },
         ]),
       },
-      shippingSettings: {
-        findUnique: vi.fn().mockResolvedValue({
-          id: "default",
-          freeShippingThreshold: null,
-          freeShippingCurrency: "EUR",
-          dpdPriceByCountry: { LV: 4.99, EE: 5.99, LT: 4.99 },
-          euRegisteredParcelRates: null,
-        }),
-      },
       cartItem: {
         findMany: vi.fn().mockResolvedValue([]),
       },
@@ -44,6 +50,10 @@ vi.mock("@/lib/db", () => {
 });
 
 describe("shipping service", () => {
+  beforeEach(() => {
+    vi.mocked(prisma.cartItem.findMany).mockResolvedValue([]);
+  });
+
   it("returns configured methods for matching zone", async () => {
     const methods = await getAvailableShippingMethods(
       { country: "US" },
@@ -78,5 +88,24 @@ describe("shipping service", () => {
     const lp = methods.find((m) => m.id === `${LP_REGISTERED_PREFIX}DE`);
     expect(lp).toBeDefined();
     expect(lp?.amount).toBe(17.89);
+  });
+
+  it("uses the up-to-500g band for Germany when cart total mass is 500 g", async () => {
+    vi.mocked(prisma.cartItem.findMany).mockResolvedValueOnce([
+      {
+        quantity: 1,
+        product: { shippingWeightKg: 0.5, weight: null },
+      },
+    ]);
+
+    const methods = await getAvailableShippingMethods(
+      { country: "DE" },
+      { id: "cart1" },
+      null,
+      "en",
+    );
+
+    const lp = methods.find((m) => m.id === `${LP_REGISTERED_PREFIX}DE`);
+    expect(lp?.amount).toBe(10.72);
   });
 });
