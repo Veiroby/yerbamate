@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { DPD_PARCEL_MACHINE_METHOD_ID } from "@/lib/shipping/dpd";
+import { useCart } from "@/lib/cart-context";
 
 type ShippingOption = {
   id: string;
@@ -245,6 +246,8 @@ type Props = {
   country: string;
   currency?: string;
   subtotal?: number;
+  /** Server-stable id:qty signature so quotes refresh when the cart changes. */
+  cartFingerprint?: string;
   onMethodsLoaded?: (methods: ShippingOption[]) => void;
   onShippingMethodChange?: (methodId: string) => void;
   locale?: "lv" | "en";
@@ -254,10 +257,12 @@ export function ShippingMethodSelector({
   country,
   currency = "EUR",
   subtotal,
+  cartFingerprint,
   onMethodsLoaded,
   onShippingMethodChange,
   locale,
 }: Props) {
+  const { itemCount } = useCart();
   const [methods, setMethods] = useState<ShippingOption[]>([]);
   const [unsupportedCountry, setUnsupportedCountry] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -281,6 +286,9 @@ export function ShippingMethodSelector({
     if (subtotal != null && Number.isFinite(subtotal)) {
       params.set("subtotal", String(subtotal));
     }
+    if (cartFingerprint) {
+      params.set("cartFp", cartFingerprint);
+    }
     fetch(`/api/shipping/methods?${params.toString()}`)
       .then((res) => res.json())
       .then((data) => {
@@ -299,7 +307,15 @@ export function ShippingMethodSelector({
     return () => {
       cancelled = true;
     };
-  }, [country, subtotal, locale, onMethodsLoaded, onShippingMethodChange]);
+  }, [
+    country,
+    subtotal,
+    locale,
+    cartFingerprint,
+    itemCount,
+    onMethodsLoaded,
+    onShippingMethodChange,
+  ]);
 
   useEffect(() => {
     if (!isDpdSelected || !country) {

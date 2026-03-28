@@ -8,13 +8,22 @@ import { LOCAL_PICKUP_METHOD_ID } from "@/lib/shipping/local-pickup";
 type Props = {
   currency: string;
   subtotal: number;
+  /** Changes when cart line ids/qty change so shipping quotes refetch (weight-based). */
+  cartFingerprint?: string;
   discountCode?: string | null;
   maksekeskusAvailable?: boolean;
   /** When set (e.g. "lv" | "en"), success/cancel redirects use /[locale]/checkout/... */
   locale?: string;
 };
 
-export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvailable, locale }: Props) {
+export function CheckoutForm({
+  currency,
+  subtotal,
+  cartFingerprint,
+  discountCode,
+  maksekeskusAvailable,
+  locale,
+}: Props) {
   const [customerType, setCustomerType] = useState<"INDIVIDUAL" | "BUSINESS">(
     "INDIVIDUAL",
   );
@@ -249,6 +258,7 @@ export function CheckoutForm({ currency, subtotal, discountCode, maksekeskusAvai
       <CheckoutShippingBlock
         currency={currency}
         subtotal={subtotal}
+        cartFingerprint={cartFingerprint}
         errors={errors}
         locale={locale === "lv" || locale === "en" ? locale : undefined}
         onShippingMethodChange={setShippingMethod}

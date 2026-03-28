@@ -48,6 +48,14 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
     return sum + price * item.quantity;
   }, 0);
 
+  const cartFingerprint =
+    items.length === 0
+      ? ""
+      : [...items]
+          .map((item) => `${item.id}:${item.quantity}`)
+          .sort()
+          .join("|");
+
   const destination = { country: "LV" };
   const shipping = await calculateShippingForOrder(
     destination,
@@ -144,6 +152,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
             <CheckoutForm
               currency={currency}
               subtotal={subtotal}
+              cartFingerprint={cartFingerprint}
               discountCode={appliedDiscountCode}
               maksekeskusAvailable={makseEnabled && isMaksekeskusConfigured()}
               locale={locale}

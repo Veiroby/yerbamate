@@ -8,6 +8,7 @@ import { EU_COUNTRIES } from "@/lib/locale-data";
 type Props = {
   currency?: string;
   subtotal?: number;
+  cartFingerprint?: string;
   errors?: Record<string, string>;
   onShippingMethodChange?: (methodId: string) => void;
   locale?: "lv" | "en";
@@ -16,6 +17,7 @@ type Props = {
 export function CheckoutShippingBlock({
   currency = "EUR",
   subtotal,
+  cartFingerprint,
   errors,
   onShippingMethodChange,
   locale,
@@ -126,6 +128,7 @@ export function CheckoutShippingBlock({
         country={country}
         currency={currency}
         subtotal={subtotal}
+        cartFingerprint={cartFingerprint}
         locale={locale}
         onShippingMethodChange={onShippingMethodChange}
       />

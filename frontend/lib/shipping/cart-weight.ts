@@ -1,15 +1,7 @@
 import { prisma } from "@/lib/db";
+import { parseLooseWeightKg } from "./parse-product-weight-kg";
 
-export function parseLooseWeightKg(raw: string | null | undefined): number | null {
-  if (!raw?.trim()) return null;
-  const s = raw.trim().toLowerCase();
-  const m = s.match(/([\d.,]+)/);
-  if (!m) return null;
-  const num = Number.parseFloat(m[1].replace(",", "."));
-  if (!Number.isFinite(num) || num <= 0) return null;
-  if (/\bg\b/.test(s) && !/\bkg\b/.test(s)) return num / 1000;
-  return num;
-}
+export { parseLooseWeightKg } from "./parse-product-weight-kg";
 
 export function productUnitWeightKg(product: {
   shippingWeightKg: unknown;
