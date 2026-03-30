@@ -7,6 +7,7 @@ import { Footer } from "@/app/components/landing/Footer";
 import { CartOrderSummary } from "@/app/cart/cart-order-summary";
 import { CartItem } from "@/app/cart/cart-item";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
+import { calculateBundleSavings, bestBundleForQty } from "@/lib/pricing/bundles";
 
 async function getCart() {
   const sessionId = (await cookies()).get("cart_session_id")?.value;
@@ -36,55 +37,8 @@ async function getGlobalBundleOffers() {
   return prisma.bundleOffer.findMany({
     where: { active: true, productId: null },
     orderBy: { discountPercent: "desc" },
+    select: { minQuantity: true, discountPercent: true },
   });
-}
-
-function calculateBundleSavings(
-  items: Array<{
-    quantity: number;
-    unitPrice: unknown;
-    product: {
-      id: string;
-      bundleOffers: Array<{ minQuantity: number; discountPercent: unknown }>;
-    } | null;
-  }>,
-  globalBundles: Array<{ minQuantity: number; discountPercent: unknown }>,
-): number {
-  let totalSavings = 0;
-
-  for (const item of items) {
-    if (!item.product) continue;
-
-    const price = Number(item.unitPrice);
-    const qty = item.quantity;
-    const lineTotal = price * qty;
-
-    const productBundles = item.product.bundleOffers || [];
-    const allBundles = [...productBundles, ...globalBundles];
-
-    const applicableBundles = allBundles
-      .filter((b) => qty >= b.minQuantity)
-      .sort((a, b) => Number(b.discountPercent) - Number(a.discountPercent));
-
-    if (applicableBundles.length > 0) {
-      const bestBundle = applicableBundles[0];
-      const discount = (lineTotal * Number(bestBundle.discountPercent)) / 100;
-      totalSavings += discount;
-    }
-  }
-
-  return Math.round(totalSavings * 100) / 100;
-}
-
-function bestBundleForQty(
-  qty: number,
-  bundles: Array<{ minQuantity: number; discountPercent: unknown }>,
-) {
-  if (!Array.isArray(bundles) || bundles.length === 0) return null;
-  const applicable = bundles
-    .filter((b) => qty >= b.minQuantity)
-    .sort((a, b) => Number(b.discountPercent) - Number(a.discountPercent));
-  return applicable[0] ?? null;
 }
 
 type Props = {

@@ -9,6 +9,7 @@ import { Footer } from "@/app/components/landing/Footer";
 import { CheckoutForm } from "@/app/checkout/checkout-form";
 import { isMaksekeskusConfigured } from "@/lib/maksekeskus";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
+import { calculateBundleSavings } from "@/lib/pricing/bundles";
 
 async function getCartWithItems() {
   const sessionId = (await cookies()).get("cart_session_id")?.value;
@@ -22,12 +23,21 @@ async function getCartWithItems() {
           product: {
             include: {
               images: { orderBy: { position: "asc" }, take: 1 },
+              bundleOffers: { where: { active: true } },
             },
           },
           variant: true,
         },
       },
     },
+  });
+}
+
+async function getGlobalBundleOffers() {
+  return prisma.bundleOffer.findMany({
+    where: { active: true, productId: null },
+    orderBy: { discountPercent: "desc" },
+    select: { minQuantity: true, discountPercent: true },
   });
 }
 
@@ -40,13 +50,33 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
   const { locale } = await params;
   if (!isValidLocale(locale)) return null;
   const { discountCode } = await searchParams;
-  const [cart, user] = await Promise.all([getCartWithItems(), getCurrentUser()]);
+  const [cart, user, globalBundles] = await Promise.all([
+    getCartWithItems(),
+    getCurrentUser(),
+    getGlobalBundleOffers(),
+  ]);
   const items = cart?.items ?? [];
 
   const subtotal = items.reduce((sum, item) => {
     const price = item.unitPrice as unknown as number;
     return sum + price * item.quantity;
   }, 0);
+
+  const bundleSavings = calculateBundleSavings(
+    items.map((item) => ({
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      product: item.product
+        ? {
+            bundleOffers: item.product.bundleOffers.map((b) => ({
+              minQuantity: b.minQuantity,
+              discountPercent: b.discountPercent,
+            })),
+          }
+        : null,
+    })),
+    globalBundles,
+  );
 
   const cartFingerprint =
     items.length === 0
@@ -57,11 +87,12 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
           .join("|");
 
   const destination = { country: "LV" };
+  const discountedSubtotalForShipping = Math.max(0, subtotal - bundleSavings);
   const shipping = await calculateShippingForOrder(
     destination,
     cart,
     null,
-    subtotal,
+    discountedSubtotalForShipping,
     locale,
   );
 
@@ -89,7 +120,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
     }
   }
 
-  const estimatedTotal = subtotal - discountAmount + shipping.amount;
+  const estimatedTotal = Math.max(0, subtotal - bundleSavings - discountAmount) + (shipping.amount ?? 0);
   const currency = items[0]?.product?.currency ?? "EUR";
   const prefix = `/${locale}`;
   const translations = await getTranslations(locale);
@@ -201,6 +232,12 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
                       {currency} {subtotal.toFixed(2)}
                     </dd>
                   </div>
+                  {bundleSavings > 0 && (
+                    <div className="flex justify-between text-red-600">
+                      <dt>Bundle savings</dt>
+                      <dd className="font-medium">-{currency} {bundleSavings.toFixed(2)}</dd>
+                    </div>
+                  )}
                   {appliedDiscountCode && discountAmount > 0 && (
                     <div className="flex justify-between text-red-600">
                       <dt>{t("cart.discountCode", { code: appliedDiscountCode })}</dt>

@@ -13,6 +13,7 @@ import {
 } from "@/lib/shipping/local-pickup";
 import { allocateNextInvoiceOrderNumber } from "@/lib/invoice-number";
 import { stripe } from "@/lib/stripe";
+import { calculateBundleSavings } from "@/lib/pricing/bundles";
 
 function getSiteOrigin(request: Request): string {
   const configured = process.env.NEXT_PUBLIC_APP_ORIGIN?.trim();
@@ -127,42 +128,12 @@ export async function POST(request: Request) {
 
   const destination = { country };
 
-  const preliminarySubtotal = cart.items.reduce((sum, item) => {
-    return sum + Number(item.unitPrice) * item.quantity;
-  }, 0);
-
-  const shipping = await calculateShippingForOrder(
-    destination,
-    { id: cart.id },
-    shippingOptionId,
-    preliminarySubtotal,
-    locale === "lv" || locale === "en" ? locale : undefined,
-  );
-
-  if (!shipping.option) {
-    if (shipping.invalidSelection) {
-      return NextResponse.json(
-        {
-          error: isLv
-            ? "Nederīga piegādes izvēle. Lūdzu, atsvaidziniet lapu un mēģiniet vēlreiz."
-            : "Invalid shipping selection. Please refresh the page and try again.",
-        },
-        { status: 400 },
-      );
-    }
-    return NextResponse.json(
-      {
-        error: isLv ? "Diemžēl mēs nepiegādājam uz jūsu valsti." : "Unfortunately we don't ship to your country.",
-      },
-      { status: 400 },
-    );
-  }
-
   const validatedItems = await Promise.all(
     cart.items.map(async (item) => {
       const product = item.productId
         ? await prisma.product.findUnique({
             where: { id: item.productId },
+            include: { bundleOffers: { where: { active: true } } },
           })
         : null;
 
@@ -177,6 +148,10 @@ export async function POST(request: Request) {
         currency: product.currency,
         unitPrice: product.price as unknown as number,
         quantity: item.quantity,
+        bundleOffers: product.bundleOffers.map((b) => ({
+          minQuantity: b.minQuantity,
+          discountPercent: b.discountPercent,
+        })),
       };
     }),
   );
@@ -184,9 +159,6 @@ export async function POST(request: Request) {
   const subtotal = validatedItems.reduce((sum, item) => {
     return sum + item.unitPrice * item.quantity;
   }, 0);
-
-  const shippingAmount = shipping.amount ?? 0;
-  const tax = 0;
 
   let discountCode: string | null = null;
   let discountAmount: number | null = null;
@@ -212,7 +184,59 @@ export async function POST(request: Request) {
     }
   }
 
-  const total = subtotal - (discountAmount ?? 0) + shippingAmount + tax;
+  const globalBundles = await prisma.bundleOffer.findMany({
+    where: { active: true, productId: null },
+    orderBy: { discountPercent: "desc" },
+    select: { minQuantity: true, discountPercent: true },
+  });
+
+  const bundleSavings = calculateBundleSavings(
+    validatedItems.map((item) => ({
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+      product: { bundleOffers: item.bundleOffers },
+    })),
+    globalBundles,
+  );
+
+  const discountedSubtotalForShipping = Math.max(
+    0,
+    subtotal - bundleSavings - (discountAmount ?? 0),
+  );
+
+  const shipping = await calculateShippingForOrder(
+    destination,
+    { id: cart.id },
+    shippingOptionId,
+    discountedSubtotalForShipping,
+    locale === "lv" || locale === "en" ? locale : undefined,
+  );
+
+  if (!shipping.option) {
+    if (shipping.invalidSelection) {
+      return NextResponse.json(
+        {
+          error: isLv
+            ? "Nederīga piegādes izvēle. Lūdzu, atsvaidziniet lapu un mēģiniet vēlreiz."
+            : "Invalid shipping selection. Please refresh the page and try again.",
+        },
+        { status: 400 },
+      );
+    }
+    return NextResponse.json(
+      {
+        error: isLv
+          ? "Diemžēl mēs nepiegādājam uz jūsu valsti."
+          : "Unfortunately we don't ship to your country.",
+      },
+      { status: 400 },
+    );
+  }
+
+  const shippingAmount = shipping.amount ?? 0;
+  const tax = 0;
+
+  const total = Math.max(0, subtotal - bundleSavings - (discountAmount ?? 0)) + shippingAmount + tax;
 
   const currency = validatedItems[0]?.currency ?? "USD";
 
@@ -283,7 +307,8 @@ export async function POST(request: Request) {
       phone,
       subtotal,
       discountCode,
-      discountAmount,
+      discountAmount:
+        (discountAmount ?? 0) + (bundleSavings > 0 ? bundleSavings : 0) || null,
       shippingCost: shippingAmount,
       tax,
       total,
@@ -341,12 +366,17 @@ export async function POST(request: Request) {
     });
   }
 
+  const combinedDiscount = Math.min(
+    subtotal,
+    (discountAmount ?? 0) + (bundleSavings > 0 ? bundleSavings : 0),
+  );
+
   let stripeCouponId: string | undefined;
-  if (discountAmount && discountAmount > 0) {
+  if (combinedDiscount > 0) {
     const coupon = await stripe.coupons.create({
-      amount_off: Math.round(discountAmount * 100),
+      amount_off: Math.round(combinedDiscount * 100),
       currency,
-      name: `Discount ${discountCode}`,
+      name: discountCode ? `Discount ${discountCode}` : "Bundle discount",
       duration: "once",
     });
     stripeCouponId = coupon.id;

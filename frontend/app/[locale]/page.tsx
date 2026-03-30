@@ -18,6 +18,15 @@ import { getTranslations, createT, isValidLocale } from "@/lib/i18n";
 
 export const dynamic = "force-dynamic";
 
+function productQuantityLeft(p: {
+  variants: { inventoryItems: { quantity: number }[] }[];
+}): number {
+  return p.variants.reduce(
+    (sum, v) => sum + v.inventoryItems.reduce((s, i) => s + i.quantity, 0),
+    0,
+  );
+}
+
 function toCarouselProduct(
   p: {
     id: string;
@@ -27,6 +36,7 @@ function toCarouselProduct(
     images: { url: string; altText: string | null }[];
     weight: string | null;
     stockLocation: string | null;
+    variants: { inventoryItems: { quantity: number }[] }[];
   },
   locale: Locale
 ): CarouselProduct {
@@ -39,6 +49,7 @@ function toCarouselProduct(
     weight: p.weight ?? null,
     productId: p.id,
     stockLocation: p.stockLocation ?? null,
+    quantityLeft: productQuantityLeft(p),
   };
 }
 
@@ -102,6 +113,7 @@ export default async function HomePage({ params }: Props) {
       take: 12,
       include: {
         images: { orderBy: { position: "asc" }, take: 1 },
+        variants: { include: { inventoryItems: true } },
       },
     }),
     (async () => {
@@ -155,7 +167,10 @@ export default async function HomePage({ params }: Props) {
             take: 8,
             include: {
               product: {
-                include: { images: { orderBy: { position: "asc" }, take: 1 } },
+                include: {
+                  images: { orderBy: { position: "asc" }, take: 1 },
+                  variants: { include: { inventoryItems: true } },
+                },
               },
             },
           })
@@ -169,7 +184,10 @@ export default async function HomePage({ params }: Props) {
             take: 8,
             include: {
               product: {
-                include: { images: { orderBy: { position: "asc" }, take: 1 } },
+                include: {
+                  images: { orderBy: { position: "asc" }, take: 1 },
+                  variants: { include: { inventoryItems: true } },
+                },
               },
             },
           })
