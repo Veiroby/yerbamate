@@ -133,6 +133,7 @@
   "cart.total": "Kopā",
   "cart.adding": "Pievieno…",
   "cart.bundleSavingsMessage": "Ietaupāt {currency} {amount} ar komplekta atlaidēm!",
+  "cart.bundleDealLine": "Komplekta atlaide: pērc {min}+ — ietaupi {currency} {amount} 🔥",
   "cart.each": "gab.",
   "cart.decreaseQty": "Samazināt daudzumu",
   "cart.increaseQty": "Palielināt daudzumu",

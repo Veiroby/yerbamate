@@ -133,6 +133,7 @@
   "cart.total": "Total",
   "cart.adding": "Adding...",
   "cart.bundleSavingsMessage": "You're saving {currency} {amount} with bundle discounts!",
+  "cart.bundleDealLine": "Bundle deal: get {min}+ — you save {currency} {amount} 🔥",
   "cart.each": "each",
   "cart.decreaseQty": "Decrease quantity",
   "cart.increaseQty": "Increase quantity",

@@ -10,13 +10,14 @@ type Props = {
   quantity: number;
   unitPrice: number;
   currency: string;
+  bundleLine?: string | null;
   product: {
     name: string;
     image?: { url: string; altText?: string | null } | null;
   } | null;
 };
 
-export function CartItem({ id, quantity: initialQuantity, unitPrice, currency, product }: Props) {
+export function CartItem({ id, quantity: initialQuantity, unitPrice, currency, bundleLine, product }: Props) {
   const router = useRouter();
   const { t } = useTranslation();
   const [quantity, setQuantity] = useState(initialQuantity);
@@ -99,6 +100,11 @@ export function CartItem({ id, quantity: initialQuantity, unitPrice, currency, p
           <p className="mt-2 text-base font-bold text-black sm:mt-3">
             {currency} {lineTotal.toFixed(2)}
           </p>
+          {bundleLine ? (
+            <p className="mt-1 text-xs font-semibold text-black">
+              {bundleLine}
+            </p>
+          ) : null}
           <div className="mt-3 flex items-center gap-3">
             <div className="inline-flex items-center rounded-full border border-gray-200 bg-white">
               <button

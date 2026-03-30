@@ -76,6 +76,17 @@ function calculateBundleSavings(
   return Math.round(totalSavings * 100) / 100;
 }
 
+function bestBundleForQty(
+  qty: number,
+  bundles: Array<{ minQuantity: number; discountPercent: unknown }>,
+) {
+  if (!Array.isArray(bundles) || bundles.length === 0) return null;
+  const applicable = bundles
+    .filter((b) => qty >= b.minQuantity)
+    .sort((a, b) => Number(b.discountPercent) - Number(a.discountPercent));
+  return applicable[0] ?? null;
+}
+
 type Props = {
   params: Promise<{ locale: string }>;
 };
@@ -94,6 +105,8 @@ export default async function CartPage({ params }: Props) {
 
   const items = cart?.items ?? [];
   const currency = items[0]?.product?.currency ?? "EUR";
+  const currencySymbol = currency === "EUR" ? "€" : currency;
+  const formatMoney = (amount: number) => (Math.round(amount * 100) / 100).toFixed(2);
 
   const subtotal = items.reduce((sum, item) => {
     const price = item.unitPrice as unknown as number;
@@ -180,6 +193,22 @@ export default async function CartPage({ params }: Props) {
                   quantity={item.quantity}
                   unitPrice={Number(item.unitPrice)}
                   currency={currency}
+                  bundleLine={(() => {
+                    const qty = item.quantity;
+                    const unitPrice = Number(item.unitPrice);
+                    const lineTotal = unitPrice * qty;
+                    const productBundles = item.product?.bundleOffers ?? [];
+                    const allBundles = [...productBundles, ...globalBundles];
+                    const best = bestBundleForQty(qty, allBundles);
+                    if (!best) return null;
+                    const saved = (lineTotal * Number(best.discountPercent)) / 100;
+                    if (!(saved > 0)) return null;
+                    return t("cart.bundleDealLine", {
+                      min: best.minQuantity,
+                      currency: currencySymbol,
+                      amount: formatMoney(saved),
+                    });
+                  })()}
                   product={
                     item.product
                       ? {
