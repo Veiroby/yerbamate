@@ -39,15 +39,19 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
   const [addingToCart, setAddingToCart] = useState(false);
   const locale: Locale = p.href.startsWith("/en") ? "en" : "lv";
   const qty = p.quantityLeft ?? 0;
-  /** Match PDP: only literal warehouse bypasses on-hand qty for sellability */
-  const isWarehouse =
-    (p.stockLocation ?? "instock").toLowerCase() === "warehouse";
-  const soldOut = !isWarehouse && qty <= 0;
+  const location = (p.stockLocation ?? "instock").toLowerCase();
+  const isWarehouse = location === "warehouse";
+  /**
+   * Only "instock" should depend on on-hand quantity.
+   * Anything else (e.g. preorder/backorder/unknown) must remain orderable.
+   */
+  const usesOnHandQty = location === "instock";
+  const soldOut = usesOnHandQty && qty <= 0;
   const canAddToCart = Boolean(p.productId) && !soldOut;
   /** Same rules as product page stock chip (in stock vs preorder); sold out → muted label */
   const stockBadge: "sold_out" | "in_stock" | "preorder" = soldOut
     ? "sold_out"
-    : isWarehouse
+    : isWarehouse || !usesOnHandQty
       ? "preorder"
       : "in_stock";
 
