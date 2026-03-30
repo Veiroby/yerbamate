@@ -221,6 +221,7 @@
   "product.origin": "Origin",
   "product.offers": "Offers",
   "product.buySave": "Buy {min}+ — save {percent}%",
+  "product.buySaveExact": "Get {min} — save {currency} {amount} 🔥",
   "product.shipsIn12Days": "Ships in 1–2 business days. Secure checkout with Stripe. Guest checkout supported.",
   "product.productDetails": "Product details",
   "product.noDescription": "No description available.",

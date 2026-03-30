@@ -166,6 +166,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const productBundles = bundleOffers.filter(
     (b) => b.productId === product.id || b.productId === null,
   );
+  const currencySymbol = product.currency === "EUR" ? "€" : product.currency;
+  const formatMoney = (amount: number) => (Math.round(amount * 100) / 100).toFixed(2);
 
   const reviewList = reviews.map((r) => ({
     id: r.id,
@@ -269,17 +271,28 @@ export default async function ProductPage({ params }: ProductPageProps) {
               <div className="mt-6 space-y-3">
                 <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">{t("product.offers")}</p>
                 {productBundles.map((bundle) => (
+                  (() => {
+                    const percent = Number(bundle.discountPercent);
+                    const qty = bundle.minQuantity;
+                    const savings = (price * qty * percent) / 100;
+                    return (
                   <div
                     key={bundle.id}
                     className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3"
                   >
-                    <span className="text-sm font-medium text-gray-900">
-                      {t("product.buySave", { min: bundle.minQuantity, percent: Number(bundle.discountPercent) })}
+                    <span className="text-sm font-bold text-orange-600">
+                      {t("product.buySaveExact", {
+                        min: qty,
+                        currency: currencySymbol,
+                        amount: formatMoney(savings),
+                      })}
                     </span>
                     {bundle.description && (
                       <span className="text-xs text-gray-500">{bundle.description}</span>
                     )}
                   </div>
+                    );
+                  })()
                 ))}
               </div>
             )}

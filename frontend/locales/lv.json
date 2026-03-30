@@ -221,6 +221,7 @@
   "product.origin": "Izcelsme",
   "product.offers": "Piedāvājumi",
   "product.buySave": "Pērc {min}+ — ietaupi {percent}%",
+  "product.buySaveExact": "Pērc {min} — ietaupi {currency} {amount} 🔥",
   "product.shipsIn12Days": "Nosūtīšana 1–2 darba dienās. Droša norēķinu apstrāde ar Stripe. Atbalstīts viesu norēķins.",
   "product.productDetails": "Produkta detaļas",
   "product.noDescription": "Apraksts nav pieejams.",
