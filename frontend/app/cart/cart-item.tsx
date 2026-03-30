@@ -73,22 +73,29 @@ export function CartItem({ id, quantity: initialQuantity, unitPrice, currency, b
       </button>
 
       <div className="flex flex-1 items-start gap-4 sm:items-center min-w-0">
-        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-gray-100 sm:h-28 sm:w-28">
-          {product?.image ? (
-            <Image
-              src={product.image.url}
-              alt={product.image.altText ?? product.name}
-              fill
-              className="object-cover"
-              sizes="(max-width: 640px) 96px, 112px"
-            />
-          ) : (
-            <div className="flex h-full items-center justify-center text-gray-400">
-              <svg className="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
-              </svg>
-            </div>
-          )}
+        <div className="flex w-24 shrink-0 flex-col gap-2 sm:w-28">
+          <div className="relative h-24 w-full overflow-hidden rounded-xl bg-gray-100 sm:h-28">
+            {product?.image ? (
+              <Image
+                src={product.image.url}
+                alt={product.image.altText ?? product.name}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 96px, 112px"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center text-gray-400">
+                <svg className="h-10 w-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14" />
+                </svg>
+              </div>
+            )}
+          </div>
+          {bundleLine ? (
+            <p className="text-[11px] font-semibold leading-snug text-black sm:text-xs">
+              {bundleLine}
+            </p>
+          ) : null}
         </div>
         <div className="flex-1 min-w-0 pt-1 sm:pt-0">
           <p className="font-semibold text-black truncate">
@@ -100,11 +107,6 @@ export function CartItem({ id, quantity: initialQuantity, unitPrice, currency, b
           <p className="mt-2 text-base font-bold text-black sm:mt-3">
             {currency} {lineTotal.toFixed(2)}
           </p>
-          {bundleLine ? (
-            <p className="mt-1 text-xs font-semibold text-black">
-              {bundleLine}
-            </p>
-          ) : null}
           <div className="mt-3 flex items-center gap-3">
             <div className="inline-flex items-center rounded-full border border-gray-200 bg-white">
               <button

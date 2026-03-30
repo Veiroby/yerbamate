@@ -178,14 +178,6 @@ export default async function CartPage({ params }: Props) {
         ) : (
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
             <div className="space-y-4">
-              {bundleSavings > 0 && (
-                <div className="flex items-center gap-2 rounded-xl bg-[#606C38]/10 px-4 py-3 text-sm text-[#283618]">
-                  <span className="text-[#BC6C25]">🎉</span>
-                  <span className="font-medium">
-                    {t("cart.bundleSavingsMessage", { currency, amount: bundleSavings.toFixed(2) })}
-                  </span>
-                </div>
-              )}
               {items.map((item) => (
                 <CartItem
                   key={item.id}
@@ -195,6 +187,7 @@ export default async function CartPage({ params }: Props) {
                   currency={currency}
                   bundleLine={(() => {
                     const qty = item.quantity;
+                    if (qty <= 1) return null;
                     const unitPrice = Number(item.unitPrice);
                     const lineTotal = unitPrice * qty;
                     const productBundles = item.product?.bundleOffers ?? [];
