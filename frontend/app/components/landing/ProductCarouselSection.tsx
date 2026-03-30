@@ -38,13 +38,18 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
   const { addToCart, isLoading: cartLoading } = useCart();
   const [addingToCart, setAddingToCart] = useState(false);
   const locale: Locale = p.href.startsWith("/en") ? "en" : "lv";
-  const stockStatus =
-    p.stockLocation === "warehouse"
-      ? "get_in_5_7_days"
-      : "in_stock";
   const qty = p.quantityLeft ?? 0;
-  const soldOut = p.stockLocation !== "warehouse" && qty <= 0;
+  /** Match PDP: only literal warehouse bypasses on-hand qty for sellability */
+  const isWarehouse =
+    (p.stockLocation ?? "instock").toLowerCase() === "warehouse";
+  const soldOut = !isWarehouse && qty <= 0;
   const canAddToCart = Boolean(p.productId) && !soldOut;
+  /** Same rules as product page stock chip (in stock vs preorder); sold out → muted label */
+  const stockBadge: "sold_out" | "in_stock" | "preorder" = soldOut
+    ? "sold_out"
+    : isWarehouse
+      ? "preorder"
+      : "in_stock";
 
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -109,10 +114,12 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
           <div className="mt-auto flex items-end justify-between pt-2">
             <p className="text-base font-semibold text-black sm:text-lg">{p.price}</p>
             <div className="flex items-center gap-1 text-xs font-semibold">
-              {stockStatus === "in_stock" ? (
+              {stockBadge === "in_stock" ? (
                 <span className="text-emerald-600">
                   {t("product.inStock")}
                 </span>
+              ) : stockBadge === "sold_out" ? (
+                <span className="text-gray-500">{t("product.soldOut")}</span>
               ) : (
                 <span className="flex items-center gap-1 text-black">
                   <svg
