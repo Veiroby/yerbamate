@@ -17,6 +17,7 @@ async function getCart() {
     where: { sessionId },
     include: {
       items: {
+        orderBy: { id: "asc" },
         include: {
           product: {
             include: {
