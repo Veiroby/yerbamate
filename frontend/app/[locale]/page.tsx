@@ -221,19 +221,12 @@ export default async function HomePage({ params }: Props) {
 
         <TrendingSection />
 
-        <section aria-label={t("home.topSelling")}>
-          <div className="bg-white px-4 pt-12 sm:pt-16">
-            <div className="mx-auto max-w-6xl text-center">
-              <h2 className="mb-2 text-3xl font-bold uppercase tracking-wide text-black sm:text-4xl">
-                {t("home.topSelling")}
-              </h2>
-              <p className="text-sm text-gray-600 sm:text-base">
-                {t("home.topSellingDescription")}
-              </p>
-            </div>
-          </div>
-          <ProductCarouselSection products={topSellingCarousel} />
-        </section>
+        <ProductCarouselSection
+          titleKey="home.topSelling"
+          descriptionKey="home.topSellingDescription"
+          tone="dark"
+          products={topSellingCarousel}
+        />
 
         <MateGuideSection locale={locale} />
 

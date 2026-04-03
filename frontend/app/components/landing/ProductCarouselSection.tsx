@@ -27,9 +27,13 @@ export type CarouselProduct = {
 type Props = {
   title?: string;
   titleKey?: string;
+  descriptionKey?: string;
+  /** Dark strip (e.g. top sellers) — white cards on dark background */
+  tone?: "light" | "dark";
   products: CarouselProduct[];
   /** No top padding/margin — e.g. first carousel directly under hero */
   compactTop?: boolean;
+  "aria-label"?: string;
 };
 
 function CarouselSectionCard({ p }: { p: CarouselProduct }) {
@@ -66,7 +70,7 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
 
   return (
     <div
-      className={`group flex w-[220px] shrink-0 flex-col overflow-hidden rounded-2xl bg-white shadow-sm transition hover:shadow-md sm:w-[260px] md:w-[300px] ${
+      className={`group flex w-[220px] shrink-0 flex-col overflow-hidden rounded-3xl border border-black/5 bg-white shadow-sm transition hover:shadow-md sm:w-[260px] md:w-[300px] max-lg:shadow-md ${
         soldOut ? "opacity-70" : ""
       }`}
     >
@@ -75,7 +79,7 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
         className={`flex min-h-0 flex-1 flex-col ${soldOut ? "pointer-events-none" : ""}`}
         aria-label={soldOut ? undefined : `${t("product.viewProduct")}: ${p.title}`}
       >
-        <div className="relative aspect-square w-full overflow-hidden rounded-t-2xl bg-gray-50">
+        <div className="relative aspect-square w-full overflow-hidden rounded-t-3xl bg-gray-50">
           {p.imageUrl ? (
             <Image
               src={p.imageUrl}
@@ -151,12 +155,12 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
           </div>
         </div>
       </Link>
-      <div className="px-2 pb-2">
+      <div className="px-2 pb-2 pt-0.5">
         <button
           type="button"
           onClick={canAddToCart ? handleAddToCart : undefined}
           disabled={!canAddToCart || addingToCart || cartLoading}
-          className="w-full rounded-xl bg-black py-2.5 text-sm font-bold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-50"
+          className="w-full rounded-full bg-[var(--mobile-cta)] py-2.5 text-sm font-bold text-white transition hover:bg-[var(--mobile-cta-hover)] disabled:cursor-not-allowed disabled:opacity-50 lg:bg-black lg:hover:bg-gray-800"
         >
           {soldOut
             ? t("product.soldOut")
@@ -177,37 +181,69 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
   );
 }
 
-export function ProductCarouselSection({ title, titleKey, products, compactTop }: Props) {
+export function ProductCarouselSection({
+  title,
+  titleKey,
+  descriptionKey,
+  tone = "light",
+  products,
+  compactTop,
+  "aria-label": ariaLabel,
+}: Props) {
   const { t } = useTranslation();
   const pathname = usePathname();
   const displayTitle = titleKey ? t(titleKey) : (title ?? "");
+  const description = descriptionKey ? t(descriptionKey) : null;
   const locale: Locale = pathname?.startsWith("/en") ? "en" : "lv";
 
   if (products.length === 0) return null;
 
-  const sectionId = displayTitle.replace(/\s/g, "-").toLowerCase();
+  const sectionId =
+    displayTitle.length > 0 ? displayTitle.replace(/\s/g, "-").toLowerCase() : "carousel";
+
+  const isDark = tone === "dark";
+  const sectionSurface = isDark
+    ? "bg-zinc-950 text-white"
+    : "bg-white text-gray-900";
+  const headingClass = isDark
+    ? "text-white"
+    : "text-black";
+  const descClass = isDark ? "text-gray-300" : "text-gray-600";
+  const viewAllClass = isDark
+    ? "border-2 border-white/80 text-white hover:bg-white hover:text-zinc-950"
+    : "border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white";
 
   return (
     <section
-      className={`bg-white px-4 ${compactTop ? "pt-0 mt-0 pb-12 sm:pb-16" : "py-12 sm:py-16"}`}
-      aria-labelledby={`carousel-${sectionId}`}
+      className={`${sectionSurface} px-4 ${compactTop ? "pt-0 mt-0 pb-14 sm:pb-16" : "py-14 sm:py-16"}`}
+      aria-label={ariaLabel}
+      aria-labelledby={displayTitle ? `carousel-${sectionId}` : undefined}
     >
       <div className="mx-auto max-w-6xl">
-        <h2
-          id={`carousel-${sectionId}`}
-          className="mb-8 text-center text-3xl font-bold uppercase tracking-wide text-black sm:text-4xl"
-        >
-          {displayTitle}
-        </h2>
-        <div className="flex gap-6 overflow-x-auto pb-4 scroll-smooth scrollbar-thin sm:gap-8">
+        {displayTitle ? (
+          <header className="mb-8 max-lg:mb-9 text-center sm:mb-10">
+            <h2
+              id={`carousel-${sectionId}`}
+              className={`text-2xl font-bold uppercase tracking-wide sm:text-3xl md:text-4xl ${headingClass}`}
+            >
+              {displayTitle}
+            </h2>
+            {description ? (
+              <p className={`mt-2 max-w-2xl mx-auto text-sm sm:text-base ${descClass}`}>
+                {description}
+              </p>
+            ) : null}
+          </header>
+        ) : null}
+        <div className="flex gap-4 overflow-x-auto pb-4 scroll-smooth scrollbar-thin sm:gap-8 max-lg:-mx-1 max-lg:px-1">
           {products.map((p) => (
             <CarouselSectionCard key={p.href} p={p} />
           ))}
         </div>
-        <div className="mt-10 flex justify-center">
+        <div className="mt-10 max-lg:mt-12 flex justify-center">
           <Link
             href={`/${locale}/products`}
-            className="rounded-full border-2 border-gray-900 px-8 py-3 text-sm font-semibold text-gray-900 transition hover:bg-gray-900 hover:text-white"
+            className={`rounded-full px-8 py-3 text-sm font-semibold transition ${viewAllClass}`}
           >
             {t("home.viewAll")}
           </Link>

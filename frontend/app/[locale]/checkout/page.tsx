@@ -87,16 +87,6 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
           .sort()
           .join("|");
 
-  const destination = { country: "LV" };
-  const discountedSubtotalForShipping = Math.max(0, subtotal - bundleSavings);
-  const shipping = await calculateShippingForOrder(
-    destination,
-    cart,
-    null,
-    discountedSubtotalForShipping,
-    locale,
-  );
-
   let discountAmount = 0;
   let appliedDiscountCode: string | null = null;
 
@@ -121,6 +111,19 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
     }
   }
 
+  const destination = { country: "LV" };
+  const discountedSubtotalForShipping = Math.max(
+    0,
+    subtotal - bundleSavings - discountAmount,
+  );
+  const shipping = await calculateShippingForOrder(
+    destination,
+    cart,
+    null,
+    discountedSubtotalForShipping,
+    locale,
+  );
+
   const estimatedTotal = Math.max(0, subtotal - bundleSavings - discountAmount) + (shipping.amount ?? 0);
   const currency = items[0]?.product?.currency ?? "EUR";
   const prefix = `/${locale}`;
@@ -129,9 +132,9 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
   const makseEnabled = process.env.MAKSEKESKUS_ENABLED === "true";
 
   return (
-    <div className="min-h-screen bg-white text-[#1a1a1a]">
+    <div className="min-h-screen bg-gray-50 text-[#1a1a1a] max-lg:bg-gray-50 lg:bg-white">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+      <main className="mx-auto max-w-6xl px-4 py-6 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1.5rem))] sm:py-8 sm:pb-8 lg:pb-8">
         <nav className="mb-4 text-sm text-gray-500" aria-label="Breadcrumb">
           <ol className="flex items-center gap-1.5">
             <li>
@@ -184,15 +187,19 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
             <CheckoutForm
               currency={currency}
               subtotal={subtotal}
+              subtotalForShipping={discountedSubtotalForShipping}
               cartFingerprint={cartFingerprint}
               discountCode={appliedDiscountCode}
+              bundleSavings={bundleSavings}
+              discountAmount={discountAmount}
+              initialShippingAmount={shipping.amount ?? 0}
               maksekeskusAvailable={makseEnabled && isMaksekeskusConfigured()}
               locale={locale}
             />
 
             <div className="lg:sticky lg:top-6 lg:self-start">
-              <section className="space-y-5 rounded-2xl bg-white p-5 shadow-sm sm:p-6">
-                <h2 className="text-lg font-bold text-black">{t("checkout.orderSummary")}</h2>
+              <section className="mobile-sheet space-y-5 rounded-3xl border border-black/5 bg-white p-5 shadow-sm sm:p-6 lg:rounded-2xl">
+                <h2 className="text-lg font-bold text-black">{t("mobile.reviewAndPay")}</h2>
                 <div className="max-h-[260px] space-y-3 overflow-y-auto pr-1">
                   {items.map((item) => (
                     <div

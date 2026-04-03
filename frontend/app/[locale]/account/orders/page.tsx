@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Image from "next/image";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
@@ -24,7 +25,11 @@ export default async function OrdersPage({ params }: Props) {
       include: {
         items: {
           include: {
-            product: true,
+            product: {
+              include: {
+                images: { orderBy: { position: "asc" }, take: 1 },
+              },
+            },
           },
         },
       },
@@ -34,7 +39,7 @@ export default async function OrdersPage({ params }: Props) {
   const t = createT(translations);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-lg:pb-2">
       <header>
         <h1 className="text-2xl font-bold uppercase tracking-tight text-black sm:text-3xl">
           {t("account.myOrders")}
@@ -45,7 +50,7 @@ export default async function OrdersPage({ params }: Props) {
       </header>
 
       {orders.length === 0 ? (
-        <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+        <div className="mobile-sheet rounded-3xl border border-black/5 bg-white p-8 text-center shadow-sm lg:rounded-2xl">
           <p className="text-sm text-gray-600">
             {t("account.noOrdersYet")}
           </p>
@@ -55,9 +60,9 @@ export default async function OrdersPage({ params }: Props) {
           {orders.map((order) => (
             <div
               key={order.id}
-              className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6"
+              className="mobile-sheet overflow-hidden rounded-3xl border border-black/5 bg-white p-5 shadow-sm sm:p-6 lg:rounded-2xl lg:border-gray-200"
             >
-              <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-medium text-gray-500">
                     {t("account.order")} {order.orderNumber}
@@ -73,9 +78,9 @@ export default async function OrdersPage({ params }: Props) {
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-medium text-gray-500">{t("account.status")}</p>
-                  <p className="text-sm font-semibold text-black">
+                  <span className="mt-1 inline-block rounded-full border border-black/10 bg-gray-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-black">
                     {order.status}
-                  </p>
+                  </span>
                 </div>
               </div>
 
@@ -87,14 +92,24 @@ export default async function OrdersPage({ params }: Props) {
                 dpdLastStatus={order.dpdLastStatus ?? null}
               />
 
-              <div className="mt-4 space-y-2 border-t border-gray-100 pt-4 text-sm">
+              <div className="mt-4 space-y-3 border-t border-gray-100 pt-4 text-sm">
                 {order.items.map((item) => (
                   <div
                     key={item.id}
                     className="flex items-center justify-between gap-3"
                   >
                     <div className="flex min-w-0 flex-1 items-center gap-3">
-                      <div className="h-9 w-9 shrink-0 rounded-lg bg-gray-100" />
+                      <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl bg-gray-100">
+                        {item.product?.images?.[0] ? (
+                          <Image
+                            src={item.product.images[0].url}
+                            alt={item.product.images[0].altText ?? item.product.name ?? ""}
+                            fill
+                            className="object-cover"
+                            sizes="44px"
+                          />
+                        ) : null}
+                      </div>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-black">
                           {item.product?.name ?? t("common.product")}

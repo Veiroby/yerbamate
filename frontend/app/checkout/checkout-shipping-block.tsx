@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { ShippingMethodSelector } from "./shipping-method-selector";
 import { useLocale } from "@/lib/locale-context";
-import { EU_COUNTRIES } from "@/lib/locale-data";
+import { EU_COUNTRIES, type CountryCode } from "@/lib/locale-data";
 
 type Props = {
   currency?: string;
@@ -11,6 +11,13 @@ type Props = {
   cartFingerprint?: string;
   errors?: Record<string, string>;
   onShippingMethodChange?: (methodId: string) => void;
+  /** When false, only address fields (shipping method rendered separately). */
+  includeShippingMethod?: boolean;
+  /** Controlled country (ISO2) when shipping method is rendered outside this block. */
+  shippingCountry?: CountryCode;
+  onShippingCountryChange?: (code: CountryCode) => void;
+  onShippingCostChange?: (amount: number) => void;
+  showAddressHeading?: boolean;
   locale?: "lv" | "en";
 };
 
@@ -20,10 +27,22 @@ export function CheckoutShippingBlock({
   cartFingerprint,
   errors,
   onShippingMethodChange,
+  includeShippingMethod = true,
+  shippingCountry,
+  onShippingCountryChange,
+  onShippingCostChange,
+  showAddressHeading = true,
   locale,
 }: Props) {
   const { country: globalCountry } = useLocale();
-  const [country, setCountry] = useState(globalCountry);
+  const [internalCountry, setInternalCountry] = useState(globalCountry);
+  const country = shippingCountry ?? internalCountry;
+  const setCountry = (code: CountryCode) => {
+    onShippingCountryChange?.(code);
+    if (shippingCountry === undefined) {
+      setInternalCountry(code);
+    }
+  };
   const isLv = locale === "lv";
 
   const regionDisplayNames = useMemo(() => {
@@ -47,9 +66,11 @@ export function CheckoutShippingBlock({
   return (
     <>
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-black">
-          {isLv ? "Piegādes adrese" : "Shipping address"}
-        </h2>
+        {showAddressHeading ? (
+          <h2 className="text-lg font-bold text-black">
+            {isLv ? "Piegādes adrese" : "Shipping address"}
+          </h2>
+        ) : null}
         <div className="space-y-2">
           <label className="block text-xs font-medium text-gray-600">
             {isLv ? "Adrese (iela un nams)" : "Address line 1"}
@@ -112,7 +133,7 @@ export function CheckoutShippingBlock({
           <select
             name="country"
             value={country}
-            onChange={(e) => setCountry(e.target.value as typeof country)}
+            onChange={(e) => setCountry(e.target.value as CountryCode)}
             className="w-full rounded-lg border border-gray-200 px-3 py-2.5 text-sm focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
           >
             {EU_COUNTRIES.map((c) => (
@@ -124,14 +145,17 @@ export function CheckoutShippingBlock({
         </div>
       </section>
 
-      <ShippingMethodSelector
-        country={country}
-        currency={currency}
-        subtotal={subtotal}
-        cartFingerprint={cartFingerprint}
-        locale={locale}
-        onShippingMethodChange={onShippingMethodChange}
-      />
+      {includeShippingMethod ? (
+        <ShippingMethodSelector
+          country={country}
+          currency={currency}
+          subtotal={subtotal}
+          cartFingerprint={cartFingerprint}
+          locale={locale}
+          onShippingMethodChange={onShippingMethodChange}
+          onShippingCostChange={onShippingCostChange}
+        />
+      ) : null}
     </>
   );
 }

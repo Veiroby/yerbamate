@@ -41,7 +41,7 @@ export function AccountSidebar({ variant, className = "" }: AccountSidebarProps)
 
   if (variant === "tabs") {
     return (
-      <div className={`shrink-0 md:hidden ${className}`.trim()}>
+      <div className={`shrink-0 lg:hidden ${className}`.trim()}>
         <nav
           ref={tabsRef}
           className="flex gap-1 overflow-x-auto rounded-2xl border border-gray-200 bg-white p-2 shadow-sm"
@@ -55,9 +55,9 @@ export function AccountSidebar({ variant, className = "" }: AccountSidebarProps)
                 key={path}
                 href={href}
                 data-active={active}
-                className={`shrink-0 rounded-lg px-3 py-2.5 text-sm font-medium transition whitespace-nowrap ${
+                className={`shrink-0 rounded-full px-3 py-2.5 text-sm font-medium transition whitespace-nowrap ${
                   active
-                    ? "bg-black text-white"
+                    ? "bg-[var(--mobile-cta)] text-white shadow-sm lg:bg-black"
                     : "text-gray-700 hover:bg-gray-100 hover:text-black"
                 }`}
               >
@@ -79,7 +79,7 @@ export function AccountSidebar({ variant, className = "" }: AccountSidebarProps)
   }
 
   return (
-    <aside className={`hidden w-56 shrink-0 md:block ${className}`.trim()}>
+    <aside className={`hidden w-56 shrink-0 lg:block ${className}`.trim()}>
       <nav className="sticky top-6 space-y-0.5 rounded-2xl border border-gray-200 bg-white p-2 shadow-sm">
         {navItems.map(({ path, labelKey }) => {
           const href = localePrefix ? `${localePrefix}/${path}` : `/${path}`;

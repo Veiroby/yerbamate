@@ -55,19 +55,21 @@ export function OrderTimeline({
         {steps.map((step, index) => (
           <div key={step.id} className="flex-1">
             <div className="flex items-center w-full">
-              <div
-                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px] ${
-                  step.done
-                    ? "border-emerald-600 bg-emerald-600 text-white"
-                    : "border-gray-300 bg-white text-gray-400"
-                }`}
+                <div
+                  className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border text-[10px] ${
+                    step.done
+                      ? "border-[var(--mobile-cta)] bg-[var(--mobile-cta)] text-white lg:border-emerald-600 lg:bg-emerald-600"
+                      : "border-gray-300 bg-white text-gray-400"
+                  }`}
               >
                 {index + 1}
               </div>
               {index < steps.length - 1 && (
                 <div
                   className={`h-[2px] flex-1 rounded-full ${
-                    steps[index + 1].done ? "bg-emerald-500" : "bg-gray-200"
+                    steps[index + 1].done
+                      ? "bg-[var(--mobile-cta)] lg:bg-emerald-500"
+                      : "bg-gray-200"
                   }`}
                 />
               )}

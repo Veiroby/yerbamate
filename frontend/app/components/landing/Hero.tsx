@@ -53,38 +53,36 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
 
   return (
     <section
-      className="relative overflow-hidden bg-white px-4 pt-0 pb-6 sm:pb-16 md:pb-20 lg:pb-24"
+      className="relative overflow-hidden bg-white px-4 pt-2 pb-10 sm:pb-16 md:pb-20 lg:pb-24"
       aria-labelledby="hero-heading"
     >
-      <div className="mx-auto flex max-w-7xl flex-col gap-10 md:flex-row md:items-center md:justify-between md:gap-12">
+      <div className="mx-auto flex max-w-7xl flex-col gap-12 md:flex-row md:items-center md:justify-between md:gap-12">
         <div className="flex-1">
-          <div className="hidden sm:block">
-            <h1
-              id="hero-heading"
-              className="text-4xl font-bold leading-tight text-black sm:text-5xl md:text-6xl lg:text-[3.5rem]"
-            >
-              {t("hero.heading")}
-            </h1>
-            <p className="mt-4 max-w-lg text-base text-gray-600 sm:text-lg">
-              {t("hero.subheading")}
-            </p>
-            <Link
-              href={localePrefix ? `${localePrefix}/products` : "/products"}
-              className="mt-6 inline-flex rounded-md bg-black px-8 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800"
-            >
-              {t("hero.shopNow")}
-            </Link>
-          </div>
+          <h1
+            id="hero-heading"
+            className="text-3xl font-bold leading-tight tracking-tight text-black sm:text-5xl md:text-6xl lg:text-[3.5rem]"
+          >
+            {t("hero.heading")}
+          </h1>
+          <p className="mt-3 max-w-lg text-[15px] leading-relaxed text-gray-600 sm:mt-4 sm:text-lg">
+            {t("hero.subheading")}
+          </p>
+          <Link
+            href={localePrefix ? `${localePrefix}/products` : "/products"}
+            className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-[var(--mobile-cta)] px-6 py-3.5 text-sm font-semibold text-white hover:bg-[var(--mobile-cta-hover)] lg:w-auto lg:rounded-md lg:bg-black lg:px-8 lg:hover:bg-gray-800"
+          >
+            {t("hero.shopNow")}
+          </Link>
           {/* Mobile: full-width swipeable carousel */}
           <div className="sm:hidden" aria-label="Hero statistics">
             <div
               ref={carouselRef}
-              className="mt-5 flex w-full snap-x snap-mandatory overflow-x-auto scroll-smooth pb-2"
+              className="mt-8 flex w-full snap-x snap-mandatory overflow-x-auto scroll-smooth pb-2"
               style={{ scrollbarWidth: "none" } as any}
             >
               {statCards.map((c, idx) => (
-                <div key={idx} className="w-full shrink-0 snap-center px-4">
-                  <div className="w-full rounded-2xl border border-stone-200 bg-white px-7 py-5 text-center shadow-sm">
+                <div key={idx} className="w-full shrink-0 snap-center px-1">
+                  <div className="w-full rounded-3xl border border-black/5 bg-white px-7 py-6 text-center shadow-sm">
                     <div className="flex items-center justify-center gap-2">
                       <p className="text-3xl font-bold leading-none text-black">{c.value}</p>
                       <span className="text-2xl leading-none" aria-hidden="true">
