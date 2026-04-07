@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
 import { getAppleProfile, getAuthRedirectUrl, mergeAppleName } from "@/lib/oauth";
 import { createSession, findOrCreateUserFromOAuth } from "@/lib/auth";
 
@@ -38,7 +39,12 @@ export async function POST(request: Request) {
     }
     const userId = await findOrCreateUserFromOAuth(profile);
     await createSession(userId);
-    return NextResponse.redirect(getAuthRedirectUrl("/account/profile", request));
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { isAdmin: true },
+    });
+    const path = user?.isAdmin ? "/admin" : "/auth/continuing";
+    return NextResponse.redirect(getAuthRedirectUrl(path, request));
   } catch (e) {
     console.error("Apple callback:", e);
     return NextResponse.redirect(getAuthRedirectUrl("/account/profile?error=oauth", request));

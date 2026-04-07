@@ -94,7 +94,8 @@ export async function POST(request: Request) {
 
   await createSession(user.id);
 
-  return NextResponse.redirect(getAuthRedirectUrl("/account/profile", request), {
+  const redirectTo = user.isAdmin ? "/admin" : "/auth/continuing";
+  return NextResponse.redirect(getAuthRedirectUrl(redirectTo, request), {
     status: 303,
   });
 }
