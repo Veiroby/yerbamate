@@ -12,6 +12,7 @@ export const navItems = [
   { path: "account/orders", labelKey: "account.navOrders" },
   { path: "account/wishlist", labelKey: "account.navWishlist" },
   { path: "account/newsletter", labelKey: "account.navNewsletter" },
+  { path: "account/settings", labelKey: "account.settings" },
 ];
 
 function isActive(pathname: string, path: string, localePrefix: string) {
