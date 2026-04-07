@@ -9,7 +9,8 @@ export const navItems = [
   { path: "account/profile", labelKey: "account.navDashboard" },
   { path: "account/information", labelKey: "account.navInformation" },
   { path: "account/orders", labelKey: "account.navOrders" },
-  // Keep the sidebar minimal; other destinations live as cards on the profile page.
+  { path: "account/wishlist", labelKey: "account.navWishlist" },
+  { path: "account/newsletter", labelKey: "account.navNewsletter" },
 ];
 
 function isActive(pathname: string, path: string, localePrefix: string) {

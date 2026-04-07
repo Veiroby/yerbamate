@@ -10,25 +10,6 @@ type Props = {
   searchParams: Promise<{ error?: string; status?: string }>;
 };
 
-function SettingsIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 15.5a3.5 3.5 0 110-7 3.5 3.5 0 010 7z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-      <path
-        d="M19.4 15a8.7 8.7 0 00.1-2l2-1.5-2-3.5-2.4 1a8.8 8.8 0 00-1.7-1L15 5h-6l-.4 3a8.8 8.8 0 00-1.7 1l-2.4-1-2 3.5 2 1.5a8.7 8.7 0 000 2l-2 1.5 2 3.5 2.4-1a8.8 8.8 0 001.7 1l.4 3h6l.4-3a8.8 8.8 0 001.7-1l2.4 1 2-3.5-2-1.5z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
 export default async function ProfilePage({ params, searchParams }: Props) {
   const { locale } = await params;
   if (!isValidLocale(locale)) return null;
@@ -99,6 +80,41 @@ export default async function ProfilePage({ params, searchParams }: Props) {
             stroke="currentColor"
             strokeWidth="1.8"
             strokeLinejoin="round"
+          />
+        </svg>
+      ),
+    },
+    {
+      href: `${prefix}/account/wishlist`,
+      title: t("account.navWishlist"),
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 20s-7-4.6-9.2-9A5.5 5.5 0 0112 5.9 5.5 5.5 0 0121.2 11C19 15.4 12 20 12 20z"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ),
+    },
+    {
+      href: `${prefix}/account/newsletter`,
+      title: t("account.navNewsletter"),
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M4 6h16v12H4V6z"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M4 8l8 6 8-6"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+            strokeLinecap="round"
           />
         </svg>
       ),
