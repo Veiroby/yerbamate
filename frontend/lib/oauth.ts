@@ -3,6 +3,8 @@
  * Uses authorization code flow; callbacks create/update User and Account and set session.
  */
 
+import { getRequestOrigin } from "@/lib/request-origin";
+
 const SCOPES = {
   google: "openid email profile",
   facebook: "email public_profile",
@@ -23,7 +25,16 @@ function normalizeOrigin(value: string): string {
   return value.trim().replace(/\/$/, "");
 }
 
+/**
+ * OAuth redirect URIs and token-exchange redirect_uri must match the host the user used.
+ * When `request` is present, always derive from the request (and x-forwarded-*), not NEXTAUTH_URL—
+ * otherwise production can send users to localhost if env is wrong.
+ */
 export function getBaseUrl(request?: Request): string {
+  if (request) {
+    return getRequestOrigin(request);
+  }
+
   const nextAuthUrl = process.env.NEXTAUTH_URL;
   if (typeof nextAuthUrl === "string" && nextAuthUrl.trim()) {
     return normalizeOrigin(nextAuthUrl);
@@ -32,11 +43,6 @@ export function getBaseUrl(request?: Request): string {
   const publicOrigin = process.env.NEXT_PUBLIC_APP_ORIGIN;
   if (typeof publicOrigin === "string" && publicOrigin.trim()) {
     return normalizeOrigin(publicOrigin);
-  }
-
-  if (request && process.env.NODE_ENV !== "production") {
-    const u = new URL(request.url);
-    return `${u.protocol}//${u.host}`;
   }
 
   return "http://localhost:3000";

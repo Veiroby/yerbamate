@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "@/lib/translation-context";
 import { DEFAULT_LOCALE, type Locale } from "@/lib/locale";
@@ -125,6 +125,39 @@ function EmailField(props: {
   );
 }
 
+/** Ensures redirect after login/register even if the browser mishandles a 303 from a form POST. */
+async function submitAuthThenNavigate(
+  e: FormEvent<HTMLFormElement>,
+  action: string,
+  locale: Locale,
+) {
+  e.preventDefault();
+  const form = e.currentTarget;
+  const res = await fetch(action, {
+    method: "POST",
+    body: new FormData(form),
+    redirect: "manual",
+    credentials: "same-origin",
+  });
+
+  if (res.status >= 300 && res.status < 400) {
+    const loc = res.headers.get("Location");
+    if (loc) {
+      window.location.assign(
+        loc.startsWith("http") ? loc : new URL(loc, window.location.origin).href,
+      );
+      return;
+    }
+  }
+
+  if (res.type === "opaqueredirect") {
+    window.location.assign(`${window.location.origin}/${locale}`);
+    return;
+  }
+
+  form.submit();
+}
+
 export function AuthForms({ error }: Props) {
   const pathname = usePathname();
   const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
@@ -135,7 +168,26 @@ export function AuthForms({ error }: Props) {
   const [focusedEmailField, setFocusedEmailField] = useState<
     "signin" | "signup" | null
   >(null);
+  const [authBusy, setAuthBusy] = useState(false);
   const { t } = useTranslation();
+
+  const onLoginSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    setAuthBusy(true);
+    try {
+      await submitAuthThenNavigate(e, "/api/auth/login", locale);
+    } finally {
+      setAuthBusy(false);
+    }
+  };
+
+  const onRegisterSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    setAuthBusy(true);
+    try {
+      await submitAuthThenNavigate(e, "/api/auth/register", locale);
+    } finally {
+      setAuthBusy(false);
+    }
+  };
 
   return (
     <div className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
@@ -215,7 +267,12 @@ export function AuthForms({ error }: Props) {
         <h2 className="text-lg font-bold text-black">
           {t("account.existingCustomers")}
         </h2>
-        <form action="/api/auth/login" method="post" className="space-y-4">
+        <form
+          action="/api/auth/login"
+          method="post"
+          className="space-y-4"
+          onSubmit={onLoginSubmit}
+        >
           <input type="hidden" name="locale" value={locale} />
           <EmailField
             id="login-email"
@@ -257,7 +314,12 @@ export function AuthForms({ error }: Props) {
         <p className="text-sm text-gray-500">
           {t("account.newCustomersIntro")}
         </p>
-        <form action="/api/auth/register" method="post" className="space-y-4">
+        <form
+          action="/api/auth/register"
+          method="post"
+          className="space-y-4"
+          onSubmit={onRegisterSubmit}
+        >
           <input type="hidden" name="locale" value={locale} />
           <div className="space-y-2">
             <label
@@ -292,9 +354,10 @@ export function AuthForms({ error }: Props) {
           />
           <button
             type="submit"
-            className="flex w-full items-center justify-center rounded-full border-2 border-black bg-white px-4 py-3 text-sm font-medium text-black transition hover:bg-gray-50"
+            disabled={authBusy}
+            className="flex w-full items-center justify-center rounded-full border-2 border-black bg-white px-4 py-3 text-sm font-medium text-black transition hover:bg-gray-50 disabled:opacity-60"
           >
-            {t("account.createAccount")}
+            {authBusy ? "…" : t("account.createAccount")}
           </button>
         </form>
       </section>

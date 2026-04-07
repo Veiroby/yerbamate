@@ -1,11 +1,12 @@
 import { cookies } from "next/headers";
 import { DEFAULT_LOCALE, type Locale, isValidLocale } from "@/lib/locale";
+import { getRequestOrigin } from "@/lib/request-origin";
 
-/** Absolute URL on the **same host** as the request (avoids NEXTAUTH_URL / PUBLIC_APP_ORIGIN mismatch on login). */
+/** Absolute URL on the public host the user interacted with (proxy-safe). */
 export function sameOriginRedirectUrl(request: Request, pathnameWithQuery: string): string {
-  const reqUrl = new URL(request.url);
+  const origin = getRequestOrigin(request);
   const path = pathnameWithQuery.startsWith("/") ? pathnameWithQuery : `/${pathnameWithQuery}`;
-  return new URL(path, `${reqUrl.protocol}//${reqUrl.host}`).toString();
+  return new URL(path, origin).toString();
 }
 
 /** Locale for post-login redirects: hidden form field, cookie, Referer, then default. */
