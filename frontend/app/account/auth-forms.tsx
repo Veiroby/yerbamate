@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslation } from "@/lib/translation-context";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/locale";
 
 type Props = {
   error?: string;
@@ -127,29 +128,17 @@ function EmailField(props: {
 export function AuthForms({ error }: Props) {
   const pathname = usePathname();
   const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
+  const pathLocale = pathname?.match(/^\/(lv|en)/)?.[1];
+  const locale: Locale = pathLocale === "lv" || pathLocale === "en" ? pathLocale : DEFAULT_LOCALE;
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [focusedEmailField, setFocusedEmailField] = useState<
     "signin" | "signup" | null
   >(null);
-  const [formSubmitting, setFormSubmitting] = useState(false);
   const { t } = useTranslation();
 
   return (
-    <div className="relative space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-      {formSubmitting ? (
-        <div
-          className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-4 rounded-2xl bg-white/85 backdrop-blur-sm"
-          role="status"
-          aria-live="polite"
-        >
-          <div
-            className="h-10 w-10 animate-spin rounded-full border-[3px] border-gray-200 border-t-[var(--mobile-cta)]"
-            aria-hidden
-          />
-          <p className="text-sm font-semibold text-gray-900">{t("account.authFormSubmitting")}</p>
-        </div>
-      ) : null}
+    <div className="space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
       {error && (
         <p className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800">
           {error === "denied" && t("account.errorSignInCancelled")}
@@ -226,12 +215,8 @@ export function AuthForms({ error }: Props) {
         <h2 className="text-lg font-bold text-black">
           {t("account.existingCustomers")}
         </h2>
-        <form
-          action="/api/auth/login"
-          method="post"
-          className="space-y-4"
-          onSubmit={() => setFormSubmitting(true)}
-        >
+        <form action="/api/auth/login" method="post" className="space-y-4">
+          <input type="hidden" name="locale" value={locale} />
           <EmailField
             id="login-email"
             helperId="login-email-helper"
@@ -272,12 +257,8 @@ export function AuthForms({ error }: Props) {
         <p className="text-sm text-gray-500">
           {t("account.newCustomersIntro")}
         </p>
-        <form
-          action="/api/auth/register"
-          method="post"
-          className="space-y-4"
-          onSubmit={() => setFormSubmitting(true)}
-        >
+        <form action="/api/auth/register" method="post" className="space-y-4">
+          <input type="hidden" name="locale" value={locale} />
           <div className="space-y-2">
             <label
               htmlFor="register-name"

@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createSession, hashPassword } from "@/lib/auth";
-import { getAuthRedirectUrl } from "@/lib/oauth";
-import { authRedirectToLocalePath, getLocaleForAuthRedirect } from "@/lib/auth-redirect";
+import {
+  authRedirectToLocalePath,
+  getLocaleForAuthRedirect,
+  sameOriginRedirectUrl,
+} from "@/lib/auth-redirect";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 function validatePassword(password: string): { valid: boolean; error?: string } {
@@ -37,10 +40,11 @@ export async function POST(request: Request) {
   const email = formData.get("email")?.toString().toLowerCase().trim();
   const name = formData.get("name")?.toString().trim();
   const password = formData.get("password")?.toString();
+  const locale = await getLocaleForAuthRedirect(request, formData);
 
   if (!email || !password) {
     return NextResponse.redirect(
-      await authRedirectToLocalePath(request, "account/profile?error=register_missing_fields"),
+      sameOriginRedirectUrl(request, `/${locale}/account/profile?error=register_missing_fields`),
       { status: 303 },
     );
   }
@@ -56,7 +60,7 @@ export async function POST(request: Request) {
             ? "password_needs_lowercase"
             : "password_needs_number";
     return NextResponse.redirect(
-      await authRedirectToLocalePath(request, `account/profile?error=${errorCode}`),
+      sameOriginRedirectUrl(request, `/${locale}/account/profile?error=${errorCode}`),
       { status: 303 },
     );
   }
@@ -67,7 +71,7 @@ export async function POST(request: Request) {
 
   if (existing && existing.passwordHash) {
     return NextResponse.redirect(
-      await authRedirectToLocalePath(request, "account/profile?error=email_exists"),
+      sameOriginRedirectUrl(request, `/${locale}/account/profile?error=email_exists`),
       { status: 303 },
     );
   }
@@ -100,9 +104,8 @@ export async function POST(request: Request) {
   await createSession(user.id);
 
   if (user.isAdmin) {
-    return NextResponse.redirect(getAuthRedirectUrl("/admin", request), { status: 303 });
+    return NextResponse.redirect(sameOriginRedirectUrl(request, "/admin"), { status: 303 });
   }
 
-  const locale = await getLocaleForAuthRedirect(request);
-  return NextResponse.redirect(getAuthRedirectUrl(`/${locale}`, request), { status: 303 });
+  return NextResponse.redirect(sameOriginRedirectUrl(request, `/${locale}`), { status: 303 });
 }

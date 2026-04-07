@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getAppleProfile, getAuthRedirectUrl, mergeAppleName } from "@/lib/oauth";
+import { getAppleProfile, mergeAppleName } from "@/lib/oauth";
 import { createSession, findOrCreateUserFromOAuth } from "@/lib/auth";
-import { authRedirectToLocalePath, getLocaleForAuthRedirect } from "@/lib/auth-redirect";
+import { authRedirectToLocalePath, getLocaleForAuthRedirect, sameOriginRedirectUrl } from "@/lib/auth-redirect";
 
 /** Apple uses response_mode=form_post, so callback is POST with code, id_token, and optionally user (name) */
 export async function POST(request: Request) {
@@ -12,6 +12,7 @@ export async function POST(request: Request) {
   } catch {
     return NextResponse.redirect(
       await authRedirectToLocalePath(request, "account/profile?error=oauth"),
+      { status: 303 },
     );
   }
 
@@ -23,11 +24,13 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.redirect(
       await authRedirectToLocalePath(request, "account/profile?error=denied"),
+      { status: 303 },
     );
   }
   if (!code) {
     return NextResponse.redirect(
       await authRedirectToLocalePath(request, "account/profile?error=no_code"),
+      { status: 303 },
     );
   }
 
@@ -51,14 +54,15 @@ export async function POST(request: Request) {
       select: { isAdmin: true },
     });
     if (user?.isAdmin) {
-      return NextResponse.redirect(getAuthRedirectUrl("/admin", request));
+      return NextResponse.redirect(sameOriginRedirectUrl(request, "/admin"), { status: 303 });
     }
     const locale = await getLocaleForAuthRedirect(request);
-    return NextResponse.redirect(getAuthRedirectUrl(`/${locale}`, request));
+    return NextResponse.redirect(sameOriginRedirectUrl(request, `/${locale}`), { status: 303 });
   } catch (e) {
     console.error("Apple callback:", e);
     return NextResponse.redirect(
       await authRedirectToLocalePath(request, "account/profile?error=oauth"),
+      { status: 303 },
     );
   }
 }
