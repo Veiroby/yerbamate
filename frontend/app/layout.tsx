@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Fraunces, DM_Sans } from "next/font/google";
+import { Fraunces, DM_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import { CookieConsent } from "@/app/components/cookie-consent";
 import { Toaster } from "sonner";
@@ -16,6 +16,12 @@ const fraunces = Fraunces({
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
 });
@@ -48,7 +54,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${fraunces.variable} ${dmSans.variable} font-sans antialiased bg-white text-gray-900`}
+        className={`${fraunces.variable} ${dmSans.variable} ${inter.variable} font-sans antialiased bg-white text-gray-900`}
       >
         {GA_MEASUREMENT_ID ? (
           <>

@@ -25,8 +25,13 @@ export async function GET() {
     where: { sessionId },
     include: {
       items: {
+        orderBy: { id: "asc" },
         include: {
-          product: true,
+          product: {
+            include: {
+              images: { orderBy: { position: "asc" }, take: 1 },
+            },
+          },
           variant: true,
         },
       },

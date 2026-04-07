@@ -30,7 +30,7 @@ export function CartOrderSummary({ subtotal, currency, showReminder, bundleSavin
   const discountedSubtotal = subtotal - discountAmount - bundleSavings;
 
   return (
-    <div className="space-y-5 rounded-2xl bg-white p-5 shadow-sm sm:p-6">
+    <div className="space-y-5 rounded-3xl border border-gray-100 bg-white p-5 shadow-sm sm:p-6 lg:rounded-2xl">
       <h2 className="text-lg font-bold text-black">{t("cart.orderSummary")}</h2>
       <dl className="space-y-3 text-sm">
         <div className="flex justify-between">
@@ -80,7 +80,7 @@ export function CartOrderSummary({ subtotal, currency, showReminder, bundleSavin
         )}
         <button
           type="submit"
-          className="flex w-full items-center justify-center gap-2 rounded-full bg-black px-4 py-3.5 text-sm font-medium text-white transition hover:bg-gray-800"
+          className="flex w-full items-center justify-center gap-2 rounded-full bg-[var(--mobile-cta)] px-4 py-4 text-base font-semibold text-white transition hover:bg-[var(--mobile-cta-hover)] lg:bg-black lg:hover:bg-gray-800"
         >
           {t("cart.goToCheckout")}
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>

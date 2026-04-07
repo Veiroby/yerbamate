@@ -91,9 +91,9 @@ export default async function CartPage({ params }: Props) {
   const prefix = `/${locale}`;
 
   return (
-    <div className="min-h-screen bg-white text-[#1a1a1a]">
+    <div className="min-h-screen bg-[#f5f5f7] text-[#1a1a1a] lg:bg-white">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+      <main className="mx-auto max-w-6xl px-4 py-5 sm:py-8 lg:py-8">
         <nav className="mb-4 text-sm text-gray-500" aria-label="Breadcrumb">
           <ol className="flex items-center gap-1.5">
             <li>
@@ -108,8 +108,8 @@ export default async function CartPage({ params }: Props) {
           </ol>
         </nav>
 
-        <header className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl font-bold uppercase tracking-tight text-black sm:text-3xl">
+        <header className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:mb-6">
+          <h1 className="text-xl font-bold tracking-tight text-black sm:text-2xl lg:text-3xl lg:uppercase lg:tracking-tight">
             {t("cart.yourCart")}
           </h1>
           <Link
@@ -131,8 +131,8 @@ export default async function CartPage({ params }: Props) {
             </p>
           </div>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-            <div className="space-y-4">
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-6">
+            <div className="space-y-3 lg:space-y-4">
               {items.map((item) => (
                 <CartItem
                   key={item.id}

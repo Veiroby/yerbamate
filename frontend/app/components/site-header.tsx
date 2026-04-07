@@ -2,13 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { useCart } from "@/lib/cart-context";
 import { useTranslation } from "@/lib/translation-context";
 import type { Locale } from "@/lib/locale";
-import { MobileProductSearch } from "@/app/components/mobile-product-search";
-
 type SiteHeaderProps = {
   user: { isAdmin: boolean } | null;
   locale: Locale;
@@ -70,7 +68,6 @@ const PROMO_DISMISS_KEY = "yerbatea-promo-dismissed";
 
 export function SiteHeader({ user, locale }: SiteHeaderProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [menuOpen, setMenuOpen] = useState(false);
   const [promoDismissed, setPromoDismissed] = useState(false);
   const { itemCount } = useCart();
@@ -138,15 +135,15 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
       )}
 
       {/* Main nav – white bg, black text (Figma SHOP.CO style) */}
-      <header className="sticky top-0 z-40 w-full border-b border-gray-200 bg-white">
+      <header className="sticky top-0 z-40 w-full border-b border-gray-100 bg-white/95 backdrop-blur-md lg:border-gray-200 lg:bg-white">
         <nav
-          className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6"
+          className="relative mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:py-4"
           aria-label="Main navigation"
         >
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 lg:flex-none lg:min-w-0">
             <button
               type="button"
-              className="flex h-12 w-12 items-center justify-center text-gray-700 hover:text-black lg:hidden"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-gray-700 hover:bg-gray-100 hover:text-black lg:h-12 lg:w-12 lg:rounded-none lg:hover:bg-transparent"
               onClick={() => setMenuOpen((o) => !o)}
               aria-expanded={menuOpen}
               aria-controls="mobile-nav"
@@ -164,7 +161,7 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
             </button>
             <Link
               href={localePrefix}
-              className="p-0 hover:opacity-80"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 p-0 hover:opacity-90 lg:static lg:translate-x-0 lg:translate-y-0"
             >
               <Image
                 src="/images/yerbatea-logo.png"
@@ -172,9 +169,10 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
                 width={1024}
                 height={1024}
                 priority
-                className="h-11 w-11 object-contain sm:h-12 sm:w-12 md:h-14 md:w-14 lg:h-16 lg:w-16"
+                className="h-9 w-9 object-contain sm:h-10 sm:w-10 md:h-11 md:w-11 lg:h-16 lg:w-16"
               />
             </Link>
+            <span className="flex-1 lg:hidden" aria-hidden />
           </div>
 
           <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex">
@@ -192,8 +190,8 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
             })}
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-4">
-            <span className="flex items-center gap-1 text-base font-medium text-gray-700 sm:text-sm">
+          <div className="flex flex-1 items-center justify-end gap-0.5 sm:gap-4 lg:flex-none">
+            <span className="flex items-center gap-1 text-sm font-medium text-gray-600 sm:text-sm">
               <Link
                 href={locale === "lv" ? switchLocalePath : switchLocalePath}
                 className={locale === "lv" ? "font-semibold text-black" : "hover:text-black"}
@@ -210,7 +208,7 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
             </span>
             <Link
               href={`/${locale}/cart`}
-              className="relative flex h-11 w-11 items-center justify-center text-gray-700 hover:text-black sm:h-10 sm:w-10"
+              className="relative hidden h-11 w-11 items-center justify-center text-gray-700 hover:text-black lg:flex sm:h-10 sm:w-10"
               aria-label={`${t("nav.cart")}${itemCount > 0 ? t("nav.cartWithCount", { count: itemCount }) : ""}`}
             >
               <CartIcon className="h-6 w-6 sm:h-5 sm:w-5" />
@@ -252,15 +250,18 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
           </div>
         </nav>
 
-        <div className="bg-white px-4 pb-3 pt-2 lg:hidden">
-          <MobileProductSearch locale={locale} />
-        </div>
-
         <div
           id="mobile-nav"
           className={`fixed inset-0 z-50 bg-white px-6 pb-8 pt-24 lg:hidden ${menuOpen ? "block" : "hidden"}`}
         >
           <div className="flex h-full flex-col gap-2 overflow-y-auto">
+            <Link
+              href={`${localePrefix}/search`}
+              className="rounded-xl px-3 py-4 text-xl font-semibold text-gray-800 hover:bg-gray-50"
+              onClick={() => setMenuOpen(false)}
+            >
+              {t("nav.search")}
+            </Link>
             {navLinkKeys.map(({ path, labelKey }) => (
               <Link
                 key={labelKey}

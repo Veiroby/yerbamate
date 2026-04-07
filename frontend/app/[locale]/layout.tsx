@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "@/lib/i18n";
 import { TranslationProvider } from "@/lib/translation-context";
 import { NewsletterPopup } from "@/app/components/newsletter-popup";
+import { MobileAppChrome, MobileAppContentShell } from "@/app/components/mobile/mobile-app-chrome";
 import type { Locale } from "@/lib/i18n";
 
 type Props = {
@@ -18,7 +19,8 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <TranslationProvider locale={locale} translations={translations}>
-      {children}
+      <MobileAppContentShell>{children}</MobileAppContentShell>
+      <MobileAppChrome locale={locale} />
       <NewsletterPopup />
     </TranslationProvider>
   );

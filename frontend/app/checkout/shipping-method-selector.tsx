@@ -250,6 +250,9 @@ type Props = {
   cartFingerprint?: string;
   onMethodsLoaded?: (methods: ShippingOption[]) => void;
   onShippingMethodChange?: (methodId: string) => void;
+  /** Called when the selected method’s price is known or changes. */
+  onShippingCostChange?: (amount: number) => void;
+  showSectionHeading?: boolean;
   locale?: "lv" | "en";
 };
 
@@ -260,6 +263,8 @@ export function ShippingMethodSelector({
   cartFingerprint,
   onMethodsLoaded,
   onShippingMethodChange,
+  onShippingCostChange,
+  showSectionHeading = true,
   locale,
 }: Props) {
   const { itemCount } = useCart();
@@ -318,6 +323,13 @@ export function ShippingMethodSelector({
   ]);
 
   useEffect(() => {
+    const m = methods.find((x) => x.id === selectedId);
+    if (m && selectedId) {
+      onShippingCostChange?.(m.amount);
+    }
+  }, [methods, selectedId, onShippingCostChange]);
+
+  useEffect(() => {
     if (!isDpdSelected || !country) {
       setPickupPoints([]);
       setSelectedPickupId("");
@@ -353,9 +365,11 @@ export function ShippingMethodSelector({
   if (unsupportedCountry || methods.length === 0) {
     return (
       <section className="space-y-4">
-        <h2 className="text-lg font-bold text-black">
-          {locale === "lv" ? "Piegādes metode" : "Shipping method"}
-        </h2>
+        {showSectionHeading ? (
+          <h2 className="text-lg font-bold text-black">
+            {locale === "lv" ? "Piegādes metode" : "Shipping method"}
+          </h2>
+        ) : null}
         <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-800">
           {locale === "lv"
             ? "Diemžēl mēs nepiegādājam uz jūsu valsti."
@@ -367,9 +381,11 @@ export function ShippingMethodSelector({
 
   return (
     <section className="space-y-4">
-      <h2 className="text-lg font-bold text-black">
-        {locale === "lv" ? "Piegādes metode" : "Shipping method"}
-      </h2>
+      {showSectionHeading ? (
+        <h2 className="text-lg font-bold text-black">
+          {locale === "lv" ? "Piegādes metode" : "Shipping method"}
+        </h2>
+      ) : null}
       {/* Single hidden field so fetch/FormData always sends the selected method (radios alone can omit name in edge cases). */}
       <input type="hidden" name="shippingOptionId" value={selectedId ?? ""} />
       <div className="space-y-2">
