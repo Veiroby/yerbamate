@@ -46,9 +46,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
         <h1 className="mb-4 text-2xl font-bold uppercase tracking-tight text-black">
           {t("account.signInOrCreate")}
         </h1>
-        <div className="mobile-sheet rounded-3xl border border-black/5 bg-white p-5 shadow-sm sm:p-6 lg:rounded-2xl lg:border-gray-200">
-          <AuthForms error={error} />
-        </div>
+        <AuthForms error={error} />
       </>
     );
   }
