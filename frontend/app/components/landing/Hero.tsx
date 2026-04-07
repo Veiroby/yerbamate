@@ -69,7 +69,7 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
           </p>
           <Link
             href={localePrefix ? `${localePrefix}/products` : "/products"}
-            className="mt-6 inline-flex w-full items-center justify-center rounded-full bg-[var(--mobile-cta)] px-6 py-3.5 text-sm font-semibold text-white hover:bg-[var(--mobile-cta-hover)] lg:w-auto lg:rounded-md lg:bg-black lg:px-8 lg:hover:bg-gray-800"
+            className="mt-6 hidden w-full items-center justify-center rounded-full bg-[var(--mobile-cta)] px-6 py-3.5 text-sm font-semibold text-white hover:bg-[var(--mobile-cta-hover)] lg:inline-flex lg:w-auto lg:rounded-md lg:bg-black lg:px-8 lg:hover:bg-gray-800"
           >
             {t("hero.shopNow")}
           </Link>
