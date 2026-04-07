@@ -165,7 +165,7 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
                   <Link
                     key={labelKey}
                     href={href}
-                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium ring-1 ring-black/5 backdrop-blur-md transition ${
+                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold ring-1 ring-black/5 backdrop-blur-md transition ${
                       active
                         ? "ring-white/20 bg-black/70 text-white"
                         : "ring-black/10 bg-white/45 text-gray-900 hover:bg-white/60"
