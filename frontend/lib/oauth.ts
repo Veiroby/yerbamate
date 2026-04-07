@@ -26,9 +26,30 @@ function normalizeOrigin(value: string): string {
 }
 
 /**
- * OAuth redirect URIs and token-exchange redirect_uri must match the host the user used.
- * When `request` is present, always derive from the request (and x-forwarded-*), not NEXTAUTH_URL—
- * otherwise production can send users to localhost if env is wrong.
+ * Base URL for OAuth authorize + token `redirect_uri`.
+ * Must match **exactly** what you add in Google / Facebook / Apple developer consoles
+ * (scheme, host, path — no trailing slash on origin).
+ *
+ * Set one of these in production if auto-detection disagrees with your console (e.g. www vs apex):
+ * `OAUTH_PUBLIC_ORIGIN`, `NEXT_PUBLIC_APP_ORIGIN`, or `GOOGLE_OAUTH_PUBLIC_ORIGIN` (all equivalent priority).
+ */
+export function getOAuthBaseUrl(request?: Request): string {
+  const explicit =
+    process.env.OAUTH_PUBLIC_ORIGIN?.trim() ||
+    process.env.GOOGLE_OAUTH_PUBLIC_ORIGIN?.trim() ||
+    process.env.NEXT_PUBLIC_APP_ORIGIN?.trim();
+  if (explicit) return normalizeOrigin(explicit);
+
+  if (request) return getRequestOrigin(request);
+
+  const nextAuthUrl = process.env.NEXTAUTH_URL?.trim();
+  if (nextAuthUrl) return normalizeOrigin(nextAuthUrl);
+
+  return "http://localhost:3000";
+}
+
+/**
+ * Generic app base URL (e.g. email magic links). Prefers request host when available.
  */
 export function getBaseUrl(request?: Request): string {
   if (request) {
@@ -54,7 +75,7 @@ export function getAuthRedirectUrl(path: string, request?: Request): string {
 
 /** Build Google authorization URL */
 export function getGoogleAuthUrl(request?: Request): string {
-  const base = getBaseUrl(request);
+  const base = getOAuthBaseUrl(request);
   const clientId = process.env.GOOGLE_CLIENT_ID;
   if (!clientId) throw new Error("GOOGLE_CLIENT_ID is not set");
 
@@ -71,7 +92,7 @@ export function getGoogleAuthUrl(request?: Request): string {
 
 /** Exchange Google code for tokens and fetch profile */
 export async function getGoogleProfile(code: string, request?: Request): Promise<OAuthProfile> {
-  const base = getBaseUrl(request);
+  const base = getOAuthBaseUrl(request);
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
   if (!clientId || !clientSecret) throw new Error("Google OAuth not configured");
@@ -108,7 +129,7 @@ export async function getGoogleProfile(code: string, request?: Request): Promise
 
 /** Build Facebook authorization URL */
 export function getFacebookAuthUrl(request?: Request): string {
-  const base = getBaseUrl(request);
+  const base = getOAuthBaseUrl(request);
   const appId = process.env.FACEBOOK_APP_ID;
   if (!appId) throw new Error("FACEBOOK_APP_ID is not set");
 
@@ -123,7 +144,7 @@ export function getFacebookAuthUrl(request?: Request): string {
 
 /** Exchange Facebook code for access token and fetch profile */
 export async function getFacebookProfile(code: string, request?: Request): Promise<OAuthProfile> {
-  const base = getBaseUrl(request);
+  const base = getOAuthBaseUrl(request);
   const appId = process.env.FACEBOOK_APP_ID;
   const appSecret = process.env.FACEBOOK_APP_SECRET;
   if (!appId || !appSecret) throw new Error("Facebook OAuth not configured");
@@ -161,7 +182,7 @@ export async function getFacebookProfile(code: string, request?: Request): Promi
 
 /** Build Apple authorization URL */
 export function getAppleAuthUrl(request?: Request): string {
-  const base = getBaseUrl(request);
+  const base = getOAuthBaseUrl(request);
   const clientId = process.env.APPLE_CLIENT_ID; // Services ID (e.g. com.yourapp.service)
   if (!clientId) throw new Error("APPLE_CLIENT_ID is not set");
 
@@ -210,7 +231,7 @@ export async function getAppleProfile(
   idToken: string | null,
   request?: Request
 ): Promise<OAuthProfile> {
-  const base = getBaseUrl(request);
+  const base = getOAuthBaseUrl(request);
   const clientId = process.env.APPLE_CLIENT_ID;
   const clientSecret = await getAppleClientSecret();
   if (!clientId) throw new Error("Apple OAuth not configured");
