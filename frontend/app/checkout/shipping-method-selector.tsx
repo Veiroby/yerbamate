@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
 import { DPD_PARCEL_MACHINE_METHOD_ID } from "@/lib/shipping/dpd";
+import { LOCAL_PICKUP_METHOD_ID } from "@/lib/shipping/local-pickup";
 import { useCart } from "@/lib/cart-context";
 
 type ShippingOption = {
@@ -283,6 +284,27 @@ export function ShippingMethodSelector({
     onShippingMethodChange?.(methodId);
   };
 
+  const dpdMethod = methods.find((m) => m.id === DPD_PARCEL_MACHINE_METHOD_ID);
+  const pickupMethod = methods.find((m) => m.id === LOCAL_PICKUP_METHOD_ID);
+  const otherMethods = methods.filter(
+    (m) => m.id !== DPD_PARCEL_MACHINE_METHOD_ID && m.id !== LOCAL_PICKUP_METHOD_ID,
+  );
+  const pairCards = [pickupMethod, dpdMethod].filter(
+    (m): m is ShippingOption => m !== undefined,
+  );
+  const pairGridClass =
+    pairCards.length >= 2 ? "grid grid-cols-2 gap-3" : "grid grid-cols-1 gap-3";
+
+  const shortDeliveryTitle = (m: ShippingOption) => {
+    if (m.id === LOCAL_PICKUP_METHOD_ID) {
+      return locale === "lv" ? "Paņemšana" : "Pick up";
+    }
+    if (m.id === DPD_PARCEL_MACHINE_METHOD_ID) {
+      return locale === "lv" ? "DPD" : "DPD";
+    }
+    return m.name;
+  };
+
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
@@ -388,42 +410,98 @@ export function ShippingMethodSelector({
       ) : null}
       {/* Single hidden field so fetch/FormData always sends the selected method (radios alone can omit name in edge cases). */}
       <input type="hidden" name="shippingOptionId" value={selectedId ?? ""} />
-      <div className="space-y-2">
-        {methods.map((method) => (
-          <label
-            key={method.id}
-            className={`flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2.5 text-sm transition ${
-              selectedId === method.id
-                ? "border-black bg-gray-50"
-                : "border-gray-200 hover:border-gray-300"
-            }`}
-          >
-            <span className="flex items-center gap-2">
-              <input
-                type="radio"
-                name="shippingMethodUi"
-                value={method.id}
-                checked={selectedId === method.id}
-                onChange={() => handleMethodChange(method.id)}
-                className="border-gray-300 text-black focus:ring-black"
-              />
-              <span>
-                {method.name}
-                {method.estimatedDays ? (
-                  <span className="ml-1 text-xs text-gray-500">
-                    {locale === "lv"
-                      ? `(${method.estimatedDays} darbadienas)`
-                      : `(${method.estimatedDays} business days)`}
+
+      {pairCards.length > 0 ? (
+        <div className={pairGridClass}>
+          {pairCards.map((method) => {
+            const selected = selectedId === method.id;
+            return (
+              <label
+                key={method.id}
+                className={`flex cursor-pointer flex-col gap-2 rounded-3xl border p-4 text-left transition ${
+                  selected
+                    ? "border-[var(--mobile-cta)] bg-[var(--mobile-cta)]/5 ring-2 ring-[var(--mobile-cta)]/20"
+                    : "border-black/10 bg-white hover:border-black/20"
+                }`}
+              >
+                <span className="flex items-start justify-between gap-2">
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold text-black">
+                      {shortDeliveryTitle(method)}
+                    </span>
+                    <span className="mt-0.5 block text-xs leading-snug text-gray-600">
+                      {method.id === LOCAL_PICKUP_METHOD_ID
+                        ? locale === "lv"
+                          ? "Stabu iela 53, Rīga"
+                          : "Stabu iela 53, Riga"
+                        : locale === "lv"
+                          ? "Piegāde uz pakomātu"
+                          : "Parcel machine delivery"}
+                    </span>
                   </span>
-                ) : null}
+                  <input
+                    type="radio"
+                    name="shippingMethodUi"
+                    value={method.id}
+                    checked={selected}
+                    onChange={() => handleMethodChange(method.id)}
+                    className="mt-1 shrink-0 border-gray-300 text-[var(--mobile-cta)] focus:ring-[var(--mobile-cta)]"
+                  />
+                </span>
+                <span className="text-sm font-semibold text-black">
+                  {currency} {method.amount.toFixed(2)}
+                  {method.estimatedDays && method.id === DPD_PARCEL_MACHINE_METHOD_ID ? (
+                    <span className="ml-1 text-xs font-normal text-gray-500">
+                      {locale === "lv"
+                        ? `· ~${method.estimatedDays} d.`
+                        : `· ~${method.estimatedDays} bd`}
+                    </span>
+                  ) : null}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {otherMethods.length > 0 ? (
+        <div className={`space-y-2 ${pairCards.length > 0 ? "mt-4" : ""}`}>
+          {otherMethods.map((method) => (
+            <label
+              key={method.id}
+              className={`flex cursor-pointer items-center justify-between rounded-xl border px-3 py-2.5 text-sm transition ${
+                selectedId === method.id
+                  ? "border-black bg-gray-50"
+                  : "border-gray-200 hover:border-gray-300"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="shippingMethodUi"
+                  value={method.id}
+                  checked={selectedId === method.id}
+                  onChange={() => handleMethodChange(method.id)}
+                  className="border-gray-300 text-black focus:ring-black"
+                />
+                <span>
+                  {method.name}
+                  {method.estimatedDays ? (
+                    <span className="ml-1 text-xs text-gray-500">
+                      {locale === "lv"
+                        ? `(${method.estimatedDays} darbadienas)`
+                        : `(${method.estimatedDays} business days)`}
+                    </span>
+                  ) : null}
+                </span>
               </span>
-            </span>
-            <span className="font-medium text-black">
-              {currency} {method.amount.toFixed(2)}
-            </span>
-          </label>
-        ))}
-      </div>
+              <span className="font-medium text-black">
+                {currency} {method.amount.toFixed(2)}
+              </span>
+            </label>
+          ))}
+        </div>
+      ) : null}
 
       {isDpdSelected && (
         <ParcelPicker
