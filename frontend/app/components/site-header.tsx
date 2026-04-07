@@ -141,7 +141,7 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
       {/* Main nav – white bg, black text (Figma SHOP.CO style) */}
       <header className="sticky top-0 z-40 w-full border-b border-transparent bg-transparent lg:border-gray-200 lg:bg-white">
         <nav
-          className="relative mx-auto flex w-full max-w-none items-center gap-3 px-4 py-3 sm:px-6 lg:max-w-7xl lg:justify-between lg:py-4"
+          className="relative mx-auto flex w-full max-w-none min-h-16 items-center gap-3 px-4 py-4 sm:px-6 lg:max-w-7xl lg:justify-between lg:py-4"
           aria-label="Main navigation"
         >
           {/* Mobile header: profile icon + category pills (no logo) */}
