@@ -110,6 +110,10 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
   const otherLocale: Locale = locale === "lv" ? "en" : "lv";
   const switchLocalePath = pathname.replace(new RegExp(`^/${locale}(/|$)`), `/${otherLocale}$1`);
 
+  const mobileCategoryLinks = navLinkKeys.filter((x) =>
+    ["products", "yerba-mate", "mate-gourds", "accessories"].includes(x.path),
+  );
+
   return (
     <>
       {/* Promo bar – black, dismissible (Figma-style) */}
@@ -140,10 +144,45 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
           className="relative mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:py-4"
           aria-label="Main navigation"
         >
-          <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3 lg:flex-none lg:min-w-0">
+          {/* Mobile header: profile icon + category pills (no logo) */}
+          <div className="flex min-w-0 flex-1 items-center gap-3 lg:hidden">
+            <Link
+              href={`/${locale}/account/profile`}
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200"
+              aria-label={user ? t("nav.account") : t("nav.logIn")}
+            >
+              <ProfileIcon className="h-6 w-6" />
+            </Link>
+            <div
+              className="flex min-w-0 flex-1 gap-2 overflow-x-auto scroll-smooth pr-1"
+              style={{ WebkitOverflowScrolling: "touch" }}
+              aria-label={t("mobile.appNav")}
+            >
+              {mobileCategoryLinks.map(({ path, labelKey }) => {
+                const href = `${localePrefix}/${path}`;
+                const active = isActive(path);
+                return (
+                  <Link
+                    key={labelKey}
+                    href={href}
+                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${
+                      active
+                        ? "bg-black text-white"
+                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                    }`}
+                  >
+                    {t(labelKey)}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Desktop left: logo + menu button */}
+          <div className="hidden min-w-0 flex-1 items-center gap-2 sm:gap-3 lg:flex lg:flex-none lg:min-w-0">
             <button
               type="button"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-gray-700 hover:bg-gray-100 hover:text-black lg:h-12 lg:w-12 lg:rounded-none lg:hover:bg-transparent"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-none text-gray-700 hover:text-black lg:hover:bg-transparent"
               onClick={() => setMenuOpen((o) => !o)}
               aria-expanded={menuOpen}
               aria-controls="mobile-nav"
@@ -159,20 +198,16 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
                 </svg>
               )}
             </button>
-            <Link
-              href={localePrefix}
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 p-0 hover:opacity-90 lg:static lg:translate-x-0 lg:translate-y-0"
-            >
+            <Link href={localePrefix} className="p-0 hover:opacity-90">
               <Image
                 src="/images/yerbatea-logo.png"
                 alt="yerbatea"
                 width={1024}
                 height={1024}
                 priority
-                className="h-9 w-9 object-contain sm:h-10 sm:w-10 md:h-11 md:w-11 lg:h-16 lg:w-16"
+                className="h-16 w-16 object-contain"
               />
             </Link>
-            <span className="flex-1 lg:hidden" aria-hidden />
           </div>
 
           <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex">
