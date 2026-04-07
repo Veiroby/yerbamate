@@ -86,21 +86,6 @@ export default async function ProfilePage({ params, searchParams }: Props) {
       ),
     },
     {
-      href: `${prefix}/account/addresses`,
-      title: t("account.navAddresses"),
-      icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M12 21s6-5 6-10a6 6 0 10-12 0c0 5 6 10 6 10z"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinejoin="round"
-          />
-          <circle cx="12" cy="11" r="2" stroke="currentColor" strokeWidth="1.8" />
-        </svg>
-      ),
-    },
-    {
       href: `${prefix}/account/orders`,
       title: t("account.navOrders"),
       icon: (
@@ -119,45 +104,6 @@ export default async function ProfilePage({ params, searchParams }: Props) {
           />
         </svg>
       ),
-    },
-    {
-      href: `${prefix}/account/wishlist`,
-      title: t("account.navWishlist"),
-      icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M12 21s-7-4.4-9.2-8.4C1.1 9.1 3 6.5 6.1 6.1c1.7-.2 3.2.6 3.9 1.7.7-1.1 2.2-1.9 3.9-1.7 3.1.4 5 3 3.3 6.5C19 16.6 12 21 12 21z"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ),
-    },
-    {
-      href: `${prefix}/account/newsletter`,
-      title: t("account.navNewsletter"),
-      icon: (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M4 6h16v12H4V6z"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinejoin="round"
-          />
-          <path
-            d="M4 7l8 6 8-6"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinejoin="round"
-          />
-        </svg>
-      ),
-    },
-    {
-      href: `${prefix}/account/settings`,
-      title: t("account.settings"),
-      icon: <SettingsIcon className="h-5 w-5" />,
     },
   ];
 
@@ -191,55 +137,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
             </Link>
           </div>
         </div>
-        <Link
-          href={`${prefix}/account/settings`}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200"
-          aria-label={t("account.settings")}
-        >
-          <SettingsIcon className="h-5 w-5" />
-        </Link>
       </header>
-
-      <div className="grid grid-cols-2 gap-3">
-        <Link
-          href={`${prefix}/account/wishlist`}
-          className="rounded-3xl border border-black/5 bg-white p-4 shadow-sm transition hover:bg-gray-50"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-100 text-gray-800">
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M12 21s-7-4.4-9.2-8.4C1.1 9.1 3 6.5 6.1 6.1c1.7-.2 3.2.6 3.9 1.7.7-1.1 2.2-1.9 3.9-1.7 3.1.4 5 3 3.3 6.5C19 16.6 12 21 12 21z"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <p className="mt-3 text-sm font-semibold text-black">{t("account.saved")}</p>
-        </Link>
-        <Link
-          href={`${prefix}/account/newsletter`}
-          className="rounded-3xl border border-black/5 bg-white p-4 shadow-sm transition hover:bg-gray-50"
-        >
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-100 text-gray-800">
-            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path
-                d="M4 6h16v12H4V6z"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M4 7l8 6 8-6"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <p className="mt-3 text-sm font-semibold text-black">{t("account.following")}</p>
-        </Link>
-      </div>
 
       <section className="space-y-3">
         <div className="grid grid-cols-2 gap-3">

@@ -15,6 +15,6 @@ export async function removeFromWishlist(formData: FormData) {
   await prisma.wishlistItem.deleteMany({
     where: { userId: user.id, productId },
   });
-  revalidatePath(prefix + "/account/wishlist");
-  redirect(prefix + "/account/wishlist");
+  revalidatePath(prefix + "/account/profile");
+  redirect(prefix + "/account/profile");
 }
