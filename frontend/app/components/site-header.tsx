@@ -154,7 +154,7 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
               <ProfileIcon className="h-6 w-6" />
             </Link>
             <div
-              className="flex min-w-0 flex-1 gap-2 overflow-x-auto scroll-smooth pr-1"
+              className="flex min-w-0 flex-1 gap-2 overflow-x-auto overflow-y-visible scroll-smooth pr-1 py-2"
               style={{ WebkitOverflowScrolling: "touch" }}
               aria-label={t("mobile.appNav")}
             >
@@ -165,10 +165,10 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
                   <Link
                     key={labelKey}
                     href={href}
-                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium shadow-sm backdrop-blur-md transition ${
+                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium ring-1 ring-black/5 backdrop-blur-md transition ${
                       active
-                        ? "border border-white/30 bg-black/70 text-white"
-                        : "border border-white/40 bg-white/45 text-gray-900 hover:bg-white/60"
+                        ? "ring-white/20 bg-black/70 text-white"
+                        : "ring-black/10 bg-white/45 text-gray-900 hover:bg-white/60"
                     }`}
                   >
                     {t(labelKey)}
