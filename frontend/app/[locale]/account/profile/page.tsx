@@ -65,6 +65,102 @@ export default async function ProfilePage({ params, searchParams }: Props) {
     }),
   ]);
 
+  const quickLinks = [
+    {
+      href: `${prefix}/account/information`,
+      title: t("account.navInformation"),
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 12a4 4 0 100-8 4 4 0 000 8z"
+            stroke="currentColor"
+            strokeWidth="1.8"
+          />
+          <path
+            d="M4 21a8 8 0 0116 0"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+        </svg>
+      ),
+    },
+    {
+      href: `${prefix}/account/addresses`,
+      title: t("account.navAddresses"),
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 21s6-5 6-10a6 6 0 10-12 0c0 5 6 10 6 10z"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+          />
+          <circle cx="12" cy="11" r="2" stroke="currentColor" strokeWidth="1.8" />
+        </svg>
+      ),
+    },
+    {
+      href: `${prefix}/account/orders`,
+      title: t("account.navOrders"),
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M7 7h14v14H7V7z"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M3 3h14v14H3V3z"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ),
+    },
+    {
+      href: `${prefix}/account/wishlist`,
+      title: t("account.navWishlist"),
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 21s-7-4.4-9.2-8.4C1.1 9.1 3 6.5 6.1 6.1c1.7-.2 3.2.6 3.9 1.7.7-1.1 2.2-1.9 3.9-1.7 3.1.4 5 3 3.3 6.5C19 16.6 12 21 12 21z"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ),
+    },
+    {
+      href: `${prefix}/account/newsletter`,
+      title: t("account.navNewsletter"),
+      icon: (
+        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M4 6h16v12H4V6z"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M4 7l8 6 8-6"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinejoin="round"
+          />
+        </svg>
+      ),
+    },
+    {
+      href: `${prefix}/account/settings`,
+      title: t("account.settings"),
+      icon: <SettingsIcon className="h-5 w-5" />,
+    },
+  ];
+
   return (
     <div className="space-y-6 max-lg:pb-2">
       {showPasswordResetSuccess && (
@@ -107,7 +203,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
       <div className="grid grid-cols-2 gap-3">
         <Link
           href={`${prefix}/account/wishlist`}
-          className="mobile-sheet rounded-3xl border border-black/5 bg-white p-4 shadow-sm transition hover:bg-gray-50"
+          className="rounded-3xl border border-black/5 bg-white p-4 shadow-sm transition hover:bg-gray-50"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-100 text-gray-800">
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -123,7 +219,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
         </Link>
         <Link
           href={`${prefix}/account/newsletter`}
-          className="mobile-sheet rounded-3xl border border-black/5 bg-white p-4 shadow-sm transition hover:bg-gray-50"
+          className="rounded-3xl border border-black/5 bg-white p-4 shadow-sm transition hover:bg-gray-50"
         >
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-100 text-gray-800">
             <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -145,7 +241,24 @@ export default async function ProfilePage({ params, searchParams }: Props) {
         </Link>
       </div>
 
-      <section className="mobile-sheet rounded-3xl border border-black/5 bg-white p-5 shadow-sm">
+      <section className="space-y-3">
+        <div className="grid grid-cols-2 gap-3">
+          {quickLinks.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="rounded-3xl border border-black/5 bg-white p-4 shadow-sm transition hover:bg-gray-50"
+            >
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-100 text-gray-800">
+                {l.icon}
+              </div>
+              <p className="mt-3 text-sm font-semibold text-black">{l.title}</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-black/5 bg-white p-5 shadow-sm">
         <Link href={`${prefix}/account/orders`} className="flex items-center justify-between gap-3">
           <div>
             <p className="text-base font-semibold text-black">{t("account.orderHistory")}</p>
@@ -200,7 +313,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
         </div>
       </section>
 
-      <section className="mobile-sheet rounded-3xl border border-black/5 bg-white p-5 shadow-sm">
+      <section className="rounded-3xl border border-black/5 bg-white p-5 shadow-sm">
         <p className="text-sm font-semibold text-black">{t("account.paymentMethods")}</p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-800">

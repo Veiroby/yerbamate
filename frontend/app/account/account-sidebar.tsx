@@ -41,6 +41,8 @@ export function AccountSidebar({ variant, className = "" }: AccountSidebarProps)
   }, [pathname, variant]);
 
   if (variant === "tabs") {
+    // Profile page uses a card grid instead of tabs.
+    if (pathname?.endsWith("/account/profile")) return null;
     return (
       <div className={`shrink-0 lg:hidden ${className}`.trim()}>
         <nav
