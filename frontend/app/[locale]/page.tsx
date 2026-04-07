@@ -2,7 +2,6 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { SiteHeader } from "@/app/components/site-header";
 import { Hero } from "@/app/components/landing/Hero";
-import { TrendingSection } from "@/app/components/landing/TrendingSection";
 import {
   ProductCarouselSection,
   type CarouselProduct,
@@ -219,12 +218,9 @@ export default async function HomePage({ params }: Props) {
           compactTop
         />
 
-        <TrendingSection />
-
         <ProductCarouselSection
           titleKey="home.topSelling"
           descriptionKey="home.topSellingDescription"
-          tone="dark"
           products={topSellingCarousel}
         />
 
