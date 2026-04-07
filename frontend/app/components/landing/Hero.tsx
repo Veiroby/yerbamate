@@ -60,11 +60,11 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
         <div className="flex-1">
           <h1
             id="hero-heading"
-            className="text-3xl font-bold leading-tight tracking-tight text-black sm:text-5xl md:text-6xl lg:text-[3.5rem]"
+            className="hidden text-3xl font-bold leading-tight tracking-tight text-black sm:block sm:text-5xl md:text-6xl lg:text-[3.5rem]"
           >
             {t("hero.heading")}
           </h1>
-          <p className="mt-3 max-w-lg text-[15px] leading-relaxed text-gray-600 sm:mt-4 sm:text-lg">
+          <p className="mt-3 hidden max-w-lg text-[15px] leading-relaxed text-gray-600 sm:block sm:mt-4 sm:text-lg">
             {t("hero.subheading")}
           </p>
           <Link
