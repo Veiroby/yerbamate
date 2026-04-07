@@ -327,6 +327,15 @@ export default async function ProfilePage({ params, searchParams }: Props) {
           {t("mobile.paymentSecure")}
         </p>
       </section>
+
+      <form action="/api/auth/logout" method="post">
+        <button
+          type="submit"
+          className="w-full rounded-3xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 shadow-sm hover:bg-gray-50"
+        >
+          {t("account.logout")}
+        </button>
+      </form>
     </div>
   );
 }

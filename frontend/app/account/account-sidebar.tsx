@@ -8,11 +8,8 @@ import { useTranslation } from "@/lib/translation-context";
 export const navItems = [
   { path: "account/profile", labelKey: "account.navDashboard" },
   { path: "account/information", labelKey: "account.navInformation" },
-  { path: "account/addresses", labelKey: "account.navAddresses" },
   { path: "account/orders", labelKey: "account.navOrders" },
-  { path: "account/wishlist", labelKey: "account.navWishlist" },
-  { path: "account/newsletter", labelKey: "account.navNewsletter" },
-  { path: "account/settings", labelKey: "account.settings" },
+  // Keep the sidebar minimal; other destinations live as cards on the profile page.
 ];
 
 function isActive(pathname: string, path: string, localePrefix: string) {
@@ -41,44 +38,8 @@ export function AccountSidebar({ variant, className = "" }: AccountSidebarProps)
   }, [pathname, variant]);
 
   if (variant === "tabs") {
-    // Profile page uses a card grid instead of tabs.
-    if (pathname?.endsWith("/account/profile")) return null;
-    return (
-      <div className={`shrink-0 lg:hidden ${className}`.trim()}>
-        <nav
-          ref={tabsRef}
-          className="flex gap-1 overflow-x-auto rounded-2xl border border-gray-200 bg-white p-2 shadow-sm"
-          style={{ WebkitOverflowScrolling: "touch" }}
-        >
-          {navItems.map(({ path, labelKey }) => {
-            const href = localePrefix ? `${localePrefix}/${path}` : `/${path}`;
-            const active = isActive(pathname, path, localePrefix);
-            return (
-              <Link
-                key={path}
-                href={href}
-                data-active={active}
-                className={`shrink-0 rounded-full px-3 py-2.5 text-sm font-medium transition whitespace-nowrap ${
-                  active
-                    ? "bg-[var(--mobile-cta)] text-white shadow-sm lg:bg-black"
-                    : "text-gray-700 hover:bg-gray-100 hover:text-black"
-                }`}
-              >
-                {t(labelKey)}
-              </Link>
-            );
-          })}
-          <form action="/api/auth/logout" method="post" className="shrink-0 ml-1 border-l border-gray-200 pl-2">
-            <button
-              type="submit"
-              className="rounded-lg px-3 py-2.5 text-left text-sm font-medium text-gray-700 transition hover:bg-red-50 hover:text-red-700 whitespace-nowrap"
-            >
-              {t("account.logout")}
-            </button>
-          </form>
-        </nav>
-      </div>
-    );
+    // Mobile account navigation is card-based on the profile page.
+    return null;
   }
 
   return (
