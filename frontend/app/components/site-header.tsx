@@ -139,7 +139,7 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
       )}
 
       {/* Main nav – white bg, black text (Figma SHOP.CO style) */}
-      <header className="sticky top-0 z-40 w-full border-b border-gray-100 bg-white/95 backdrop-blur-md lg:border-gray-200 lg:bg-white">
+      <header className="sticky top-0 z-40 w-full border-b border-transparent bg-transparent lg:border-gray-200 lg:bg-white">
         <nav
           className="relative mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:py-4"
           aria-label="Main navigation"
@@ -148,7 +148,7 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
           <div className="flex min-w-0 flex-1 items-center gap-3 lg:hidden">
             <Link
               href={`/${locale}/account/profile`}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-800 hover:bg-gray-200"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/45 text-gray-900 shadow-sm backdrop-blur-md hover:bg-white/60"
               aria-label={user ? t("nav.account") : t("nav.logIn")}
             >
               <ProfileIcon className="h-6 w-6" />
@@ -165,10 +165,10 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
                   <Link
                     key={labelKey}
                     href={href}
-                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${
+                    className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium shadow-sm backdrop-blur-md transition ${
                       active
-                        ? "bg-black text-white"
-                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        ? "border border-white/30 bg-black/70 text-white"
+                        : "border border-white/40 bg-white/45 text-gray-900 hover:bg-white/60"
                     }`}
                   >
                     {t(labelKey)}
@@ -226,7 +226,7 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
           </div>
 
           <div className="flex flex-1 items-center justify-end gap-0.5 sm:gap-4 lg:flex-none">
-            <span className="flex items-center gap-1 text-sm font-medium text-gray-600 sm:text-sm">
+            <span className="hidden items-center gap-1 text-sm font-medium text-gray-600 sm:text-sm lg:flex">
               <Link
                 href={locale === "lv" ? switchLocalePath : switchLocalePath}
                 className={locale === "lv" ? "font-semibold text-black" : "hover:text-black"}
