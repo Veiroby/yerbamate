@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getAuthRedirectUrl, getFacebookProfile } from "@/lib/oauth";
 import { createSession, findOrCreateUserFromOAuth } from "@/lib/auth";
+import { authRedirectToLocalePath, getLocaleForAuthRedirect } from "@/lib/auth-redirect";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -9,10 +10,14 @@ export async function GET(request: Request) {
   const error = url.searchParams.get("error");
 
   if (error) {
-    return NextResponse.redirect(getAuthRedirectUrl("/account/profile?error=denied", request));
+    return NextResponse.redirect(
+      await authRedirectToLocalePath(request, "account/profile?error=denied"),
+    );
   }
   if (!code) {
-    return NextResponse.redirect(getAuthRedirectUrl("/account/profile?error=no_code", request));
+    return NextResponse.redirect(
+      await authRedirectToLocalePath(request, "account/profile?error=no_code"),
+    );
   }
 
   try {
@@ -23,10 +28,15 @@ export async function GET(request: Request) {
       where: { id: userId },
       select: { isAdmin: true },
     });
-    const path = user?.isAdmin ? "/admin" : "/auth/continuing";
-    return NextResponse.redirect(getAuthRedirectUrl(path, request));
+    if (user?.isAdmin) {
+      return NextResponse.redirect(getAuthRedirectUrl("/admin", request));
+    }
+    const locale = await getLocaleForAuthRedirect(request);
+    return NextResponse.redirect(getAuthRedirectUrl(`/${locale}`, request));
   } catch (e) {
     console.error("Facebook callback:", e);
-    return NextResponse.redirect(getAuthRedirectUrl("/account/profile?error=oauth", request));
+    return NextResponse.redirect(
+      await authRedirectToLocalePath(request, "account/profile?error=oauth"),
+    );
   }
 }

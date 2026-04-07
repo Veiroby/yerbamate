@@ -2,16 +2,17 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createSession, verifyPassword } from "@/lib/auth";
 import { getAuthRedirectUrl } from "@/lib/oauth";
+import { authRedirectToLocalePath, getLocaleForAuthRedirect } from "@/lib/auth-redirect";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   const rateLimitKey = getRateLimitKey(request, "login");
-  const { allowed, retryAfterMs } = checkRateLimit(rateLimitKey, 5, 15 * 60 * 1000);
-  
+  const { allowed } = checkRateLimit(rateLimitKey, 5, 15 * 60 * 1000);
+
   if (!allowed) {
     return NextResponse.redirect(
-      getAuthRedirectUrl("/account/profile?error=too_many_attempts", request),
-      { status: 303 }
+      await authRedirectToLocalePath(request, "account/profile?error=too_many_attempts"),
+      { status: 303 },
     );
   }
 
@@ -22,8 +23,8 @@ export async function POST(request: Request) {
 
   if (!email || !password) {
     return NextResponse.redirect(
-      getAuthRedirectUrl("/account/profile?error=missing_fields", request),
-      { status: 303 }
+      await authRedirectToLocalePath(request, "account/profile?error=missing_fields"),
+      { status: 303 },
     );
   }
 
@@ -33,16 +34,16 @@ export async function POST(request: Request) {
 
   if (!user || !user.passwordHash) {
     return NextResponse.redirect(
-      getAuthRedirectUrl("/account/profile?error=invalid_credentials", request),
-      { status: 303 }
+      await authRedirectToLocalePath(request, "account/profile?error=invalid_credentials"),
+      { status: 303 },
     );
   }
 
   const valid = await verifyPassword(password, user.passwordHash);
   if (!valid) {
     return NextResponse.redirect(
-      getAuthRedirectUrl("/account/profile?error=invalid_credentials", request),
-      { status: 303 }
+      await authRedirectToLocalePath(request, "account/profile?error=invalid_credentials"),
+      { status: 303 },
     );
   }
 
@@ -58,9 +59,10 @@ export async function POST(request: Request) {
 
   await createSession(user.id);
 
-  const redirectTo = user.isAdmin ? "/admin" : "/auth/continuing";
-  return NextResponse.redirect(getAuthRedirectUrl(redirectTo, request), {
-    status: 303,
-  });
-}
+  if (user.isAdmin) {
+    return NextResponse.redirect(getAuthRedirectUrl("/admin", request), { status: 303 });
+  }
 
+  const locale = await getLocaleForAuthRedirect(request);
+  return NextResponse.redirect(getAuthRedirectUrl(`/${locale}`, request), { status: 303 });
+}

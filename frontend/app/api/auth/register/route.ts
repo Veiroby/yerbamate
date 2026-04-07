@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createSession, hashPassword } from "@/lib/auth";
 import { getAuthRedirectUrl } from "@/lib/oauth";
+import { authRedirectToLocalePath, getLocaleForAuthRedirect } from "@/lib/auth-redirect";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 function validatePassword(password: string): { valid: boolean; error?: string } {
@@ -22,12 +23,12 @@ function validatePassword(password: string): { valid: boolean; error?: string } 
 
 export async function POST(request: Request) {
   const rateLimitKey = getRateLimitKey(request, "register");
-  const { allowed, retryAfterMs } = checkRateLimit(rateLimitKey, 5, 60 * 60 * 1000);
-  
+  const { allowed } = checkRateLimit(rateLimitKey, 5, 60 * 60 * 1000);
+
   if (!allowed) {
     return NextResponse.redirect(
-      getAuthRedirectUrl("/account/profile?error=too_many_attempts", request),
-      { status: 303 }
+      await authRedirectToLocalePath(request, "account/profile?error=too_many_attempts"),
+      { status: 303 },
     );
   }
 
@@ -39,20 +40,24 @@ export async function POST(request: Request) {
 
   if (!email || !password) {
     return NextResponse.redirect(
-      getAuthRedirectUrl("/account/profile?error=register_missing_fields", request),
-      { status: 303 }
+      await authRedirectToLocalePath(request, "account/profile?error=register_missing_fields"),
+      { status: 303 },
     );
   }
 
   const passwordCheck = validatePassword(password);
   if (!passwordCheck.valid) {
-    const errorCode = password.length < 8 ? "password_too_short" :
-      !/[A-Z]/.test(password) ? "password_needs_uppercase" :
-      !/[a-z]/.test(password) ? "password_needs_lowercase" :
-      "password_needs_number";
+    const errorCode =
+      password.length < 8
+        ? "password_too_short"
+        : !/[A-Z]/.test(password)
+          ? "password_needs_uppercase"
+          : !/[a-z]/.test(password)
+            ? "password_needs_lowercase"
+            : "password_needs_number";
     return NextResponse.redirect(
-      getAuthRedirectUrl(`/account/profile?error=${errorCode}`, request),
-      { status: 303 }
+      await authRedirectToLocalePath(request, `account/profile?error=${errorCode}`),
+      { status: 303 },
     );
   }
 
@@ -62,8 +67,8 @@ export async function POST(request: Request) {
 
   if (existing && existing.passwordHash) {
     return NextResponse.redirect(
-      getAuthRedirectUrl("/account/profile?error=email_exists", request),
-      { status: 303 }
+      await authRedirectToLocalePath(request, "account/profile?error=email_exists"),
+      { status: 303 },
     );
   }
 
@@ -94,9 +99,10 @@ export async function POST(request: Request) {
 
   await createSession(user.id);
 
-  const redirectTo = user.isAdmin ? "/admin" : "/auth/continuing";
-  return NextResponse.redirect(getAuthRedirectUrl(redirectTo, request), {
-    status: 303,
-  });
-}
+  if (user.isAdmin) {
+    return NextResponse.redirect(getAuthRedirectUrl("/admin", request), { status: 303 });
+  }
 
+  const locale = await getLocaleForAuthRedirect(request);
+  return NextResponse.redirect(getAuthRedirectUrl(`/${locale}`, request), { status: 303 });
+}
