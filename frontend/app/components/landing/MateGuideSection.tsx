@@ -27,8 +27,8 @@ export async function MateGuideSection({ locale }: Props) {
   const stepsByNumber = new Map(steps.map((s) => [s.n, s]));
 
   return (
-    <section className="bg-white px-4 py-12 sm:py-16" aria-label={heading}>
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-10 md:flex-row md:items-start">
+    <section className="bg-white px-3 py-12 sm:px-4 sm:py-16" aria-label={heading}>
+      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-10 max-lg:max-w-none md:flex-row md:items-start">
         <div className="w-full md:w-1/2">
           <div className="relative mx-auto w-full max-w-[480px] overflow-hidden rounded-2xl bg-[#f5f5f0] shadow-md">
             <Image

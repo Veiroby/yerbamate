@@ -188,7 +188,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     <div className="min-h-screen bg-white text-gray-900">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <main className="mx-auto w-full max-w-7xl px-3 py-8 max-lg:max-w-none sm:px-6 sm:py-10 lg:px-8">
         <nav aria-label="Breadcrumb" className="mb-6 text-sm text-gray-500">
           <Link href={prefix} className="hover:text-black">{t("common.home")}</Link>
           <span className="mx-1">/</span>

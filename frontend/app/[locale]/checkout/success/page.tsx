@@ -74,7 +74,7 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Prop
         closeAriaLabel={t("common.close")}
       />
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
-      <main className="mx-auto max-w-3xl px-4 py-12">
+      <main className="mx-auto w-full max-w-3xl px-3 py-12 max-lg:max-w-none sm:px-4">
         <div className="rounded-2xl border border-[#606C38]/20 bg-[#FEFAE0] p-6 shadow-sm">
           <h1 className="heading-page">{t("checkout.complete")}</h1>
           <p className="mt-2 text-sm text-black">{message}</p>

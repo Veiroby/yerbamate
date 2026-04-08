@@ -21,7 +21,7 @@ export default async function AccountLayout({
     return (
       <div className="min-h-screen bg-white text-[#1a1a1a]">
         <SiteHeader user={null} locale={locale} />
-        <main className="mx-auto max-w-md px-4 py-8">{children}</main>
+        <main className="mx-auto w-full max-w-md px-3 py-8 max-lg:max-w-none sm:px-4">{children}</main>
         <Footer locale={locale} />
       </div>
     );
@@ -31,7 +31,7 @@ export default async function AccountLayout({
     <div className="min-h-screen bg-white text-[#1a1a1a]">
       <SaveNotification />
       <SiteHeader user={{ isAdmin: user.isAdmin }} locale={locale} />
-      <main className="mx-auto max-w-6xl px-4 py-6 sm:py-8">
+      <main className="mx-auto w-full max-w-6xl px-3 py-6 max-lg:max-w-none sm:px-4 sm:py-8 lg:px-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:gap-8">
           <AccountSidebar variant="sidebar" />
           <div className="min-w-0 flex-1 overflow-x-hidden">{children}</div>

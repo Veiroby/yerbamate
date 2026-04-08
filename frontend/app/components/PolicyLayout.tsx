@@ -25,7 +25,7 @@ export function PolicyLayout({
 
   return (
     <div className="min-h-screen bg-white text-[#283618]">
-      <main className="mx-auto max-w-4xl px-4 py-10 sm:py-12">
+      <main className="mx-auto w-full max-w-4xl px-3 py-10 max-lg:max-w-none sm:px-4 sm:py-12">
         <div className="mb-6 text-xs uppercase tracking-wide text-[#606C38]">
           <Link href={prefix} className="opacity-70 hover:text-[#283618]">
             Home

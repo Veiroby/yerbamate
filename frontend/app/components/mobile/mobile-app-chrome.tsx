@@ -109,7 +109,7 @@ export function MobileAppChrome({ locale }: Props) {
     <>
       {/* Bottom padding reserve for fixed chrome — pages use min-h-screen; consumers add pb via layout */}
       <div
-        className="lg:hidden fixed inset-x-0 bottom-0 z-[60] pointer-events-none flex flex-col items-stretch justify-end pb-[max(0.75rem,env(safe-area-inset-bottom))] px-3"
+        className="lg:hidden fixed inset-x-0 bottom-0 z-[60] pointer-events-none flex flex-col items-stretch justify-end pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] pl-[max(0.5rem,env(safe-area-inset-left,0px))] pr-[max(0.5rem,env(safe-area-inset-right,0px))]"
         aria-hidden={false}
       >
         <div className="pointer-events-auto flex items-end justify-center gap-3">

@@ -65,8 +65,8 @@ export function TestimonialsSection({ testimonials }: { testimonials: Testimonia
   }
 
   return (
-    <section className="bg-white px-4 py-12 sm:py-16" aria-labelledby="testimonials-heading">
-      <div className="mx-auto max-w-6xl">
+    <section className="bg-white px-3 py-12 sm:px-4 sm:py-16" aria-labelledby="testimonials-heading">
+      <div className="mx-auto w-full max-w-6xl max-lg:max-w-none">
         <div className="mb-6 flex flex-col items-center justify-between gap-4 sm:mb-8 sm:flex-row">
           <h2
             id="testimonials-heading"

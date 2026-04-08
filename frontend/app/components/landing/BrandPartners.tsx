@@ -15,7 +15,7 @@ export function BrandPartners() {
 
   return (
     <section className="bg-black py-8 sm:py-10" aria-label={t("landing.featuredBrands")}>
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+      <div className="mx-auto w-full max-w-7xl px-3 max-lg:max-w-none sm:px-6">
         <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12 lg:gap-16">
           {brandLabelKeys.map((key) => (
             <span

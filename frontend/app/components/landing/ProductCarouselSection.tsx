@@ -215,11 +215,11 @@ export function ProductCarouselSection({
 
   return (
     <section
-      className={`${sectionSurface} px-4 ${compactTop ? "pt-0 mt-0 pb-14 sm:pb-16" : "py-14 sm:py-16"}`}
+      className={`${sectionSurface} px-3 sm:px-4 ${compactTop ? "pt-0 mt-0 pb-14 sm:pb-16" : "py-14 sm:py-16"}`}
       aria-label={ariaLabel}
       aria-labelledby={displayTitle ? `carousel-${sectionId}` : undefined}
     >
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto w-full max-w-6xl max-lg:max-w-none">
         {displayTitle ? (
           <header className="mb-8 max-lg:mb-9 text-center sm:mb-10">
             <h2

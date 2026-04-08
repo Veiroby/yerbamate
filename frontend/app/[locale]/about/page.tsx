@@ -58,7 +58,7 @@ export default async function AboutPage({ params }: Props) {
     <div className="min-h-screen bg-white text-neutral-900">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
 
-      <main className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-3xl px-3 py-16 max-lg:max-w-none sm:px-6 lg:px-8">
         <h1 className="mb-8 text-3xl font-bold tracking-tight text-black sm:text-4xl">
           {t("about.title")}
         </h1>

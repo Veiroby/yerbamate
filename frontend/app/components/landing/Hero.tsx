@@ -53,10 +53,10 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
 
   return (
     <section
-      className="relative overflow-hidden bg-white px-4 pt-0 pb-10 max-lg:pb-8 sm:pt-2 sm:pb-16 md:pb-20 lg:pb-24"
+      className="relative overflow-hidden bg-white px-3 pt-0 pb-10 max-lg:pb-8 sm:px-4 sm:pt-2 sm:pb-16 md:pb-20 lg:pb-24"
       aria-labelledby="hero-heading"
     >
-      <div className="mx-auto flex max-w-7xl flex-col gap-0 md:flex-row md:items-center md:justify-between md:gap-12">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-0 max-lg:max-w-none md:flex-row md:items-center md:justify-between md:gap-12">
         <div className="flex-1">
           <h1
             id="hero-heading"

@@ -15,8 +15,8 @@ export function BrowseByCategory({ locale }: { locale: Locale }) {
   const { t } = useTranslation();
   const prefix = `/${locale}/`;
   return (
-    <section className="bg-white px-4 py-12 sm:py-16" aria-labelledby="browse-heading">
-      <div className="mx-auto max-w-6xl">
+    <section className="bg-white px-3 py-12 sm:px-4 sm:py-16" aria-labelledby="browse-heading">
+      <div className="mx-auto w-full max-w-6xl max-lg:max-w-none">
         <h2
           id="browse-heading"
           className="mb-8 text-center text-3xl font-bold uppercase tracking-wide text-black sm:text-4xl"

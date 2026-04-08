@@ -134,7 +134,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
   return (
     <div className="min-h-dvh bg-gray-50 text-[#1a1a1a] lg:min-h-screen lg:bg-white">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
-      <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-8 lg:pb-8">
+      <main className="mx-auto w-full max-w-6xl px-3 py-6 max-lg:max-w-none sm:px-4 sm:py-8 lg:px-6 lg:pb-8">
         <nav className="mb-4 text-sm text-gray-500" aria-label="Breadcrumb">
           <ol className="flex items-center gap-1.5">
             <li>

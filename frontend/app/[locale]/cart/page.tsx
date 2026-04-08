@@ -93,7 +93,7 @@ export default async function CartPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-[#f5f5f7] text-[#1a1a1a] lg:bg-white">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
-      <main className="mx-auto max-w-6xl px-4 py-5 sm:py-8 lg:py-8">
+      <main className="mx-auto w-full max-w-6xl px-3 py-5 max-lg:max-w-none sm:px-4 sm:py-8 lg:px-6 lg:py-8">
         <nav className="mb-4 text-sm text-gray-500" aria-label="Breadcrumb">
           <ol className="flex items-center gap-1.5">
             <li>

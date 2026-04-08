@@ -118,7 +118,7 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
     <>
       {/* Promo bar – black, dismissible (Figma-style) */}
       {!promoDismissed && (
-        <div className="relative bg-black px-4 py-2.5 text-center text-sm text-white">
+        <div className="relative bg-black px-3 py-2.5 text-center text-sm text-white max-lg:px-[max(0.75rem,env(safe-area-inset-left))] max-lg:pr-[max(2.5rem,env(safe-area-inset-right))] sm:px-4">
           <span>
             {t("promo.signUpText")}{" "}
             <Link href={`/${locale}/account/profile`} className="underline font-semibold hover:no-underline">
@@ -141,11 +141,11 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
       {/* Main nav – white bg, black text (Figma SHOP.CO style) */}
       <header className="sticky top-0 z-40 w-full overflow-visible border-b border-transparent bg-transparent lg:border-gray-200 lg:bg-white">
         <nav
-          className="relative mx-auto flex w-full max-w-none min-h-20 items-center gap-3 overflow-visible px-4 py-5 sm:px-6 lg:min-h-0 lg:max-w-7xl lg:justify-between lg:py-4"
+          className="relative mx-auto flex w-full max-w-none min-h-20 items-center gap-2 overflow-visible py-5 max-lg:gap-2 max-lg:pl-[max(0.75rem,env(safe-area-inset-left))] max-lg:pr-[max(0.25rem,env(safe-area-inset-right))] lg:gap-3 lg:px-6 lg:py-4 lg:min-h-0 lg:max-w-7xl lg:justify-between"
           aria-label="Main navigation"
         >
           {/* Mobile header: profile icon + category pills (no logo) */}
-          <div className="flex min-w-0 flex-1 items-center gap-3 lg:hidden">
+          <div className="flex min-w-0 flex-1 items-center gap-2 lg:hidden">
             <Link
               href={`/${locale}/account/profile`}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/40 bg-white/45 text-gray-900 shadow-sm backdrop-blur-md hover:bg-white/60"
@@ -154,7 +154,7 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
               <ProfileIcon className="h-6 w-6" />
             </Link>
             <div
-              className="flex min-w-0 flex-1 gap-2 overflow-x-auto overflow-y-visible scroll-smooth pr-1 py-2"
+              className="flex min-w-0 flex-1 gap-2 overflow-x-auto overflow-y-visible scroll-smooth py-2 pr-2"
               style={{ WebkitOverflowScrolling: "touch" }}
               aria-label={t("mobile.appNav")}
             >
