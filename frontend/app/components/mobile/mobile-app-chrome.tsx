@@ -245,14 +245,18 @@ export function MobileAppChrome({ locale }: Props) {
 }
 
 /**
- * Wrapper: adds bottom scroll padding on mobile so content clears the floating nav + cart FAB.
- * Uses a soft gray base on small screens so the inset area matches checkout/cart-style pages
- * instead of flashing body white below the footer.
+ * After each page, append an in-flow spacer so document scroll height always clears the fixed
+ * bottom chrome. Padding on a wrapper often fails on iOS (overlap / white gap); block height does not.
  */
 export function MobileAppContentShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="bg-gray-50 pb-[calc(7.25rem+env(safe-area-inset-bottom))] lg:bg-transparent lg:pb-0">
+    <>
       {children}
-    </div>
+      <div
+        aria-hidden
+        className="w-full shrink-0 bg-gray-50 lg:hidden"
+        style={{ height: "var(--mobile-floating-chrome-inset)" }}
+      />
+    </>
   );
 }

@@ -2,6 +2,8 @@
 
 /* Palette: Olive Leaf, Black Forest, Cornsilk, Light Caramel, Copper */
 :root {
+  /* Reserve space above fixed mobile nav + cart FAB (in-flow spacer; more reliable than padding on iOS). */
+  --mobile-floating-chrome-inset: calc(9.5rem + env(safe-area-inset-bottom, 0px));
   --olive: #606C38;
   --black-forest: #283618;
   --cornsilk: #FEFAE0;
@@ -38,6 +40,12 @@
   --color-mobile-cta-hover: var(--mobile-cta-hover);
   --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+@media (max-width: 1023px) {
+  html {
+    scroll-padding-bottom: var(--mobile-floating-chrome-inset);
+  }
 }
 
 body {
