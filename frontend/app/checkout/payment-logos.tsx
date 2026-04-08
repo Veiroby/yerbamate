@@ -87,7 +87,7 @@ export function MaksekeskusBadges({
   }, [failed, methods]);
 
   return (
-    <span className="ml-auto flex items-center gap-1.5">
+    <span className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-1.5">
       {badges.includes("CITA") ? <BankBadge label="Citadele" /> : null}
       {badges.includes("SWED") ? <BankBadge label="Swedbank" /> : null}
       {badges.includes("REV") ? <BankBadge label="Revolut" /> : null}

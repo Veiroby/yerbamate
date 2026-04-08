@@ -134,7 +134,7 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
   return (
     <div className="min-h-dvh bg-gray-50 text-[#1a1a1a] lg:min-h-screen lg:bg-white">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
-      <main className="mx-auto w-full max-w-6xl px-3 py-6 max-lg:max-w-none sm:px-4 sm:py-8 lg:px-6 lg:pb-8">
+      <main className="mx-auto w-full min-w-0 max-w-6xl overflow-x-hidden px-3 py-6 max-lg:max-w-none sm:px-4 sm:py-8 lg:overflow-x-visible lg:px-6 lg:pb-8">
         <nav className="mb-4 text-sm text-gray-500" aria-label="Breadcrumb">
           <ol className="flex items-center gap-1.5">
             <li>
@@ -183,7 +183,8 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
             </p>
           </div>
         ) : (
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
+            <div className="min-w-0">
             <CheckoutForm
               currency={currency}
               subtotal={subtotal}
@@ -196,9 +197,10 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
               maksekeskusAvailable={makseEnabled && isMaksekeskusConfigured()}
               locale={locale}
             />
+            </div>
 
-            <div className="lg:sticky lg:top-6 lg:self-start">
-              <section className="mobile-sheet space-y-5 rounded-3xl border border-black/5 bg-white p-5 shadow-sm sm:p-6 lg:rounded-2xl">
+            <div className="min-w-0 lg:sticky lg:top-6 lg:self-start">
+              <section className="mobile-sheet w-full min-w-0 max-w-full space-y-5 rounded-3xl border border-black/5 bg-white p-5 shadow-sm sm:p-6 lg:rounded-2xl">
                 <h2 className="text-lg font-bold text-black">{t("mobile.reviewAndPay")}</h2>
                 <div className="max-h-[260px] space-y-3 overflow-y-auto pr-1">
                   {items.map((item) => (

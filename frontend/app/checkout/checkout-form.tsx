@@ -225,7 +225,7 @@ export function CheckoutForm({
     `${!open ? "max-lg:hidden" : ""} max-lg:border-t max-lg:border-gray-100 max-lg:px-4 max-lg:pb-4 lg:block`;
 
   const paymentRow = (active: boolean) =>
-    `flex w-full cursor-pointer items-center gap-3 rounded-2xl border px-3 py-3 transition ${
+    `flex w-full min-w-0 max-w-full cursor-pointer items-center gap-3 rounded-2xl border px-3 py-3 transition ${
       active ? "border-[var(--mobile-cta)] bg-[var(--mobile-cta)]/5" : "border-gray-200 hover:border-gray-300"
     }`;
 
@@ -383,7 +383,7 @@ export function CheckoutForm({
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-900">
               <CardIcon className="h-5 w-5" />
             </span>
-            <span className="flex-1 text-sm font-medium text-black">
+            <span className="min-w-0 flex-1 text-sm font-medium text-black">
               {t("mobile.payWithCard")}
             </span>
           </label>
@@ -397,7 +397,7 @@ export function CheckoutForm({
                 checked={paymentChoice === "maksekeskus"}
                 onChange={() => setPaymentChoice("maksekeskus")}
               />
-              <span className="flex-1 text-sm font-medium text-black">
+              <span className="min-w-0 flex-1 text-sm font-medium text-black">
                 {t("mobile.payWithMaksekeskus")}
               </span>
               <MaksekeskusBadges enabled={maksekeskusAvailable} />
@@ -413,7 +413,7 @@ export function CheckoutForm({
                 checked={paymentChoice === "wire"}
                 onChange={() => setPaymentChoice("wire")}
               />
-              <span className="flex-1 text-sm font-medium text-black">{t("mobile.payWithWire")}</span>
+              <span className="min-w-0 flex-1 text-sm font-medium text-black">{t("mobile.payWithWire")}</span>
             </label>
           ) : null}
         </div>

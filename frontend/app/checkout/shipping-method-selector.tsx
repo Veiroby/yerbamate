@@ -293,7 +293,9 @@ export function ShippingMethodSelector({
     (m): m is ShippingOption => m !== undefined,
   );
   const pairGridClass =
-    pairCards.length >= 2 ? "grid grid-cols-2 gap-3" : "grid grid-cols-1 gap-3";
+    pairCards.length >= 2
+      ? "grid min-w-0 grid-cols-2 gap-3"
+      : "grid min-w-0 grid-cols-1 gap-3";
 
   const shortDeliveryTitle = (m: ShippingOption) => {
     if (m.id === LOCAL_PICKUP_METHOD_ID) {
@@ -418,7 +420,7 @@ export function ShippingMethodSelector({
             return (
               <label
                 key={method.id}
-                className={`flex cursor-pointer flex-col gap-2 rounded-3xl border p-4 text-left transition ${
+                className={`flex min-w-0 cursor-pointer flex-col gap-2 rounded-3xl border p-3 text-left transition sm:p-4 ${
                   selected
                     ? "border-[var(--mobile-cta)] bg-[var(--mobile-cta)]/5 ring-2 ring-[var(--mobile-cta)]/20"
                     : "border-black/10 bg-white hover:border-black/20"
