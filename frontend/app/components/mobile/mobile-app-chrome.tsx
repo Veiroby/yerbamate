@@ -245,10 +245,14 @@ export function MobileAppChrome({ locale }: Props) {
 }
 
 /**
- * Wrapper: adds bottom safe space on mobile so content is not covered by floating chrome.
+ * Wrapper: adds bottom scroll padding on mobile so content clears the floating nav + cart FAB.
+ * Uses a soft gray base on small screens so the inset area matches checkout/cart-style pages
+ * instead of flashing body white below the footer.
  */
 export function MobileAppContentShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="lg:pb-0 pb-[calc(5.75rem+env(safe-area-inset-bottom))]">{children}</div>
+    <div className="bg-gray-50 pb-[calc(7.25rem+env(safe-area-inset-bottom))] lg:bg-transparent lg:pb-0">
+      {children}
+    </div>
   );
 }

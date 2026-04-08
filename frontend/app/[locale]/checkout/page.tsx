@@ -132,9 +132,9 @@ export default async function CheckoutPage({ params, searchParams }: CheckoutPag
   const makseEnabled = process.env.MAKSEKESKUS_ENABLED === "true";
 
   return (
-    <div className="min-h-screen bg-gray-50 text-[#1a1a1a] max-lg:bg-gray-50 lg:bg-white">
+    <div className="flex min-h-dvh flex-col bg-gray-50 text-[#1a1a1a] max-lg:bg-gray-50 lg:min-h-screen lg:bg-white">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
-      <main className="mx-auto max-w-6xl px-4 py-6 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+1.5rem))] sm:py-8 sm:pb-8 lg:pb-8">
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-6 sm:py-8 lg:pb-8">
         <nav className="mb-4 text-sm text-gray-500" aria-label="Breadcrumb">
           <ol className="flex items-center gap-1.5">
             <li>

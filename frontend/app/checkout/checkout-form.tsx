@@ -256,7 +256,7 @@ export function CheckoutForm({
       )}
 
       {/* Delivery: contact + business + address */}
-      <div className="max-lg:overflow-hidden max-lg:rounded-2xl max-lg:border max-lg:border-gray-200">
+      <div className="max-lg:overflow-x-hidden max-lg:rounded-2xl max-lg:border max-lg:border-gray-200">
         <button
           type="button"
           className={panelBtn}
@@ -334,7 +334,7 @@ export function CheckoutForm({
       </div>
 
       {/* Shipping method */}
-      <div className="max-lg:overflow-hidden max-lg:rounded-2xl max-lg:border max-lg:border-gray-200">
+      <div className="max-lg:overflow-x-hidden max-lg:rounded-2xl max-lg:border max-lg:border-gray-200">
         <button
           type="button"
           className={panelBtn}

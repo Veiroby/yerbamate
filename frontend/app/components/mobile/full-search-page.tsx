@@ -148,7 +148,7 @@ export function FullSearchPage({ locale }: Props) {
         </button>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-4">
+      <div className="flex-1 overflow-y-auto px-4 pb-[calc(7.25rem+env(safe-area-inset-bottom))] pt-4">
         {query.trim().length < MIN_CHARS && (
           <section className="mb-8">
             <h2 className="mb-3 text-lg font-bold text-black">{t("mobile.trendingSearches")}</h2>
