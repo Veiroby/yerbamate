@@ -117,7 +117,7 @@ export default async function MateGourdsPage({ params }: Props) {
 
         <div className="grid grid-cols-2 gap-3 sm:gap-6">
           {productCards.map((product) => (
-            <ProductCard key={product.id} product={product} showDescription />
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </main>

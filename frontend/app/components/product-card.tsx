@@ -28,10 +28,9 @@ export type ProductCardData = {
 
 type Props = {
   product: ProductCardData;
-  showDescription?: boolean;
 };
 
-export function ProductCard({ product, showDescription }: Props) {
+export function ProductCard({ product }: Props) {
   const pathname = usePathname();
   const { t } = useTranslation();
   const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
@@ -116,7 +115,7 @@ export function ProductCard({ product, showDescription }: Props) {
           )}
         </div>
 
-        {/* Left-aligned: title, weight, optional description */}
+        {/* Left-aligned: title, weight */}
         <div className="flex flex-1 min-h-0 flex-col p-2 text-left">
           <h2 className="line-clamp-2 text-lg font-semibold text-gray-900 transition group-hover:text-black">
             {product.name}
@@ -124,11 +123,6 @@ export function ProductCard({ product, showDescription }: Props) {
           <p className="mt-1.5 text-sm text-gray-500">
             {product.weight ?? "—"}
           </p>
-          {showDescription && product.description ? (
-            <p className="mt-2 line-clamp-2 text-xs text-gray-500">
-              {product.description}
-            </p>
-          ) : null}
           <div className="mt-auto flex items-end justify-between pt-2">
             <p className="text-lg font-semibold text-black">
               {product.currency} {product.price.toFixed(2)}
