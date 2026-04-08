@@ -64,16 +64,22 @@ export async function createTransaction(
     ? params.amount.toFixed(2)
     : String(params.amount);
 
+  // MakeCommerce expects a top-level `transaction` object and customer.ip (not a top-level `ip`).
+  // Error seen when wrong: 400 missing resource transaction + customer.ip
   const body = {
-    amount: amountStr,
-    currency: params.currency,
-    ip: params.ip,
-    return_url: params.return_url,
-    cancel_url: params.cancel_url,
-    notifications_url: params.notifications_url,
-    reference: params.reference,
-    merchant_data: params.merchant_data,
-    ...(params.customer && { customer: params.customer }),
+    transaction: {
+      amount: amountStr,
+      currency: params.currency,
+      return_url: params.return_url,
+      cancel_url: params.cancel_url,
+      notifications_url: params.notifications_url,
+      reference: params.reference,
+      merchant_data: params.merchant_data,
+      customer: {
+        ip: params.ip,
+        ...(params.customer ?? {}),
+      },
+    },
   };
 
   const auth = Buffer.from(`${shopId}:${secretKey}`).toString("base64");
