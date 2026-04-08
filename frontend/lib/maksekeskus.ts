@@ -38,7 +38,7 @@ export type CreateTransactionParams = {
   ip: string;
   return_url: string;
   cancel_url: string;
-  notifications_url: string;
+  notification_url: string;
   reference: string;
   merchant_data: string;
   customer?: { country?: string; locale?: string };
@@ -64,21 +64,21 @@ export async function createTransaction(
     ? params.amount.toFixed(2)
     : String(params.amount);
 
-  // MakeCommerce expects a top-level `transaction` object and customer.ip (not a top-level `ip`).
-  // Error seen when wrong: 400 missing resource transaction + customer.ip
+  // MakeCommerce expects a top-level `transaction` object and a top-level `customer` object.
+  // See SDK docs example: CreateTransactionRequest(transaction, customer).
   const body = {
     transaction: {
       amount: amountStr,
       currency: params.currency,
       return_url: params.return_url,
       cancel_url: params.cancel_url,
-      notifications_url: params.notifications_url,
+      notification_url: params.notification_url,
       reference: params.reference,
       merchant_data: params.merchant_data,
-      customer: {
-        ip: params.ip,
-        ...(params.customer ?? {}),
-      },
+    },
+    customer: {
+      ip: params.ip,
+      ...(params.customer ?? {}),
     },
   };
 

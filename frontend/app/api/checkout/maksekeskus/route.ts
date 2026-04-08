@@ -356,7 +356,7 @@ export async function POST(request: Request) {
     ip: getClientIp(request),
     return_url: `${origin}${pathPrefix}/checkout/success?provider=maksekeskus&orderNumber=${encodeURIComponent(order.orderNumber)}`,
     cancel_url: `${origin}${pathPrefix}/cart`,
-    notifications_url: `${origin}/api/checkout/maksekeskus/notify`,
+    notification_url: `${origin}/api/checkout/maksekeskus/notify`,
     reference: order.orderNumber,
     merchant_data: order.id,
     customer: {
