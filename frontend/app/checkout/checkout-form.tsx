@@ -8,6 +8,7 @@ import { LOCAL_PICKUP_METHOD_ID } from "@/lib/shipping/local-pickup";
 import { useLocale } from "@/lib/locale-context";
 import type { CountryCode } from "@/lib/locale-data";
 import { useTranslation } from "@/lib/translation-context";
+import { ApplePayMark, CardIcon, MaksekeskusBadges } from "./payment-logos";
 
 type Props = {
   currency: string;
@@ -379,7 +380,15 @@ export function CheckoutForm({
               checked={paymentChoice === "stripe"}
               onChange={() => setPaymentChoice("stripe")}
             />
-            <span className="flex-1 text-sm font-medium text-black">{t("mobile.payWithCard")}</span>
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-900">
+              <CardIcon className="h-5 w-5" />
+            </span>
+            <span className="flex-1 text-sm font-medium text-black">
+              {t("mobile.payWithCard")}
+            </span>
+            <span className="shrink-0 text-gray-900/80">
+              <ApplePayMark className="h-5 w-auto" />
+            </span>
           </label>
 
           {maksekeskusAvailable ? (
@@ -391,7 +400,10 @@ export function CheckoutForm({
                 checked={paymentChoice === "maksekeskus"}
                 onChange={() => setPaymentChoice("maksekeskus")}
               />
-              <span className="flex-1 text-sm font-medium text-black">{t("mobile.payWithMaksekeskus")}</span>
+              <span className="flex-1 text-sm font-medium text-black">
+                {t("mobile.payWithMaksekeskus")}
+              </span>
+              <MaksekeskusBadges enabled={maksekeskusAvailable} />
             </label>
           ) : null}
 
