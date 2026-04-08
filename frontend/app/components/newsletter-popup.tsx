@@ -76,60 +76,83 @@ export function NewsletterPopup() {
   const discountPercent = settings.popupDiscountPercent ?? 10;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg animate-in fade-in zoom-in-95 duration-300 rounded-2xl border border-gray-100 bg-white p-6 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.35)] sm:p-7">
-        <button
-          onClick={handleClose}
-          className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
-          aria-label="Close"
-        >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
+    <div
+      className="fixed inset-0 z-[100]"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="newsletter-popup-title"
+    >
+      <div className="absolute inset-0 bg-black/25 backdrop-blur-sm" aria-hidden />
+      <div className="relative flex min-h-full items-center justify-center px-4 py-6 sm:px-6">
+        <div className="relative w-full max-w-md rounded-3xl border border-black/5 bg-white/80 p-5 shadow-[0_18px_60px_rgba(0,0,0,0.18)] backdrop-blur-md sm:p-6">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-[var(--mobile-cta)] focus:ring-offset-2"
+            aria-label={t("common.close")}
+          >
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
 
-        {status === "success" ? (
-          <div className="py-5 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#e7f2ef]">
-              <svg className="h-8 w-8 text-[#606C38]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h3 className="mb-2 text-2xl font-semibold tracking-wide text-gray-900">{t("newsletter.popupSuccessTitle")}</h3>
-            <p className="text-sm leading-relaxed text-gray-600">{t("newsletter.popupSuccessText")}</p>
-            {receivedDiscountCode && (
-              <div className="mt-4 rounded-xl border border-gray-200 bg-[#f6fbf6] px-4 py-4">
-                <p className="mb-1 text-xs font-medium text-[#606C38]">{t("newsletter.popupSuccessCodeLabel")}</p>
-                <p className="text-2xl font-bold text-[#1f5b4f] tracking-wider">{receivedDiscountCode}</p>
-                <p className="mt-2 text-xs text-[#606C38]">{t("newsletter.popupSuccessValidNote")}</p>
+          {status === "success" ? (
+            <div className="space-y-4 pt-2">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[var(--mobile-cta)]/10">
+                <svg
+                  className="h-7 w-7 text-[var(--mobile-cta)]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  aria-hidden
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
               </div>
-            )}
-            <p className="mt-4 text-xs text-gray-500">{t("newsletter.popupSentInfo")}</p>
-            <button
-              onClick={handleClose}
-              className="mt-4 rounded-2xl bg-[#283618] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1f2c12]"
-            >
-              {t("newsletter.popupStartShopping")}
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#e7f2ef]">
-              {/* Mail logo */}
-              <svg className="h-7 w-7 text-[#606C38]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16v12H4z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 7l8 6 8-6" />
-              </svg>
+              <div className="min-w-0 text-center">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  {t("newsletter.success")}
+                </p>
+                <h2 id="newsletter-popup-title" className="mt-1 text-lg font-bold tracking-tight text-black">
+                  {t("newsletter.popupSuccessTitle")}
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-gray-700">{t("newsletter.popupSuccessText")}</p>
+              </div>
+              {receivedDiscountCode ? (
+                <div className="rounded-2xl border border-black/5 bg-white/60 px-4 py-4 backdrop-blur-sm">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    {t("newsletter.popupSuccessCodeLabel")}
+                  </p>
+                  <p className="text-xl font-bold tracking-wider text-black sm:text-2xl">{receivedDiscountCode}</p>
+                  <p className="mt-2 text-xs text-gray-600">{t("newsletter.popupSuccessValidNote")}</p>
+                </div>
+              ) : null}
+              <p className="text-center text-xs text-gray-500">{t("newsletter.popupSentInfo")}</p>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--mobile-cta)] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--mobile-cta-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--mobile-cta)] focus:ring-offset-2"
+              >
+                {t("newsletter.popupStartShopping")}
+              </button>
             </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="min-w-0 pr-10">
+                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  {t("newsletter.subscribeToNewsletter")}
+                </p>
+                <h2 id="newsletter-popup-title" className="mt-1 text-lg font-bold tracking-tight text-black">
+                  {t("newsletter.popupTitle")}
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-gray-700">{t("newsletter.popupDescription")}</p>
+                <p className="mt-3 text-sm font-semibold text-[var(--mobile-cta)]">
+                  {t("newsletter.popupDiscountLine", { percent: discountPercent })}
+                </p>
+              </div>
 
-            <h3 className="mb-2 text-2xl font-semibold tracking-wide text-gray-900">{t("newsletter.popupTitle")}</h3>
-            <p className="mb-3 text-sm leading-relaxed text-gray-600">{t("newsletter.popupDescription")}</p>
-            <p className="mb-4 text-sm font-medium text-[#606C38]">
-              {t("newsletter.popupDiscountLine", { percent: discountPercent })}
-            </p>
-
-            <form onSubmit={handleSubmit} className="mt-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-2">
                 <input
                   type="email"
                   value={email}
@@ -137,16 +160,16 @@ export function NewsletterPopup() {
                   placeholder={t("newsletter.placeholderDark")}
                   required
                   disabled={status === "loading"}
-                  className="w-full flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm transition outline-none placeholder:text-gray-400 focus:border-[#606C38] focus:ring-2 focus:ring-[#606C38]/20 disabled:bg-gray-50"
+                  className="inline-flex h-12 w-full rounded-full border border-gray-200 bg-white px-4 text-sm text-gray-900 shadow-sm outline-none transition placeholder:text-gray-400 focus:border-black focus:ring-1 focus:ring-black/20 disabled:bg-gray-50 disabled:opacity-70"
                 />
                 <button
                   type="submit"
                   disabled={status === "loading"}
-                  className="flex w-full items-center justify-center rounded-2xl bg-[#283618] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#1f2c12] disabled:bg-[#4e6a5a] sm:w-auto sm:flex-shrink-0"
+                  className="inline-flex h-12 w-full items-center justify-center rounded-full bg-[var(--mobile-cta)] px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--mobile-cta-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--mobile-cta)] focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {status === "loading" ? (
                     <>
-                      <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden>
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                         <path
                           className="opacity-75"
@@ -160,16 +183,21 @@ export function NewsletterPopup() {
                     t("newsletter.popupButton", { percent: discountPercent })
                   )}
                 </button>
-              </div>
+                <button
+                  type="button"
+                  onClick={handleClose}
+                  className="inline-flex h-12 w-full items-center justify-center rounded-full border border-black/10 bg-white px-5 text-sm font-semibold text-gray-900 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[var(--mobile-cta)] focus:ring-offset-2"
+                >
+                  {t("common.close")}
+                </button>
+              </form>
 
-              {status === "error" && (
-                <p className="mt-3 text-sm text-red-600">{message}</p>
-              )}
-            </form>
+              {status === "error" ? <p className="text-sm text-red-600">{message}</p> : null}
 
-            <p className="mt-4 text-center text-xs text-gray-500">{t("newsletter.popupNoSpam")}</p>
-          </>
-        )}
+              <p className="text-center text-xs text-gray-500">{t("newsletter.popupNoSpam")}</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
