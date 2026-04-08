@@ -8,7 +8,7 @@ import { LOCAL_PICKUP_METHOD_ID } from "@/lib/shipping/local-pickup";
 import { useLocale } from "@/lib/locale-context";
 import type { CountryCode } from "@/lib/locale-data";
 import { useTranslation } from "@/lib/translation-context";
-import { ApplePayMark, CardIcon, MaksekeskusBadges } from "./payment-logos";
+import { CardIcon, MaksekeskusBadges } from "./payment-logos";
 
 type Props = {
   currency: string;
@@ -385,9 +385,6 @@ export function CheckoutForm({
             </span>
             <span className="flex-1 text-sm font-medium text-black">
               {t("mobile.payWithCard")}
-            </span>
-            <span className="shrink-0 text-gray-900/80">
-              <ApplePayMark className="h-5 w-auto" />
             </span>
           </label>
 
