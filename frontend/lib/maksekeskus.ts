@@ -64,8 +64,13 @@ export async function createTransaction(
     ? params.amount.toFixed(2)
     : String(params.amount);
 
-  // MakeCommerce expects a top-level `transaction` object and a top-level `customer` object.
-  // See SDK docs example: CreateTransactionRequest(transaction, customer).
+  // MakeCommerce SDKs serialize CreateTransactionRequest(transaction, customer).
+  // In practice, some deployments validate `customer` at the top-level, others expect it under `transaction`.
+  // To be robust, we include BOTH. (Duplicate customer payload is small and avoids 400 missing customer.)
+  const customerPayload = {
+    ip: params.ip,
+    ...(params.customer ?? {}),
+  };
   const body = {
     transaction: {
       amount: amountStr,
@@ -75,11 +80,9 @@ export async function createTransaction(
       notification_url: params.notification_url,
       reference: params.reference,
       merchant_data: params.merchant_data,
+      customer: customerPayload,
     },
-    customer: {
-      ip: params.ip,
-      ...(params.customer ?? {}),
-    },
+    customer: customerPayload,
   };
 
   const auth = Buffer.from(`${shopId}:${secretKey}`).toString("base64");
@@ -108,6 +111,10 @@ export async function createTransaction(
       parts.push(baseMsg);
       if (d.errors) parts.push(`errors=${JSON.stringify(d.errors)}`);
       if (d.details) parts.push(`details=${JSON.stringify(d.details)}`);
+      // Include minimal request shape for debugging (no secrets).
+      parts.push(
+        `sentKeys=${JSON.stringify(Object.keys(body))}`,
+      );
       return { ok: false, error: `Maksekeskus ${res.status}: ${parts.join(" | ")}` };
     }
 
