@@ -255,8 +255,8 @@ export function CheckoutForm({
         </div>
       )}
 
-      {/* Delivery: contact + business + address */}
-      <div className="max-lg:overflow-x-hidden max-lg:rounded-2xl max-lg:border max-lg:border-gray-200">
+      {/* Delivery: contact + business + address — no inner card on mobile (outer form is the only card) */}
+      <div className="max-lg:overflow-x-hidden max-lg:border-b max-lg:border-gray-100 max-lg:pb-2">
         <button
           type="button"
           className={panelBtn}
@@ -334,7 +334,7 @@ export function CheckoutForm({
       </div>
 
       {/* Shipping method */}
-      <div className="max-lg:overflow-x-hidden max-lg:rounded-2xl max-lg:border max-lg:border-gray-200">
+      <div className="max-lg:overflow-x-hidden max-lg:border-b max-lg:border-gray-100 max-lg:pb-2">
         <button
           type="button"
           className={panelBtn}
@@ -365,7 +365,7 @@ export function CheckoutForm({
         </div>
       </div>
 
-      <section className="space-y-3 rounded-2xl border border-gray-200 p-4 lg:border-0 lg:p-0">
+      <section className="space-y-3 max-lg:rounded-none max-lg:border-0 max-lg:p-0 max-lg:pt-3 max-lg:shadow-none rounded-2xl border border-gray-200 p-4 lg:border-0 lg:p-0">
         <div>
           <h2 className="text-xl font-bold text-black">{t("mobile.payment")}</h2>
           <p className="mt-1 text-xs text-gray-500">{t("mobile.paymentSecure")}</p>

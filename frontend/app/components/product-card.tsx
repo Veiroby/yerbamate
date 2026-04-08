@@ -70,7 +70,7 @@ export function ProductCard({ product, showDescription }: Props) {
               alt={product.imageAlt ?? product.name}
               fill
               className="object-contain transition duration-200 group-hover:scale-[1.02]"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              sizes="(max-width: 1024px) 50vw, 25vw"
               unoptimized
               style={
                 (product as any).focalX != null &&

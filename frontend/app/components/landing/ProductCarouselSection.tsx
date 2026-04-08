@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { usePathname } from "next/navigation";
 import { ProductFavoriteHeart } from "@/app/components/product-favorite-heart";
 import { ProductWishlistHeart } from "@/app/components/product-wishlist-heart";
 import { useTranslation } from "@/lib/translation-context";
@@ -191,10 +190,8 @@ export function ProductCarouselSection({
   "aria-label": ariaLabel,
 }: Props) {
   const { t } = useTranslation();
-  const pathname = usePathname();
   const displayTitle = titleKey ? t(titleKey) : (title ?? "");
   const description = descriptionKey ? t(descriptionKey) : null;
-  const locale: Locale = pathname?.startsWith("/en") ? "en" : "lv";
 
   if (products.length === 0) return null;
 
@@ -209,9 +206,6 @@ export function ProductCarouselSection({
     ? "text-white"
     : "text-black";
   const descClass = isDark ? "text-gray-300" : "text-gray-600";
-  const viewAllClass = isDark
-    ? "border-2 border-white/80 text-white hover:bg-white hover:text-zinc-950"
-    : "border-2 border-gray-900 text-gray-900 hover:bg-gray-900 hover:text-white";
 
   return (
     <section
@@ -239,14 +233,6 @@ export function ProductCarouselSection({
           {products.map((p) => (
             <CarouselSectionCard key={p.href} p={p} />
           ))}
-        </div>
-        <div className="mt-10 max-lg:mt-12 flex justify-center">
-          <Link
-            href={`/${locale}/products`}
-            className={`rounded-full px-8 py-3 text-sm font-semibold transition ${viewAllClass}`}
-          >
-            {t("home.viewAll")}
-          </Link>
         </div>
       </div>
     </section>
