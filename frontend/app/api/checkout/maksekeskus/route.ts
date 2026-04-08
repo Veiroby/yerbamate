@@ -18,13 +18,12 @@ import {
   getRedirectUrl,
 } from "@/lib/maksekeskus";
 import { calculateBundleSavings } from "@/lib/pricing/bundles";
+import { getRequestOrigin } from "@/lib/request-origin";
 
 function getSiteOrigin(request: Request): string {
   const configured = process.env.NEXT_PUBLIC_APP_ORIGIN?.trim();
   if (configured) return configured.replace(/\/+$/, "");
-  const origin = request.headers.get("origin")?.trim();
-  if (origin && process.env.NODE_ENV !== "production") return origin;
-  return "http://localhost:3000";
+  return getRequestOrigin(request);
 }
 
 function getClientIp(request: Request): string {
@@ -361,8 +360,8 @@ export async function POST(request: Request) {
     reference: order.orderNumber,
     merchant_data: order.id,
     customer: {
-      country: country.toLowerCase(),
-      locale: "et",
+      country: country.toUpperCase(),
+      ...(locale === "lv" || locale === "en" ? { locale } : {}),
     },
   });
 

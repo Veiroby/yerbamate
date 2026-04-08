@@ -92,8 +92,17 @@ export async function createTransaction(
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      const msg = (data && (data.message || data.error)) || res.statusText;
-      return { ok: false, error: String(msg) };
+      const d = (data ?? {}) as any;
+      const parts: string[] = [];
+      const baseMsg =
+        (typeof d.message === "string" && d.message) ||
+        (typeof d.error === "string" && d.error) ||
+        res.statusText ||
+        "Maksekeskus request failed";
+      parts.push(baseMsg);
+      if (d.errors) parts.push(`errors=${JSON.stringify(d.errors)}`);
+      if (d.details) parts.push(`details=${JSON.stringify(d.details)}`);
+      return { ok: false, error: `Maksekeskus ${res.status}: ${parts.join(" | ")}` };
     }
 
     const transaction = data as CreateTransactionResponse;
