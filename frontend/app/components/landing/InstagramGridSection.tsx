@@ -1,4 +1,4 @@
-import { fetchInstagramMedia } from "@/lib/instagram";
+import { fetchInstagramMedia, isInstagramConfigured } from "@/lib/instagram";
 
 type Props = {
   username: string;
@@ -7,7 +7,8 @@ type Props = {
 
 export async function InstagramGridSection({ username, title = "Instagram" }: Props) {
   const media = await fetchInstagramMedia(9);
-  if (!media.length) return null;
+  const configured = isInstagramConfigured();
+  if (!media.length && !configured) return null;
 
   return (
     <section className="mx-auto w-full max-w-6xl px-3 py-8 sm:px-6 lg:px-8">
@@ -23,6 +24,11 @@ export async function InstagramGridSection({ username, title = "Instagram" }: Pr
         </a>
       </div>
 
+      {!media.length ? (
+        <div className="rounded-3xl border border-black/5 bg-white p-5 text-sm text-gray-600 shadow-sm">
+          Instagram feed is temporarily unavailable.
+        </div>
+      ) : (
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {media.slice(0, 9).map((m) => {
           const src =
@@ -48,6 +54,7 @@ export async function InstagramGridSection({ username, title = "Instagram" }: Pr
           );
         })}
       </div>
+      )}
     </section>
   );
 }

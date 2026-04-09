@@ -17,6 +17,10 @@ function getAccessToken(): string | null {
   return token ? token : null;
 }
 
+export function isInstagramConfigured(): boolean {
+  return Boolean(getAccessToken());
+}
+
 export async function fetchInstagramMedia(limit = 9): Promise<InstagramMediaItem[]> {
   const token = getAccessToken();
   if (!token) return [];
@@ -33,7 +37,18 @@ export async function fetchInstagramMedia(limit = 9): Promise<InstagramMediaItem
     // "Real time" enough without hammering IG API.
     next: { revalidate: 300 },
   });
-  if (!res.ok) return [];
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error(
+      "[instagram] fetch failed",
+      JSON.stringify({
+        status: res.status,
+        statusText: res.statusText,
+        body: body.slice(0, 300),
+      }),
+    );
+    return [];
+  }
 
   const json = (await res.json().catch(() => null)) as InstagramMediaResponse | null;
   const items = Array.isArray(json?.data) ? json!.data : [];
