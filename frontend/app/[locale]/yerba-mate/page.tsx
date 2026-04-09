@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
@@ -94,19 +93,13 @@ export default async function YerbaMatePage({ params }: Props) {
     <div className="min-h-screen bg-white text-gray-900">
       <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
       <main className="mx-auto w-full max-w-7xl px-3 py-10 max-lg:max-w-none sm:px-6 sm:py-14 lg:px-8">
-        <header className="mb-10 flex flex-wrap items-end justify-between gap-6 border-b border-gray-200 pb-8">
-          <div>
-            <h1 className="text-2xl font-bold uppercase tracking-wide text-black sm:text-3xl md:text-4xl">
-              {t("products.categoryYerbaMate")}
-            </h1>
-            <p className="mt-2 text-base text-gray-600">{t("products.browseCategorySelection", { category: t("products.categoryYerbaMate") })}</p>
-          </div>
-          <Link
-            href={`${prefix}/cart`}
-            className="inline-flex shrink-0 rounded border-2 border-black px-5 py-2.5 text-sm font-semibold uppercase tracking-wide text-black transition hover:bg-black hover:text-white"
-          >
-            {t("products.viewCart")}
-          </Link>
+        <header className="mb-10 border-b border-gray-200 pb-8">
+          <h1 className="text-2xl font-bold uppercase tracking-wide text-black sm:text-3xl md:text-4xl">
+            {t("products.categoryYerbaMate")}
+          </h1>
+          <p className="mt-2 text-base text-gray-600">
+            {t("products.browseCategorySelection", { category: t("products.categoryYerbaMate") })}
+          </p>
         </header>
 
         <p className="mb-6 text-base font-medium text-gray-600">

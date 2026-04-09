@@ -116,18 +116,18 @@ export function ProductCard({ product }: Props) {
         </div>
 
         {/* Left-aligned: title, weight */}
-        <div className="flex flex-1 min-h-0 flex-col p-2 text-left">
-          <h2 className="line-clamp-2 text-lg font-semibold text-gray-900 transition group-hover:text-black">
+        <div className="flex flex-1 min-h-0 flex-col px-2 pt-2 pb-1 text-left">
+          <h2 className="line-clamp-2 text-sm font-semibold text-gray-900 transition group-hover:text-black sm:text-base">
             {product.name}
           </h2>
-          <p className="mt-1.5 text-sm text-gray-500">
+          <p className="mt-1 text-xs text-gray-500">
             {product.weight ?? "—"}
           </p>
           <div className="mt-auto flex items-end justify-between pt-2">
-            <p className="text-lg font-semibold text-black">
+            <p className="text-base font-semibold text-black">
               {product.currency} {product.price.toFixed(2)}
             </p>
-            <div className="flex items-center gap-1 text-xs font-semibold">
+            <div className="flex items-center gap-1 text-[10px] font-semibold sm:text-xs">
               {stockStatus === "in_stock" ? (
                 <span className="text-emerald-600">
                   {t("product.inStock")}
@@ -163,12 +163,12 @@ export function ProductCard({ product }: Props) {
 
       {/* Add to cart button */}
       {!soldOut && (
-        <div className="mt-4 px-4 pb-4">
+        <div className="mt-2 px-2 pb-2">
           <button
             type="button"
             onClick={handleAddToCart}
             disabled={addingToCart || isLoading}
-            className="w-full rounded-xl bg-black py-3.5 text-base font-bold text-white transition hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full rounded-full bg-[var(--mobile-cta)] py-2 text-sm font-semibold text-white transition hover:bg-[var(--mobile-cta-hover)] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {addingToCart ? (
               <span className="flex items-center justify-center gap-2">
