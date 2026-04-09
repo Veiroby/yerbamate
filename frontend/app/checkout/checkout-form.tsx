@@ -8,7 +8,8 @@ import { LOCAL_PICKUP_METHOD_ID } from "@/lib/shipping/local-pickup";
 import { useLocale } from "@/lib/locale-context";
 import type { CountryCode } from "@/lib/locale-data";
 import { useTranslation } from "@/lib/translation-context";
-import { CardIcon, MaksekeskusBadges, VisaMastercardMarks } from "./payment-logos";
+import Image from "next/image";
+import { CardIcon, VisaMastercardMarks } from "./payment-logos";
 
 type Props = {
   currency: string;
@@ -27,6 +28,11 @@ type Props = {
 };
 
 type PaymentChoice = "stripe" | "maksekeskus" | "wire";
+
+type MakseBankKey = "swedbank" | "seb" | "luminor" | "citadele" | "revolut";
+type MakseUiMethod =
+  | { kind: "card" }
+  | { kind: "bank"; bank: MakseBankKey; label: string; logoSrc: string; methodUrl: string };
 
 function Chevron({ open }: { open: boolean }) {
   return (
@@ -69,6 +75,8 @@ export function CheckoutForm({
   const [deliveryOpen, setDeliveryOpen] = useState(true);
   const [methodOpen, setMethodOpen] = useState(true);
   const [paymentChoice, setPaymentChoice] = useState<PaymentChoice>("stripe");
+  const [makseMethodUrl, setMakseMethodUrl] = useState<string>("");
+  const [makseMethods, setMakseMethods] = useState<MakseUiMethod[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
 
   const isBusiness = customerType === "BUSINESS";
@@ -93,6 +101,73 @@ export function CheckoutForm({
       setPaymentChoice("stripe");
     }
   }, [maksekeskusAvailable, isBusiness, paymentChoice]);
+
+  useEffect(() => {
+    if (!maksekeskusAvailable) {
+      setMakseMethods([]);
+      setMakseMethodUrl("");
+      return;
+    }
+
+    let cancelled = false;
+
+    const bankLogoMap: Record<MakseBankKey, { label: string; logoSrc: string }> = {
+      swedbank: { label: "Swedbank", logoSrc: "/payments/banks/swedbank.png" },
+      seb: { label: "SEB", logoSrc: "/payments/banks/seb.png" },
+      luminor: { label: "Luminor", logoSrc: "/payments/banks/luminor.png" },
+      citadele: { label: "Citadele", logoSrc: "/payments/banks/citadele.png" },
+      revolut: { label: "Revolut", logoSrc: "/payments/banks/revolut.png" },
+    };
+
+    const mapNameToBank = (name: string): MakseBankKey | null => {
+      const n = name.toLowerCase();
+      if (n.includes("swed")) return "swedbank";
+      if (n.includes("seb")) return "seb";
+      if (n.includes("luminor")) return "luminor";
+      if (n.includes("citadele")) return "citadele";
+      if (n.includes("revolut")) return "revolut";
+      return null;
+    };
+
+    fetch("/api/payments/maksekeskus/methods", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => {
+        if (cancelled) return;
+        const list = Array.isArray(d?.methods) ? (d.methods as Array<any>) : [];
+
+        const picked: Array<MakseUiMethod> = [];
+        for (const m of list) {
+          if (m?.category && m.category !== "banklinks") continue;
+          const name = typeof m?.display_name === "string" ? m.display_name : typeof m?.name === "string" ? m.name : "";
+          const url = typeof m?.url === "string" ? m.url : "";
+          if (!name || !url) continue;
+          const bank = mapNameToBank(name);
+          if (!bank) continue;
+          const meta = bankLogoMap[bank];
+          if (picked.some((x) => x.kind === "bank" && x.bank === bank)) continue;
+          picked.push({ kind: "bank", bank, label: meta.label, logoSrc: meta.logoSrc, methodUrl: url });
+        }
+
+        // Stable order (matches screenshot)
+        const order: MakseBankKey[] = ["swedbank", "seb", "luminor", "citadele", "revolut"];
+        picked.sort((a, b) => {
+          if (a.kind !== "bank" || b.kind !== "bank") return 0;
+          return order.indexOf(a.bank) - order.indexOf(b.bank);
+        });
+
+        setMakseMethods(picked);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setMakseMethods([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [maksekeskusAvailable]);
+
+  const showMakseBanks = maksekeskusAvailable && makseMethods.some((m) => m.kind === "bank");
 
   const getInputValue = (name: string): string => {
     const form = formRef.current;
@@ -242,6 +317,9 @@ export function CheckoutForm({
       {locale && (
         <input type="hidden" name="locale" value={locale} />
       )}
+      {paymentChoice === "maksekeskus" && makseMethodUrl ? (
+        <input type="hidden" name="maksekeskusMethodUrl" value={makseMethodUrl} />
+      ) : null}
       {errors._submit && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
           {errors._submit}
@@ -389,19 +467,76 @@ export function CheckoutForm({
             <VisaMastercardMarks />
           </label>
 
-          {maksekeskusAvailable ? (
+          {showMakseBanks ? (
+            <div className="overflow-hidden rounded-2xl border border-gray-200">
+              {makseMethods.filter((m) => m.kind === "bank").map((m) => {
+                const checked = paymentChoice === "maksekeskus" && makseMethodUrl === (m as any).methodUrl;
+                return (
+                  <label
+                    key={(m as any).bank}
+                    className={`flex w-full cursor-pointer items-center gap-3 border-t border-gray-200 px-3 py-3 transition first:border-t-0 ${
+                      checked ? "bg-[var(--mobile-cta)]/5 ring-1 ring-[var(--mobile-cta)]/30" : "bg-white hover:bg-gray-50"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="paymentMethodUi"
+                      className="border-gray-300 text-[var(--mobile-cta)] focus:ring-[var(--mobile-cta)]"
+                      checked={checked}
+                      onChange={() => {
+                        setPaymentChoice("maksekeskus");
+                        setMakseMethodUrl((m as any).methodUrl);
+                      }}
+                    />
+                    <span className="min-w-0 flex-1 text-sm font-medium text-black">{(m as any).label}</span>
+                    <span className="shrink-0">
+                      <span className="inline-flex h-7 items-center justify-center rounded-md border border-black/10 bg-white px-2">
+                        <Image src={(m as any).logoSrc} alt={(m as any).label} width={64} height={16} />
+                      </span>
+                    </span>
+                  </label>
+                );
+              })}
+              {/* Card payment via Maksekeskus selection page fallback */}
+              <label
+                className={`flex w-full cursor-pointer items-center gap-3 border-t border-gray-200 px-3 py-3 transition ${
+                  paymentChoice === "maksekeskus" && !makseMethodUrl
+                    ? "bg-[var(--mobile-cta)]/5 ring-1 ring-[var(--mobile-cta)]/30"
+                    : "bg-white hover:bg-gray-50"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="paymentMethodUi"
+                  className="border-gray-300 text-[var(--mobile-cta)] focus:ring-[var(--mobile-cta)]"
+                  checked={paymentChoice === "maksekeskus" && !makseMethodUrl}
+                  onChange={() => {
+                    setPaymentChoice("maksekeskus");
+                    setMakseMethodUrl("");
+                  }}
+                />
+                <span className="min-w-0 flex-1 text-sm font-medium text-black">
+                  {t("mobile.payWithMaksekeskus")}
+                </span>
+                <span className="shrink-0 text-xs font-semibold text-gray-500">MakeCommerce</span>
+              </label>
+            </div>
+          ) : maksekeskusAvailable ? (
             <label className={paymentRow(paymentChoice === "maksekeskus")}>
               <input
                 type="radio"
                 name="paymentMethodUi"
                 className="border-gray-300 text-[var(--mobile-cta)] focus:ring-[var(--mobile-cta)]"
                 checked={paymentChoice === "maksekeskus"}
-                onChange={() => setPaymentChoice("maksekeskus")}
+                onChange={() => {
+                  setPaymentChoice("maksekeskus");
+                  setMakseMethodUrl("");
+                }}
               />
               <span className="min-w-0 flex-1 text-sm font-medium text-black">
                 {t("mobile.payWithMaksekeskus")}
               </span>
-              <MaksekeskusBadges enabled={maksekeskusAvailable} />
+              {/* Logos handled in bank list; keep simple fallback */}
             </label>
           ) : null}
 

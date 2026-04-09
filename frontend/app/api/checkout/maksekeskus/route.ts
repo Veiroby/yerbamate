@@ -83,6 +83,7 @@ export async function POST(request: Request) {
   const vatNumber = formData.get("vatNumber")?.toString() || null;
   const phone = formData.get("phone")?.toString() || null;
   const discountCodeInput = formData.get("discountCode")?.toString() || null;
+  const maksekeskusMethodUrl = formData.get("maksekeskusMethodUrl")?.toString() || "";
   const localeRaw = formData.get("locale")?.toString();
   const locale = localeRaw === "lv" || localeRaw === "en" ? localeRaw : "";
   const pathPrefix = locale ? `/${locale}` : "";
@@ -373,8 +374,26 @@ export async function POST(request: Request) {
     );
   }
 
-  const redirectUrl = getRedirectUrl(result.transaction);
-  if (!redirectUrl) {
+  const buildDirectMethodUrl = (template: string, transactionId: string): string | null => {
+    const raw = (template ?? "").trim();
+    if (!raw) return null;
+    try {
+      const u = new URL(raw);
+      u.searchParams.set("trx", transactionId);
+      return u.toString();
+    } catch {
+      // If template isn't a full URL, don't risk a bad redirect.
+      return null;
+    }
+  };
+
+  const redirectUrl =
+    maksekeskusMethodUrl
+      ? buildDirectMethodUrl(maksekeskusMethodUrl, result.transaction.id)
+      : null;
+
+  const finalRedirectUrl = redirectUrl ?? getRedirectUrl(result.transaction);
+  if (!finalRedirectUrl) {
     console.error("[maksekeskus] No redirect URL in response");
     return NextResponse.json(
       { error: "Invalid response from payment provider" },
@@ -388,7 +407,7 @@ export async function POST(request: Request) {
   });
 
   if (request.headers.get("accept")?.includes("application/json")) {
-    return NextResponse.json({ url: redirectUrl });
+    return NextResponse.json({ url: finalRedirectUrl });
   }
-  return NextResponse.redirect(redirectUrl, { status: 303 });
+  return NextResponse.redirect(finalRedirectUrl, { status: 303 });
 }
