@@ -12,31 +12,27 @@ export type InstagramMediaResponse = {
   data: InstagramMediaItem[];
 };
 
-function getAccessToken(): string | null {
+function getBasicDisplayToken(): string | null {
   const token = process.env.INSTAGRAM_ACCESS_TOKEN?.trim();
   return token ? token : null;
 }
 
-export function isInstagramConfigured(): boolean {
-  return Boolean(getAccessToken());
+function getGraphApiToken(): string | null {
+  const token = process.env.INSTAGRAM_GRAPH_API_ACCESS_TOKEN?.trim();
+  return token ? token : null;
 }
 
-export async function fetchInstagramMedia(limit = 9): Promise<InstagramMediaItem[]> {
-  const token = getAccessToken();
-  if (!token) return [];
+function getGraphApiIgUserId(): string | null {
+  const id = process.env.INSTAGRAM_IG_USER_ID?.trim();
+  return id ? id : null;
+}
 
-  const url = new URL("https://graph.instagram.com/me/media");
-  url.searchParams.set(
-    "fields",
-    "id,media_type,media_url,permalink,thumbnail_url,caption,timestamp",
-  );
-  url.searchParams.set("limit", String(limit));
-  url.searchParams.set("access_token", token);
+export function isInstagramConfigured(): boolean {
+  return Boolean(getGraphApiToken() && getGraphApiIgUserId()) || Boolean(getBasicDisplayToken());
+}
 
-  const res = await fetch(url.toString(), {
-    // "Real time" enough without hammering IG API.
-    next: { revalidate: 300 },
-  });
+async function fetchJsonOrLog(url: string): Promise<{ ok: true; data: InstagramMediaResponse } | { ok: false }> {
+  const res = await fetch(url, { next: { revalidate: 300 } });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     console.error(
@@ -47,14 +43,53 @@ export async function fetchInstagramMedia(limit = 9): Promise<InstagramMediaItem
         body: body.slice(0, 300),
       }),
     );
-    return [];
+    return { ok: false };
+  }
+  const json = (await res.json().catch(() => null)) as InstagramMediaResponse | null;
+  if (!json || !Array.isArray((json as any).data)) return { ok: false };
+  return { ok: true, data: json };
+}
+
+export async function fetchInstagramMedia(limit = 9): Promise<InstagramMediaItem[]> {
+  const graphToken = getGraphApiToken();
+  const igUserId = getGraphApiIgUserId();
+  const basicToken = getBasicDisplayToken();
+  if (!graphToken && !basicToken) return [];
+
+  // Prefer Instagram Graph API (Business/Creator) if configured.
+  if (graphToken && igUserId) {
+    const url = new URL(`https://graph.facebook.com/v20.0/${encodeURIComponent(igUserId)}/media`);
+    url.searchParams.set(
+      "fields",
+      "id,media_type,media_url,permalink,thumbnail_url,caption,timestamp",
+    );
+    url.searchParams.set("limit", String(limit));
+    url.searchParams.set("access_token", graphToken);
+    const result = await fetchJsonOrLog(url.toString());
+    if (result.ok) {
+      return result.data.data.filter((m) => {
+        if (!m?.id) return false;
+        const mediaUrl = typeof m.media_url === "string" ? m.media_url : "";
+        const thumbUrl = typeof m.thumbnail_url === "string" ? m.thumbnail_url : "";
+        return Boolean(mediaUrl || thumbUrl);
+      });
+    }
   }
 
-  const json = (await res.json().catch(() => null)) as InstagramMediaResponse | null;
-  const items = Array.isArray(json?.data) ? json!.data : [];
+  // Fallback: Instagram Basic Display (Personal/Creator with Basic Display token)
+  if (!basicToken) return [];
+  const url = new URL("https://graph.instagram.com/me/media");
+  url.searchParams.set(
+    "fields",
+    "id,media_type,media_url,permalink,thumbnail_url,caption,timestamp",
+  );
+  url.searchParams.set("limit", String(limit));
+  url.searchParams.set("access_token", basicToken);
 
-  // Keep only displayable items.
-  return items.filter((m) => {
+  const result = await fetchJsonOrLog(url.toString());
+  if (!result.ok) return [];
+
+  return result.data.data.filter((m) => {
     if (!m?.id) return false;
     const mediaUrl = typeof m.media_url === "string" ? m.media_url : "";
     const thumbUrl = typeof m.thumbnail_url === "string" ? m.thumbnail_url : "";
