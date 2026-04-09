@@ -36,7 +36,7 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://images.unsplash.com https://*.stripe.com https://www.google-analytics.com https://www.googletagmanager.com https://*.maksekeskus.ee https://*.makecommerce.net https://*.makecommerce.ee",
+      "img-src 'self' data: blob: https://images.unsplash.com https://*.stripe.com https://www.google-analytics.com https://www.googletagmanager.com https://*.maksekeskus.ee https://*.makecommerce.net https://*.makecommerce.ee https://*.cdninstagram.com https://*.fbcdn.net https://*.instagram.com",
       // Perplexity browser extension injects fonts on the page; allow to avoid noisy CSP console errors.
       "font-src 'self' data: https://fonts.gstatic.com https://r2cdn.perplexity.ai",
       "connect-src 'self' https://api.stripe.com https://*.stripe.com https://eserviss.dpd.lv https://www.google-analytics.com https://www.googletagmanager.com https://region1.google-analytics.com",

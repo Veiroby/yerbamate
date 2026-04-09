@@ -11,6 +11,7 @@ import { MateGuideSection } from "@/app/components/landing/MateGuideSection";
 import { FollowSubscribe } from "@/app/components/landing/FollowSubscribe";
 import { Footer } from "@/app/components/landing/Footer";
 import { TestimonialsSection, type Testimonial } from "@/app/components/landing/TestimonialsSection";
+import { InstagramGridSection } from "@/app/components/landing/InstagramGridSection";
 import type { Metadata } from "next";
 import type { Locale } from "@/lib/i18n";
 import { getTranslations, createT, isValidLocale } from "@/lib/i18n";
@@ -227,6 +228,8 @@ export default async function HomePage({ params }: Props) {
         <MateGuideSection locale={locale} />
 
         <TestimonialsSection testimonials={testimonials as unknown as Testimonial[]} />
+
+        <InstagramGridSection username="yerbatealatvia" title={locale === "lv" ? "Instagram" : "Instagram"} />
 
         <BrandPartners />
 
