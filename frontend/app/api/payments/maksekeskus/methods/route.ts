@@ -9,6 +9,8 @@ export type Method = {
   logo_url?: string | null;
   category?: "banklinks" | "cards" | "paylater" | "other" | null;
   country?: string | null;
+  /** Present on some /v1/methods banklinks — use for Baltic filtering. */
+  countries?: string[] | null;
   max_amount?: number | null;
   min_amount?: number | null;
 };
@@ -31,6 +33,15 @@ function basicAuthHeader(): string | null {
   return `Basic ${Buffer.from(`${shopId}:${secretKey}`).toString("base64")}`;
 }
 
+function normalizeCountries(m: any): string[] | null {
+  const raw = m?.countries;
+  if (!Array.isArray(raw)) return null;
+  const out = raw
+    .filter((x): x is string => typeof x === "string" && x.trim().length > 0)
+    .map((x) => x.trim());
+  return out.length ? out : null;
+}
+
 function normalizeMethods(input: any): Method[] {
   const out: Method[] = [];
 
@@ -50,26 +61,35 @@ function normalizeMethods(input: any): Method[] {
       logo_url: typeof m?.logo_url === "string" ? m.logo_url : null,
       category,
       country: typeof m?.country === "string" ? m.country : null,
+      countries: normalizeCountries(m),
       max_amount: typeof m?.max_amount === "number" ? m.max_amount : null,
       min_amount: typeof m?.min_amount === "number" ? m.min_amount : null,
     });
   };
 
-  // /v1/methods returns { banklinks: [], cards: [], paylater: [], other: [] }
   const groups = ["banklinks", "cards", "paylater", "other"] as const;
-  for (const g of groups) {
-    const arr = input?.[g];
-    if (Array.isArray(arr)) for (const m of arr) push(m, g);
+
+  const roots: unknown[] = [];
+  if (input && typeof input === "object") roots.push(input);
+  const pm = input?.payment_methods ?? input?.paymentMethods;
+  if (pm && typeof pm === "object") roots.push(pm);
+
+  for (const root of roots) {
+    if (!root || typeof root !== "object") continue;
+    const r = root as Record<string, unknown>;
+    for (const g of groups) {
+      const arr = r[g];
+      if (Array.isArray(arr)) for (const m of arr) push(m, g);
+    }
   }
 
-  // /v1/shop/configuration shape can vary; try common keys.
-  const pm =
+  const flatPm =
     input?.payment_methods ||
     input?.paymentMethods ||
     input?.methods ||
     input?.payment_methods?.methods;
-  if (Array.isArray(pm)) {
-    for (const m of pm) {
+  if (Array.isArray(flatPm)) {
+    for (const m of flatPm) {
       push(
         {
           name: m?.name ?? m?.title ?? m?.display_name,
@@ -78,6 +98,7 @@ function normalizeMethods(input: any): Method[] {
           url: m?.url,
           logo_url: m?.logo_url,
           country: m?.country,
+          countries: m?.countries,
           max_amount: m?.max_amount,
           min_amount: m?.min_amount,
         },
@@ -86,14 +107,44 @@ function normalizeMethods(input: any): Method[] {
     }
   }
 
-  // Deduplicate by (category, code) when possible; fallback to lowercase name.
   const seen = new Set<string>();
   return out.filter((m) => {
-    const k = `${m.category ?? ""}:${(m.code ?? m.name).toLowerCase()}`;
+    const k = `${m.category ?? ""}:${(m.code ?? m.name).toLowerCase()}:${m.url ?? ""}`;
     if (seen.has(k)) return false;
     seen.add(k);
     return true;
   });
+}
+
+function methodDedupeKey(m: Method): string {
+  const u = (m.url ?? "").trim().toLowerCase();
+  if (u) return `url:${u}`;
+  return `n:${(m.category ?? "")}:${(m.code ?? m.name).toLowerCase()}:${(m.country ?? "").toLowerCase()}`;
+}
+
+async function fetchMergedMethods(base: string, auth: string): Promise<Method[]> {
+  const byKey = new Map<string, Method>();
+  const urls = [`${base}/v1/methods`, `${base}/v1/shop/configuration`];
+
+  for (const url of urls) {
+    try {
+      const res = await fetch(url, {
+        headers: { Authorization: auth, Accept: "application/json" },
+        cache: "no-store",
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) continue;
+      const methods = normalizeMethods(data);
+      for (const m of methods) {
+        const k = methodDedupeKey(m);
+        if (!byKey.has(k)) byKey.set(k, m);
+      }
+    } catch {
+      // try next
+    }
+  }
+
+  return [...byKey.values()];
 }
 
 export async function GET() {
@@ -108,30 +159,13 @@ export async function GET() {
   if (!auth) return NextResponse.json({ methods: [] satisfies Method[] }, { status: 200 });
 
   const base = baseUrl();
-  const urls = [
-    `${base}/v1/shop/configuration`,
-    `${base}/v1/methods`,
-  ];
+  const merged = await fetchMergedMethods(base, auth);
 
-  for (const url of urls) {
-    try {
-      const res = await fetch(url, {
-        headers: { Authorization: auth, Accept: "application/json" },
-        cache: "no-store",
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) continue;
-      const methods = normalizeMethods(data);
-      if (methods.length > 0) {
-        cache = { at: Date.now(), methods };
-        return NextResponse.json({ methods }, { status: 200 });
-      }
-    } catch {
-      // try next
-    }
+  if (merged.length > 0) {
+    cache = { at: Date.now(), methods: merged };
+    return NextResponse.json({ methods: merged }, { status: 200 });
   }
 
   cache = { at: Date.now(), methods: [] };
   return NextResponse.json({ methods: [] satisfies Method[] }, { status: 200 });
 }
-

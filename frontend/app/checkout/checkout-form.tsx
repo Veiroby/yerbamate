@@ -10,6 +10,11 @@ import type { CountryCode } from "@/lib/locale-data";
 import { useTranslation } from "@/lib/translation-context";
 import Image from "next/image";
 import { CardIcon, VisaMastercardMarks } from "./payment-logos";
+import {
+  collectMethodCountryCodes,
+  inferBanklinkCountryFromStrings,
+  shippingCountryToIso2,
+} from "@/lib/maksekeskus-baltic";
 
 type Props = {
   currency: string;
@@ -29,10 +34,16 @@ type Props = {
 
 type PaymentChoice = "stripe" | "maksekeskus" | "wire";
 
-type MakseBankKey = "swedbank" | "seb" | "luminor" | "citadele" | "revolut";
-type MakseUiMethod =
-  | { kind: "card" }
-  | { kind: "bank"; bank: MakseBankKey; label: string; logoSrc: string; methodUrl: string };
+type MakseUiBank = {
+  kind: "bank";
+  label: string;
+  methodUrl: string;
+  /** Local asset under /public when known brand */
+  logoSrc: string | null;
+  /** Hosted logo from Maksekeskus when present */
+  remoteLogo: string | null;
+  sortKey: number;
+};
 
 function Chevron({ open }: { open: boolean }) {
   return (
@@ -76,7 +87,7 @@ export function CheckoutForm({
   const [methodOpen, setMethodOpen] = useState(true);
   const [paymentChoice, setPaymentChoice] = useState<PaymentChoice>("stripe");
   const [makseMethodUrl, setMakseMethodUrl] = useState<string>("");
-  const [makseMethods, setMakseMethods] = useState<MakseUiMethod[]>([]);
+  const [makseMethods, setMakseMethods] = useState<MakseUiBank[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
 
   const isBusiness = customerType === "BUSINESS";
@@ -110,9 +121,9 @@ export function CheckoutForm({
     }
 
     let cancelled = false;
-    const targetCountry = String(shipCountry ?? "").toLowerCase();
+    const targetCountry = shippingCountryToIso2(shipCountry);
 
-    const bankLogoMap: Record<MakseBankKey, { label: string; logoSrc: string }> = {
+    const bankLogoMap: Record<string, { label: string; logoSrc: string }> = {
       swedbank: { label: "Swedbank", logoSrc: "/payments/banks/swedbank.png" },
       seb: { label: "SEB", logoSrc: "/payments/banks/seb.png" },
       luminor: { label: "Luminor", logoSrc: "/payments/banks/luminor.png" },
@@ -120,13 +131,17 @@ export function CheckoutForm({
       revolut: { label: "Revolut", logoSrc: "/payments/banks/revolut.png" },
     };
 
-    const mapNameToBank = (name: string): MakseBankKey | null => {
+    const preferredOrder = ["swedbank", "seb", "luminor", "citadele", "revolut", "lhv", "coop"];
+
+    const mapNameToPreferredId = (name: string): string | null => {
       const n = name.toLowerCase();
       if (n.includes("swed")) return "swedbank";
       if (n.includes("seb")) return "seb";
       if (n.includes("luminor")) return "luminor";
       if (n.includes("citadele")) return "citadele";
       if (n.includes("revolut")) return "revolut";
+      if (n.includes("lhv")) return "lhv";
+      if (n.includes("coop")) return "coop";
       return null;
     };
 
@@ -136,31 +151,65 @@ export function CheckoutForm({
         if (cancelled) return;
         const list = Array.isArray(d?.methods) ? (d.methods as Array<any>) : [];
 
-        const picked: Array<MakseUiMethod> = [];
+        const picked: MakseUiBank[] = [];
+        const seenUrl = new Set<string>();
+
         for (const m of list) {
           if (m?.category && m.category !== "banklinks") continue;
-          if (typeof m?.country === "string" && m.country.trim().toLowerCase() !== targetCountry) continue;
-          const name = typeof m?.display_name === "string" ? m.display_name : typeof m?.name === "string" ? m.name : "";
-          const url = typeof m?.url === "string" ? m.url : "";
-          if (!name || !url) continue;
-          const bank = mapNameToBank(name);
-          if (!bank) continue;
-          const meta = bankLogoMap[bank];
-          if (picked.some((x) => x.kind === "bank" && x.bank === bank)) continue;
-          picked.push({ kind: "bank", bank, label: meta.label, logoSrc: meta.logoSrc, methodUrl: url });
+
+          let codes = collectMethodCountryCodes({
+            country: m?.country,
+            countries: m?.countries,
+          });
+          if (codes.length === 0) {
+            const inferred = inferBanklinkCountryFromStrings([
+              typeof m?.url === "string" ? m.url : "",
+              typeof m?.display_name === "string" ? m.display_name : "",
+              typeof m?.name === "string" ? m.name : "",
+            ]);
+            if (inferred) codes = [inferred];
+          }
+
+          if (codes.length === 0) continue;
+          if (!codes.includes(targetCountry)) continue;
+
+          const rawLabel =
+            typeof m?.display_name === "string" && m.display_name.trim()
+              ? m.display_name.trim()
+              : typeof m?.name === "string"
+                ? m.name.trim()
+                : "";
+          const url = typeof m?.url === "string" ? m.url.trim() : "";
+          if (!rawLabel || !url) continue;
+          const urlKey = url.toLowerCase();
+          if (seenUrl.has(urlKey)) continue;
+          seenUrl.add(urlKey);
+
+          const prefId = mapNameToPreferredId(rawLabel + " " + (typeof m?.name === "string" ? m.name : ""));
+          const brand = prefId && bankLogoMap[prefId] ? bankLogoMap[prefId] : null;
+          const label = brand?.label ?? rawLabel;
+          let logoSrc: string | null = brand?.logoSrc ?? null;
+          const remoteRaw = typeof m?.logo_url === "string" ? m.logo_url.trim() : "";
+          const remoteLogo =
+            remoteRaw.startsWith("https://") || remoteRaw.startsWith("http://") ? remoteRaw : null;
+          if (!logoSrc && !remoteLogo) logoSrc = null;
+
+          const sortIx = prefId ? preferredOrder.indexOf(prefId) : -1;
+          const sortKey = sortIx === -1 ? 1000 : sortIx;
+
+          picked.push({
+            kind: "bank",
+            label,
+            methodUrl: url,
+            logoSrc,
+            remoteLogo,
+            sortKey,
+          });
         }
 
-        // Stable order (matches screenshot)
-        const order: MakseBankKey[] = ["swedbank", "seb", "luminor", "citadele", "revolut"];
-        picked.sort((a, b) => {
-          if (a.kind !== "bank" || b.kind !== "bank") return 0;
-          return order.indexOf(a.bank) - order.indexOf(b.bank);
-        });
+        picked.sort((a, b) => (a.sortKey !== b.sortKey ? a.sortKey - b.sortKey : a.label.localeCompare(b.label)));
 
         setMakseMethods(picked);
-        if (paymentChoice === "maksekeskus" && makseMethodUrl && !picked.some((x) => x.kind === "bank" && x.methodUrl === makseMethodUrl)) {
-          setMakseMethodUrl("");
-        }
       })
       .catch(() => {
         if (cancelled) return;
@@ -170,9 +219,19 @@ export function CheckoutForm({
     return () => {
       cancelled = true;
     };
-  }, [maksekeskusAvailable, shipCountry, paymentChoice, makseMethodUrl]);
+  }, [maksekeskusAvailable, shipCountry]);
 
-  const showMakseBanks = maksekeskusAvailable && makseMethods.some((m) => m.kind === "bank");
+  useEffect(() => {
+    if (
+      paymentChoice === "maksekeskus" &&
+      makseMethodUrl &&
+      !makseMethods.some((x) => x.methodUrl === makseMethodUrl)
+    ) {
+      setMakseMethodUrl("");
+    }
+  }, [paymentChoice, makseMethodUrl, makseMethods]);
+
+  const showMakseBanks = maksekeskusAvailable && makseMethods.length > 0;
 
   const getInputValue = (name: string): string => {
     const form = formRef.current;
@@ -474,11 +533,11 @@ export function CheckoutForm({
 
           {showMakseBanks ? (
             <div className="overflow-hidden rounded-2xl border border-gray-200">
-              {makseMethods.filter((m) => m.kind === "bank").map((m) => {
-                const checked = paymentChoice === "maksekeskus" && makseMethodUrl === (m as any).methodUrl;
+              {makseMethods.map((m) => {
+                const checked = paymentChoice === "maksekeskus" && makseMethodUrl === m.methodUrl;
                 return (
                   <label
-                    key={(m as any).bank}
+                    key={m.methodUrl}
                     className={`flex w-full cursor-pointer items-center gap-3 border-t border-gray-200 px-3 py-3 transition first:border-t-0 ${
                       checked ? "bg-[var(--mobile-cta)]/5 ring-1 ring-[var(--mobile-cta)]/30" : "bg-white hover:bg-gray-50"
                     }`}
@@ -490,13 +549,24 @@ export function CheckoutForm({
                       checked={checked}
                       onChange={() => {
                         setPaymentChoice("maksekeskus");
-                        setMakseMethodUrl((m as any).methodUrl);
+                        setMakseMethodUrl(m.methodUrl);
                       }}
                     />
-                    <span className="min-w-0 flex-1 text-sm font-medium text-black">{(m as any).label}</span>
+                    <span className="min-w-0 flex-1 text-sm font-medium text-black">{m.label}</span>
                     <span className="shrink-0">
-                      <span className="inline-flex h-7 items-center justify-center rounded-md border border-black/10 bg-white px-2">
-                        <Image src={(m as any).logoSrc} alt={(m as any).label} width={64} height={16} />
+                      <span className="inline-flex h-7 min-w-[2.5rem] items-center justify-center rounded-md border border-black/10 bg-white px-2">
+                        {m.logoSrc ? (
+                          <Image src={m.logoSrc} alt="" width={64} height={16} className="max-h-5 w-auto object-contain" />
+                        ) : m.remoteLogo ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={m.remoteLogo}
+                            alt=""
+                            className="max-h-5 max-w-[4.5rem] object-contain"
+                          />
+                        ) : (
+                          <span className="text-[10px] font-bold uppercase text-gray-600">{m.label.slice(0, 3)}</span>
+                        )}
                       </span>
                     </span>
                   </label>

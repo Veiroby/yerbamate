@@ -19,6 +19,7 @@ import {
 } from "@/lib/maksekeskus";
 import { calculateBundleSavings } from "@/lib/pricing/bundles";
 import { getRequestOrigin } from "@/lib/request-origin";
+import { makseCustomerLocaleForCountry } from "@/lib/maksekeskus-baltic";
 
 function getSiteOrigin(request: Request): string {
   const configured = process.env.NEXT_PUBLIC_APP_ORIGIN?.trim();
@@ -362,7 +363,7 @@ export async function POST(request: Request) {
     merchant_data: order.id,
     customer: {
       country: country.toUpperCase(),
-      ...(locale === "lv" || locale === "en" ? { locale } : {}),
+      locale: makseCustomerLocaleForCountry(country.toUpperCase(), locale || "en"),
     },
   });
 
