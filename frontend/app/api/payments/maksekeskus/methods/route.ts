@@ -1,7 +1,17 @@
 import { NextResponse } from "next/server";
 import { isMaksekeskusConfigured } from "@/lib/maksekeskus";
 
-type Method = { name: string; code?: string | null };
+export type Method = {
+  name: string;
+  code?: string | null;
+  display_name?: string | null;
+  url?: string | null;
+  logo_url?: string | null;
+  category?: "banklinks" | "cards" | "paylater" | "other" | null;
+  country?: string | null;
+  max_amount?: number | null;
+  min_amount?: number | null;
+};
 
 let cache: { at: number; methods: Method[] } | null = null;
 const CACHE_MS = 15 * 60 * 1000;
@@ -23,32 +33,63 @@ function basicAuthHeader(): string | null {
 
 function normalizeMethods(input: any): Method[] {
   const out: Method[] = [];
-  const push = (name: unknown, code?: unknown) => {
-    const n = typeof name === "string" ? name.trim() : "";
-    if (!n) return;
-    out.push({ name: n, code: typeof code === "string" ? code : null });
+
+  const push = (m: any, category: Method["category"]) => {
+    const name = typeof m?.name === "string" ? m.name.trim() : "";
+    if (!name) return;
+    out.push({
+      name,
+      code: typeof m?.code === "string" ? m.code : typeof m?.id === "string" ? m.id : null,
+      display_name:
+        typeof m?.display_name === "string"
+          ? m.display_name
+          : typeof m?.title === "string"
+            ? m.title
+            : null,
+      url: typeof m?.url === "string" ? m.url : null,
+      logo_url: typeof m?.logo_url === "string" ? m.logo_url : null,
+      category,
+      country: typeof m?.country === "string" ? m.country : null,
+      max_amount: typeof m?.max_amount === "number" ? m.max_amount : null,
+      min_amount: typeof m?.min_amount === "number" ? m.min_amount : null,
+    });
   };
 
-  // Prefer /v1/shop/configuration payment method list when available.
+  // /v1/methods returns { banklinks: [], cards: [], paylater: [], other: [] }
+  const groups = ["banklinks", "cards", "paylater", "other"] as const;
+  for (const g of groups) {
+    const arr = input?.[g];
+    if (Array.isArray(arr)) for (const m of arr) push(m, g);
+  }
+
+  // /v1/shop/configuration shape can vary; try common keys.
   const pm =
     input?.payment_methods ||
     input?.paymentMethods ||
     input?.methods ||
     input?.payment_methods?.methods;
-
   if (Array.isArray(pm)) {
-    for (const m of pm) push(m?.name ?? m?.title ?? m?.display_name, m?.code ?? m?.id);
-  } else if (pm && typeof pm === "object") {
-    // Sometimes grouped by country.
-    for (const v of Object.values(pm)) {
-      if (Array.isArray(v)) for (const m of v) push((m as any)?.name ?? (m as any)?.title, (m as any)?.code ?? (m as any)?.id);
+    for (const m of pm) {
+      push(
+        {
+          name: m?.name ?? m?.title ?? m?.display_name,
+          code: m?.code ?? m?.id,
+          display_name: m?.display_name ?? m?.title,
+          url: m?.url,
+          logo_url: m?.logo_url,
+          country: m?.country,
+          max_amount: m?.max_amount,
+          min_amount: m?.min_amount,
+        },
+        null,
+      );
     }
   }
 
-  // Deduplicate by lowercase name.
+  // Deduplicate by (category, code) when possible; fallback to lowercase name.
   const seen = new Set<string>();
   return out.filter((m) => {
-    const k = m.name.toLowerCase();
+    const k = `${m.category ?? ""}:${(m.code ?? m.name).toLowerCase()}`;
     if (seen.has(k)) return false;
     seen.add(k);
     return true;

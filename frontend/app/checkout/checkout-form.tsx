@@ -8,7 +8,7 @@ import { LOCAL_PICKUP_METHOD_ID } from "@/lib/shipping/local-pickup";
 import { useLocale } from "@/lib/locale-context";
 import type { CountryCode } from "@/lib/locale-data";
 import { useTranslation } from "@/lib/translation-context";
-import { CardIcon, MaksekeskusBadges } from "./payment-logos";
+import { CardIcon, MaksekeskusBadges, VisaMastercardMarks } from "./payment-logos";
 
 type Props = {
   currency: string;
@@ -386,6 +386,7 @@ export function CheckoutForm({
             <span className="min-w-0 flex-1 text-sm font-medium text-black">
               {t("mobile.payWithCard")}
             </span>
+            <VisaMastercardMarks />
           </label>
 
           {maksekeskusAvailable ? (
