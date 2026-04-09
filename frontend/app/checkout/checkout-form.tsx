@@ -110,6 +110,7 @@ export function CheckoutForm({
     }
 
     let cancelled = false;
+    const targetCountry = String(shipCountry ?? "").toLowerCase();
 
     const bankLogoMap: Record<MakseBankKey, { label: string; logoSrc: string }> = {
       swedbank: { label: "Swedbank", logoSrc: "/payments/banks/swedbank.png" },
@@ -138,6 +139,7 @@ export function CheckoutForm({
         const picked: Array<MakseUiMethod> = [];
         for (const m of list) {
           if (m?.category && m.category !== "banklinks") continue;
+          if (typeof m?.country === "string" && m.country.trim().toLowerCase() !== targetCountry) continue;
           const name = typeof m?.display_name === "string" ? m.display_name : typeof m?.name === "string" ? m.name : "";
           const url = typeof m?.url === "string" ? m.url : "";
           if (!name || !url) continue;
@@ -156,6 +158,9 @@ export function CheckoutForm({
         });
 
         setMakseMethods(picked);
+        if (paymentChoice === "maksekeskus" && makseMethodUrl && !picked.some((x) => x.kind === "bank" && x.methodUrl === makseMethodUrl)) {
+          setMakseMethodUrl("");
+        }
       })
       .catch(() => {
         if (cancelled) return;
@@ -165,7 +170,7 @@ export function CheckoutForm({
     return () => {
       cancelled = true;
     };
-  }, [maksekeskusAvailable]);
+  }, [maksekeskusAvailable, shipCountry, paymentChoice, makseMethodUrl]);
 
   const showMakseBanks = maksekeskusAvailable && makseMethods.some((m) => m.kind === "bank");
 
