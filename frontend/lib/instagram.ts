@@ -12,19 +12,26 @@ export type InstagramMediaResponse = {
   data: InstagramMediaItem[];
 };
 
+/** Meta rejects tokens with stray quotes, newlines, or BOM from .env / PM2 copies. */
+function sanitizeEnvValue(raw: string | undefined): string | null {
+  if (raw == null) return null;
+  let s = raw.replace(/\uFEFF/g, "").replace(/\r/g, "").replace(/\n/g, "").trim();
+  if ((s.startsWith('"') && s.endsWith('"')) || (s.startsWith("'") && s.endsWith("'"))) {
+    s = s.slice(1, -1).trim();
+  }
+  return s ? s : null;
+}
+
 function getBasicDisplayToken(): string | null {
-  const token = process.env.INSTAGRAM_ACCESS_TOKEN?.trim();
-  return token ? token : null;
+  return sanitizeEnvValue(process.env.INSTAGRAM_ACCESS_TOKEN);
 }
 
 function getGraphApiToken(): string | null {
-  const token = process.env.INSTAGRAM_GRAPH_API_ACCESS_TOKEN?.trim();
-  return token ? token : null;
+  return sanitizeEnvValue(process.env.INSTAGRAM_GRAPH_API_ACCESS_TOKEN);
 }
 
 function getGraphApiIgUserId(): string | null {
-  const id = process.env.INSTAGRAM_IG_USER_ID?.trim();
-  return id ? id : null;
+  return sanitizeEnvValue(process.env.INSTAGRAM_IG_USER_ID);
 }
 
 export function isInstagramConfigured(): boolean {
