@@ -15,11 +15,12 @@ type Props = {
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  if (!isValidLocale(params.locale)) return {};
+  const { locale } = await params;
+  if (!isValidLocale(locale)) return {};
 
-  const translations = await getTranslations(params.locale as "lv" | "en");
+  const translations = await getTranslations(locale as "lv" | "en");
   const t = createT(translations);
   const category = t("landing.accessories");
 

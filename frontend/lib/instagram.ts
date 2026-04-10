@@ -38,13 +38,25 @@ export function isInstagramConfigured(): boolean {
   return Boolean(getGraphApiToken() && getGraphApiIgUserId()) || Boolean(getBasicDisplayToken());
 }
 
-async function fetchJsonOrLog(url: string): Promise<{ ok: true; data: InstagramMediaResponse } | { ok: false }> {
+type FetchMeta = {
+  phase: "instagram_graph" | "instagram_basic";
+  tokenLength: number;
+  igUserId?: string | null;
+};
+
+async function fetchJsonOrLog(
+  url: string,
+  meta: FetchMeta,
+): Promise<{ ok: true; data: InstagramMediaResponse } | { ok: false }> {
   const res = await fetch(url, { next: { revalidate: 300 } });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     console.error(
       "[instagram] fetch failed",
       JSON.stringify({
+        phase: meta.phase,
+        tokenLength: meta.tokenLength,
+        igUserId: meta.igUserId ?? null,
         status: res.status,
         statusText: res.statusText,
         body: body.slice(0, 300),
@@ -72,7 +84,11 @@ export async function fetchInstagramMedia(limit = 9): Promise<InstagramMediaItem
     );
     url.searchParams.set("limit", String(limit));
     url.searchParams.set("access_token", graphToken);
-    const result = await fetchJsonOrLog(url.toString());
+    const result = await fetchJsonOrLog(url.toString(), {
+      phase: "instagram_graph",
+      tokenLength: graphToken.length,
+      igUserId,
+    });
     if (result.ok) {
       return result.data.data.filter((m) => {
         if (!m?.id) return false;
@@ -81,6 +97,9 @@ export async function fetchInstagramMedia(limit = 9): Promise<InstagramMediaItem
         return Boolean(mediaUrl || thumbUrl);
       });
     }
+    console.warn(
+      "[instagram] Graph API media fetch failed; if using Explorer token, paste the same string into INSTAGRAM_GRAPH_API_ACCESS_TOKEN and set INSTAGRAM_IG_USER_ID to instagram_business_account id. Trying Basic Display fallback if configured.",
+    );
   }
 
   // Fallback: Instagram Basic Display (Personal/Creator with Basic Display token)
@@ -93,7 +112,10 @@ export async function fetchInstagramMedia(limit = 9): Promise<InstagramMediaItem
   url.searchParams.set("limit", String(limit));
   url.searchParams.set("access_token", basicToken);
 
-  const result = await fetchJsonOrLog(url.toString());
+  const result = await fetchJsonOrLog(url.toString(), {
+    phase: "instagram_basic",
+    tokenLength: basicToken.length,
+  });
   if (!result.ok) return [];
 
   return result.data.data.filter((m) => {
