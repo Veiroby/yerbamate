@@ -99,6 +99,7 @@ export async function GET(request: Request) {
       cartTotal,
       currency,
       cartUrl,
+      siteOrigin,
     });
 
     const result = await sendEmail({

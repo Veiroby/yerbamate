@@ -34,14 +34,39 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { name, subject, htmlContent, recipients, sendNow } = body;
+    const { name, subject, htmlContent, recipients, sendNow, recipientPreset } = body as {
+      name?: string;
+      subject?: string;
+      htmlContent?: string;
+      recipients?: string[];
+      sendNow?: boolean;
+      recipientPreset?: "subscribers" | "users" | "all";
+    };
 
     if (!name || !subject || !htmlContent) {
       return NextResponse.json({ error: "Name, subject, and content are required" }, { status: 400 });
     }
 
-    if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {
-      return NextResponse.json({ error: "At least one recipient is required" }, { status: 400 });
+    let toSend: string[] = [];
+    if (recipientPreset === "subscribers") {
+      const rows = await prisma.newsletterSubscriber.findMany({ select: { email: true } });
+      toSend = rows.map((r) => r.email);
+    } else if (recipientPreset === "users") {
+      const rows = await prisma.user.findMany({ select: { email: true } });
+      toSend = rows.map((r) => r.email);
+    } else if (recipientPreset === "all") {
+      const [subs, users] = await Promise.all([
+        prisma.newsletterSubscriber.findMany({ select: { email: true } }),
+        prisma.user.findMany({ select: { email: true } }),
+      ]);
+      toSend = Array.from(new Set([...subs.map((s) => s.email), ...users.map((u) => u.email)]));
+    } else if (Array.isArray(recipients) && recipients.length > 0) {
+      toSend = recipients;
+    } else {
+      return NextResponse.json(
+        { error: "Select recipients or choose a preset (subscribers, users, or all)" },
+        { status: 400 },
+      );
     }
 
     const campaign = await prisma.emailCampaign.create({
@@ -55,9 +80,9 @@ export async function POST(request: Request) {
     if (sendNow) {
       let sentCount = 0;
       const batchSize = 10;
-      
-      for (let i = 0; i < recipients.length; i += batchSize) {
-        const batch = recipients.slice(i, i + batchSize);
+
+      for (let i = 0; i < toSend.length; i += batchSize) {
+        const batch = toSend.slice(i, i + batchSize);
         const promises = batch.map(async (email: string) => {
           try {
             const result = await sendEmail({
@@ -85,7 +110,7 @@ export async function POST(request: Request) {
         ...campaign,
         sentAt: new Date(),
         sentCount,
-        message: `Campaign sent to ${sentCount} of ${recipients.length} recipients`,
+        message: `Campaign sent to ${sentCount} of ${toSend.length} recipients`,
       });
     }
 

@@ -1,28 +1,31 @@
 import { prisma } from "@/lib/db";
 import { isEmailConfigured } from "@/lib/email";
 import { EmailCampaignForm } from "./email-campaign-form";
+import { NewArrivalsEmailForm } from "./new-arrivals-email-form";
 import { PopupSettingsForm } from "./popup-settings-form";
 
 export default async function AdminEmailPage() {
-  const [subscriberCount, resendConfigured, subscribers, users, settings, campaigns] = await Promise.all([
-    prisma.newsletterSubscriber.count(),
-    Promise.resolve(isEmailConfigured()),
-    prisma.newsletterSubscriber.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 100,
-    }),
-    prisma.user.findMany({
-      where: { email: { not: undefined } },
-      select: { id: true, email: true, name: true, createdAt: true },
-      orderBy: { createdAt: "desc" },
-      take: 100,
-    }),
-    prisma.siteSettings.findUnique({ where: { id: "default" } }),
-    prisma.emailCampaign.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 10,
-    }),
-  ]);
+  const [subscriberCount, userCount, resendConfigured, subscribers, users, settings, campaigns] =
+    await Promise.all([
+      prisma.newsletterSubscriber.count(),
+      prisma.user.count(),
+      Promise.resolve(isEmailConfigured()),
+      prisma.newsletterSubscriber.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 100,
+      }),
+      prisma.user.findMany({
+        where: { email: { not: undefined } },
+        select: { id: true, email: true, name: true, createdAt: true },
+        orderBy: { createdAt: "desc" },
+        take: 100,
+      }),
+      prisma.siteSettings.findUnique({ where: { id: "default" } }),
+      prisma.emailCampaign.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      }),
+    ]);
 
   const defaultSettings = {
     popupEnabled: true,
@@ -73,7 +76,7 @@ export default async function AdminEmailPage() {
             Registered Users
           </p>
           <p className="mt-1 text-2xl font-semibold text-stone-900">
-            {users.length}
+            {userCount}
           </p>
         </div>
         <div className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
@@ -116,9 +119,17 @@ export default async function AdminEmailPage() {
         <p className="mb-4 text-sm text-stone-600">
           Select recipients and compose a custom email to send.
         </p>
-        <EmailCampaignForm 
-          subscribers={subscribers.map(s => ({ email: s.email, type: 'subscriber' as const }))}
-          users={users.map(u => ({ email: u.email, name: u.name, type: 'user' as const }))}
+        <div className="mb-8">
+          <NewArrivalsEmailForm
+            subscriberTotal={subscriberCount}
+            resendConfigured={resendConfigured}
+          />
+        </div>
+        <EmailCampaignForm
+          subscribers={subscribers.map((s) => ({ email: s.email, type: "subscriber" as const }))}
+          users={users.map((u) => ({ email: u.email, name: u.name, type: "user" as const }))}
+          subscriberTotal={subscriberCount}
+          userTotal={userCount}
           resendConfigured={resendConfigured}
         />
       </section>

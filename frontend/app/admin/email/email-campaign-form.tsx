@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { wrapCampaignContentHtml } from "@/lib/email-layout";
 
 type Recipient = {
   email: string;
@@ -11,10 +12,19 @@ type Recipient = {
 type Props = {
   subscribers: Recipient[];
   users: Recipient[];
+  /** Full counts for preset labels (not capped at admin list limit) */
+  subscriberTotal: number;
+  userTotal: number;
   resendConfigured: boolean;
 };
 
-export function EmailCampaignForm({ subscribers, users, resendConfigured }: Props) {
+export function EmailCampaignForm({
+  subscribers,
+  users,
+  subscriberTotal,
+  userTotal,
+  resendConfigured,
+}: Props) {
   const [name, setName] = useState("");
   const [subject, setSubject] = useState("");
   const [content, setContent] = useState("");
@@ -52,12 +62,12 @@ export function EmailCampaignForm({ subscribers, users, resendConfigured }: Prop
     return list;
   }, [recipientType, subscribers, users, allRecipients, searchTerm]);
 
-  const getRecipientList = (): string[] => {
-    if (recipientType === "custom") {
-      return Array.from(selectedEmails);
-    }
-    return filteredRecipients.map(r => r.email);
-  };
+  const presetRecipientCount = useMemo(() => {
+    if (recipientType === "subscribers") return subscriberTotal;
+    if (recipientType === "users") return userTotal;
+    if (recipientType === "all") return subscriberTotal + userTotal;
+    return 0;
+  }, [recipientType, subscriberTotal, userTotal]);
 
   const toggleEmail = (email: string) => {
     const newSet = new Set(selectedEmails);
@@ -80,10 +90,15 @@ export function EmailCampaignForm({ subscribers, users, resendConfigured }: Prop
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const recipients = getRecipientList();
-    if (recipients.length === 0) {
+    if (recipientType === "custom" && selectedEmails.size === 0) {
       setStatus("error");
       setMessage("Please select at least one recipient");
+      return;
+    }
+
+    if (recipientType !== "custom" && presetRecipientCount === 0) {
+      setStatus("error");
+      setMessage("No recipients for this audience");
       return;
     }
 
@@ -96,6 +111,14 @@ export function EmailCampaignForm({ subscribers, users, resendConfigured }: Prop
     setStatus("sending");
     setMessage("");
 
+    const siteOrigin = process.env.NEXT_PUBLIC_APP_ORIGIN || "https://yerbatea.lv";
+    const htmlContent = wrapCampaignContentHtml({
+      siteOrigin,
+      previewText: subject,
+      title: subject,
+      bodyHtml: content.replace(/\n/g, "<br>"),
+    });
+
     try {
       const res = await fetch("/api/admin/email-campaigns", {
         method: "POST",
@@ -103,8 +126,13 @@ export function EmailCampaignForm({ subscribers, users, resendConfigured }: Prop
         body: JSON.stringify({
           name,
           subject,
-          htmlContent: wrapInEmailTemplate(content),
-          recipients,
+          htmlContent,
+          recipientPreset:
+            recipientType === "custom"
+              ? undefined
+              : (recipientType as "subscribers" | "users" | "all"),
+          recipients:
+            recipientType === "custom" ? Array.from(selectedEmails) : undefined,
           sendNow: true,
         }),
       });
@@ -194,9 +222,12 @@ export function EmailCampaignForm({ subscribers, users, resendConfigured }: Prop
             <label className="block text-sm font-medium text-stone-700">Recipients</label>
             <div className="flex flex-wrap gap-2">
               {[
-                { value: "subscribers", label: `Subscribers (${subscribers.length})` },
-                { value: "users", label: `Users (${users.length})` },
-                { value: "all", label: `All (${allRecipients.length})` },
+                { value: "subscribers", label: `Subscribers (${subscriberTotal})` },
+                { value: "users", label: `Users (${userTotal})` },
+                {
+                  value: "all",
+                  label: `All (~${subscriberTotal + userTotal}, overlaps merged)`,
+                },
                 { value: "custom", label: "Custom Selection" },
               ].map((opt) => (
                 <button
@@ -278,12 +309,15 @@ export function EmailCampaignForm({ subscribers, users, resendConfigured }: Prop
           {recipientType !== "custom" && (
             <div className="rounded-xl bg-stone-50 p-4 text-sm text-stone-600">
               <p className="font-medium text-stone-900">
-                Will send to {filteredRecipients.length} recipients
+                Will send to{" "}
+                {recipientType === "all"
+                  ? `every subscriber and user (duplicates removed; about ${subscriberTotal + userTotal} addresses before merge)`
+                  : `${presetRecipientCount} recipients`}
               </p>
               <p className="mt-1 text-xs">
-                {recipientType === "subscribers" && "All newsletter subscribers"}
-                {recipientType === "users" && "All registered users"}
-                {recipientType === "all" && "All subscribers and users"}
+                {recipientType === "subscribers" && "Every address in your newsletter list"}
+                {recipientType === "users" && "Every registered account email"}
+                {recipientType === "all" && "Union of newsletter subscribers and user accounts"}
               </p>
             </div>
           )}
@@ -307,24 +341,4 @@ export function EmailCampaignForm({ subscribers, users, resendConfigured }: Prop
       </div>
     </form>
   );
-}
-
-function wrapInEmailTemplate(content: string): string {
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #18181b; line-height: 1.6;">
-  ${content.replace(/\n/g, '<br>')}
-  <hr style="margin: 32px 0; border: none; border-top: 1px solid #e4e4e7;">
-  <p style="color: #71717a; font-size: 12px; margin: 0;">
-    You received this email because you subscribed to YerbaTea.
-    <br>
-    <a href="${process.env.NEXT_PUBLIC_APP_ORIGIN || 'https://yerbatea.lv'}" style="color: #0d9488;">Visit our store</a>
-  </p>
-</body>
-</html>`;
 }

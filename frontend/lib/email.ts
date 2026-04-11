@@ -5,6 +5,11 @@ import {
   generateInvoicePdf,
   type InvoiceOrderData,
 } from "@/lib/invoice";
+import {
+  brandedEmailLayout,
+  escapeHtml,
+  formatMoney,
+} from "@/lib/email-layout";
 
 const resend =
   process.env.RESEND_API_KEY && process.env.RESEND_FROM
@@ -293,22 +298,29 @@ function renderWireTransferInvoiceHtml(options: {
   siteOrigin: string;
 }): string {
   const { orderNumber, total, currency, siteOrigin } = options;
-  return `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Invoice for Order ${escapeHtml(orderNumber)}</title></head>
-<body style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#18181b">
-  <h1 style="font-size:1.25rem;margin:0 0 8px">Invoice for Order ${escapeHtml(orderNumber)}</h1>
-  <p style="margin:0 0 24px;line-height:1.6">Dear customer,</p>
-  <p style="margin:0 0 24px;line-height:1.6">Please find invoice attached. We will ship goods after invoice will be paid.</p>
-  <p style="margin:0 0 8px;line-height:1.6"><strong>Payment details:</strong></p>
-  <p style="margin:0 0 8px;line-height:1.6">Bank: Swedbank</p>
-  <p style="margin:0 0 8px;line-height:1.6">IBAN: LV30HABA0551057129470</p>
-  <p style="margin:0 0 8px;line-height:1.6">Reference: ${escapeHtml(orderNumber)}</p>
-  <p style="margin:0 0 24px;line-height:1.6">Amount: ${escapeHtml(formatMoney(Number(total), currency))}</p>
-  <p style="color:#71717a;font-size:0.875rem"><a href="${escapeHtml(siteOrigin)}" style="color:#059669">Back to store</a></p>
-</body>
-</html>`;
+  const inner = `
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:#44403c;">
+    Please find your invoice attached. We ship after payment is received.
+  </p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border-radius:12px;background:#fafaf9;border:1px solid #e7e5e4;">
+    <tr>
+      <td style="padding:18px 20px;font-family:system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.7;color:#44403c;">
+        <p style="margin:0 0 8px;font-weight:600;color:#1c1917;">Payment details</p>
+        <p style="margin:0;">Bank: Swedbank</p>
+        <p style="margin:4px 0 0;">IBAN: LV30HABA0551057129470</p>
+        <p style="margin:4px 0 0;">Reference: <span style="font-family:ui-monospace,monospace;">${escapeHtml(orderNumber)}</span></p>
+        <p style="margin:12px 0 0;font-weight:600;color:#0d9488;">Amount: ${escapeHtml(formatMoney(Number(total), currency))}</p>
+      </td>
+    </tr>
+  </table>`;
+
+  return brandedEmailLayout({
+    siteOrigin,
+    previewText: `Invoice ${orderNumber} — payment required`,
+    title: `Invoice for order ${orderNumber}`,
+    innerHtml: inner,
+    showSubscriptionFooter: false,
+  });
 }
 
 export function renderOrderConfirmationHtml(options: {
@@ -323,24 +335,45 @@ export function renderOrderConfirmationHtml(options: {
   const rows = items
     .map(
       (i) =>
-        `<tr><td>${escapeHtml(i.product?.name ?? "Item")}</td><td>${i.quantity}</td><td style="text-align:right">${formatMoney(Number(i.unitPrice.toString()), currency)}</td><td style="text-align:right">${formatMoney(Number(i.total.toString()), currency)}</td></tr>`,
+        `<tr>
+          <td style="padding:10px 8px;border-bottom:1px solid #f5f5f4;font-size:14px;color:#44403c;">${escapeHtml(i.product?.name ?? "Item")}</td>
+          <td style="padding:10px 8px;border-bottom:1px solid #f5f5f4;text-align:center;font-size:14px;">${i.quantity}</td>
+          <td style="padding:10px 8px;border-bottom:1px solid #f5f5f4;text-align:right;font-size:14px;">${escapeHtml(formatMoney(Number(i.unitPrice.toString()), currency))}</td>
+          <td style="padding:10px 8px;border-bottom:1px solid #f5f5f4;text-align:right;font-size:14px;font-weight:600;">${escapeHtml(formatMoney(Number(i.total.toString()), currency))}</td>
+        </tr>`,
     )
     .join("");
-  return `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Order ${escapeHtml(orderNumber)}</title></head>
-<body style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#18181b">
-  <h1 style="font-size:1.25rem;margin:0 0 8px">Thanks for your order</h1>
-  <p style="color:#71717a;margin:0 0 24px">Order <strong>${escapeHtml(orderNumber)}</strong></p>
-  <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
-    <thead><tr style="border-bottom:1px solid #e4e4e7"><th style="text-align:left">Product</th><th>Qty</th><th style="text-align:right">Price</th><th style="text-align:right">Total</th></tr></thead>
+
+  const inner = `
+  <p style="margin:0 0 8px;font-size:14px;color:#78716c;">
+    Order <strong style="color:#1c1917;font-family:ui-monospace,monospace;">${escapeHtml(orderNumber)}</strong>
+  </p>
+  <p style="margin:0 0 20px;font-size:15px;line-height:1.65;color:#44403c;">
+    We have received your payment. Your invoice is attached to this message.
+  </p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:8px;">
+    <thead>
+      <tr style="border-bottom:2px solid #e7e5e4;">
+        <th align="left" style="padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#78716c;">Product</th>
+        <th style="padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#78716c;">Qty</th>
+        <th align="right" style="padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#78716c;">Price</th>
+        <th align="right" style="padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#78716c;">Total</th>
+      </tr>
+    </thead>
     <tbody>${rows}</tbody>
   </table>
-  <p style="font-weight:600;text-align:right;margin:0 0 24px">Total: ${escapeHtml(formatMoney(Number(total), currency))}</p>
-  <p style="color:#71717a;font-size:0.875rem"><a href="${escapeHtml(siteOrigin)}" style="color:#059669">Back to store</a></p>
-</body>
-</html>`;
+  <p style="margin:16px 0 0;text-align:right;font-size:16px;font-weight:700;color:#134e4a;">
+    Total: ${escapeHtml(formatMoney(Number(total), currency))}
+  </p>`;
+
+  return brandedEmailLayout({
+    siteOrigin,
+    previewText: `Order ${orderNumber} confirmed — thank you`,
+    title: "Thanks for your order",
+    innerHtml: inner,
+    primaryCta: { label: "View store", href: siteOrigin },
+    showSubscriptionFooter: false,
+  });
 }
 
 export function renderAbandonedCartHtml(options: {
@@ -348,29 +381,44 @@ export function renderAbandonedCartHtml(options: {
   cartTotal: string;
   currency: string;
   cartUrl: string;
+  siteOrigin: string;
 }): string {
-  const { items, cartTotal, currency, cartUrl } = options;
+  const { items, cartTotal, cartUrl, siteOrigin } = options;
   const rows = items
     .map(
       (i) =>
-        `<tr><td>${escapeHtml(i.productName)}</td><td>${i.quantity}</td><td style="text-align:right">${i.lineTotal}</td></tr>`,
+        `<tr>
+          <td style="padding:10px 8px;border-bottom:1px solid #f5f5f4;font-size:14px;">${escapeHtml(i.productName)}</td>
+          <td style="padding:10px 8px;border-bottom:1px solid #f5f5f4;text-align:center;">${i.quantity}</td>
+          <td style="padding:10px 8px;border-bottom:1px solid #f5f5f4;text-align:right;font-size:14px;">${escapeHtml(i.lineTotal)}</td>
+        </tr>`,
     )
     .join("");
-  return `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Your cart is waiting</title></head>
-<body style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#18181b">
-  <h1 style="font-size:1.25rem;margin:0 0 8px">You left something behind</h1>
-  <p style="color:#71717a;margin:0 0 24px">Your cart is still waiting. Complete your purchase when you're ready.</p>
-  <table style="width:100%;border-collapse:collapse;margin-bottom:24px">
-    <thead><tr style="border-bottom:1px solid #e4e4e7"><th style="text-align:left">Product</th><th>Qty</th><th style="text-align:right">Total</th></tr></thead>
+
+  const inner = `
+  <p style="margin:0 0 20px;font-size:15px;line-height:1.65;color:#44403c;">
+    Your cart still has items waiting. Complete your order whenever you are ready.
+  </p>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:12px;">
+    <thead>
+      <tr style="border-bottom:2px solid #e7e5e4;">
+        <th align="left" style="padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#78716c;">Product</th>
+        <th style="padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#78716c;">Qty</th>
+        <th align="right" style="padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#78716c;">Total</th>
+      </tr>
+    </thead>
     <tbody>${rows}</tbody>
   </table>
-  <p style="font-weight:600;margin:0 0 24px">Cart total: ${escapeHtml(cartTotal)}</p>
-  <p><a href="${escapeHtml(cartUrl)}" style="display:inline-block;background:#059669;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:600">Complete your order</a></p>
-</body>
-</html>`;
+  <p style="margin:0 0 8px;font-size:15px;font-weight:600;color:#1c1917;">Cart total: ${escapeHtml(cartTotal)}</p>`;
+
+  return brandedEmailLayout({
+    siteOrigin,
+    previewText: "Your cart is waiting — complete your order",
+    title: "You left something behind",
+    innerHtml: inner,
+    primaryCta: { label: "Complete your order", href: cartUrl },
+    showSubscriptionFooter: false,
+  });
 }
 
 export async function sendPasswordResetEmail(options: {
@@ -381,41 +429,31 @@ export async function sendPasswordResetEmail(options: {
     return { ok: false, error: "Email not configured" };
   }
 
-  const html = `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Reset your password</title></head>
-<body style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#18181b">
-  <h1 style="font-size:1.25rem;margin:0 0 16px">Reset your password</h1>
-  <p style="margin:0 0 16px;line-height:1.6">We received a request to reset your password. Click the button below to choose a new password:</p>
-  <p style="margin:0 0 24px">
-    <a href="${escapeHtml(options.resetUrl)}" style="display:inline-block;background:#0d9488;color:white;padding:12px 24px;text-decoration:none;border-radius:8px;font-weight:600">Reset Password</a>
+  const siteOrigin =
+    process.env.NEXT_PUBLIC_APP_ORIGIN ?? "http://localhost:3000";
+
+  const inner = `
+  <p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:#44403c;">
+    We received a request to reset your password. Use the button below to choose a new one.
   </p>
-  <p style="margin:0 0 16px;line-height:1.6;color:#71717a;font-size:0.875rem">This link will expire in 1 hour.</p>
-  <p style="margin:0;line-height:1.6;color:#71717a;font-size:0.875rem">If you didn't request this, you can safely ignore this email.</p>
-</body>
-</html>`;
+  <p style="margin:0 0 16px;font-size:13px;line-height:1.6;color:#78716c;">
+    This link expires in one hour. If you did not request a reset, you can ignore this email.
+  </p>`;
+
+  const html = brandedEmailLayout({
+    siteOrigin,
+    previewText: "Reset your YerbaTea password",
+    title: "Reset your password",
+    innerHtml: inner,
+    primaryCta: { label: "Choose a new password", href: options.resetUrl },
+    showSubscriptionFooter: false,
+  });
 
   return sendEmail({
     to: options.email,
     subject: `Reset your ${SITE_NAME} password`,
     html,
   });
-}
-
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function formatMoney(value: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency || "USD",
-  }).format(value);
 }
 
 /** Options for the "leave a review" email sent 4 days after order */
@@ -464,25 +502,31 @@ function renderReviewRequestHtml(options: {
   const productList = options.productLinks
     .map(
       (p) =>
-        `<li style="margin:6px 0"><a href="${escapeHtml(p.url)}" style="color:#059669;text-decoration:none">${escapeHtml(p.name)}</a> – leave a review (1–5 stars)</li>`,
+        `<li style="margin:8px 0;line-height:1.5;">
+          <a href="${escapeHtml(p.url)}" style="color:#0d9488;font-weight:600;text-decoration:none;">${escapeHtml(p.name)}</a>
+          <span style="color:#78716c;"> — tap to leave a review (1–5 stars)</span>
+        </li>`,
     )
     .join("");
 
-  return `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>Leave a review</title></head>
-<body style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#18181b">
-  <h1 style="font-size:1.25rem;margin:0 0 8px">How was your order?</h1>
-  <p style="margin:0 0 16px;line-height:1.6">${greeting}</p>
-  <p style="margin:0 0 16px;line-height:1.6">You placed an order with us a few days ago. We’d love to hear what you thought – leave a review and choose a star rating (1 to 5) for the products you received.</p>
-  <ul style="margin:0 0 24px;padding-left:20px;line-height:1.6">
+  const inner = `
+  <p style="margin:0 0 14px;font-size:15px;line-height:1.65;color:#44403c;">${greeting}</p>
+  <p style="margin:0 0 18px;font-size:15px;line-height:1.65;color:#44403c;">
+    You ordered from us a few days ago. We would love a quick star rating and a few words on the products below.
+  </p>
+  <ul style="margin:0 0 22px;padding-left:18px;color:#44403c;">
     ${productList}
   </ul>
-  <p style="margin:0 0 16px;line-height:1.6">Thank you for shopping with us!</p>
-  <p style="color:#71717a;font-size:0.875rem"><a href="${escapeHtml(options.siteOrigin)}" style="color:#059669">Back to store</a></p>
-</body>
-</html>`;
+  <p style="margin:0;font-size:15px;line-height:1.65;color:#44403c;">Thank you for supporting YerbaTea.</p>`;
+
+  return brandedEmailLayout({
+    siteOrigin: options.siteOrigin,
+    previewText: "How was your order? Leave a quick review",
+    title: "How was your order?",
+    innerHtml: inner,
+    primaryCta: { label: "Back to the shop", href: options.siteOrigin },
+    showSubscriptionFooter: false,
+  });
 }
 
-export { SITE_NAME, FROM };
+export { SITE_NAME, FROM, escapeHtml, formatMoney };
