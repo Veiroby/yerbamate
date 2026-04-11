@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
 import { useTranslation } from "@/lib/translation-context";
 import { ProductWishlistHeart } from "@/app/components/product-wishlist-heart";
+import { productListingImageAlt } from "@/lib/seo-yerba";
 
 export type ProductCardData = {
   id: string;
@@ -16,6 +17,8 @@ export type ProductCardData = {
   currency: string;
   imageUrl: string | null;
   imageAlt: string | null;
+  /** Category slug for SEO alt text (e.g. yerba-mate) */
+  categorySlug?: string | null;
   quantityLeft: number;
   /** "in_stock" | "get_in_5_7_days" for display */
   stockStatus?: string;
@@ -36,6 +39,12 @@ export function ProductCard({ product }: Props) {
   const localePrefix = pathname?.match(/^\/(lv|en)/)?.[0] ?? "";
   const locale = localePrefix === "/lv" ? "lv" : "en";
   const productHref = `${localePrefix}/products/${encodeURIComponent(product.slug)}`;
+  const listingAlt = productListingImageAlt(
+    locale,
+    product.categorySlug,
+    product.name,
+    product.imageAlt,
+  );
   const stockStatus =
     product.stockLocation === "warehouse"
       ? "get_in_5_7_days"
@@ -66,7 +75,7 @@ export function ProductCard({ product }: Props) {
           {product.imageUrl ? (
             <Image
               src={product.imageUrl}
-              alt={product.imageAlt ?? product.name}
+              alt={listingAlt}
               fill
               className="object-contain transition duration-200 group-hover:scale-[1.02]"
               sizes="(max-width: 1024px) 50vw, 25vw"

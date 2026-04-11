@@ -15,6 +15,7 @@ import { InstagramGridSection } from "@/app/components/landing/InstagramGridSect
 import type { Metadata } from "next";
 import type { Locale } from "@/lib/i18n";
 import { getTranslations, createT, isValidLocale } from "@/lib/i18n";
+import { productListingImageAlt } from "@/lib/seo-yerba";
 
 export const dynamic = "force-dynamic";
 
@@ -36,16 +37,19 @@ function toCarouselProduct(
     images: { url: string; altText: string | null }[];
     weight: string | null;
     stockLocation: string | null;
+    category?: { slug: string } | null;
     variants: { inventoryItems: { quantity: number }[] }[];
   },
   locale: Locale
 ): CarouselProduct {
+  const loc: "lv" | "en" = locale === "en" ? "en" : "lv";
   return {
     title: p.name,
     price: `€${Number(p.price).toFixed(2)}`,
     href: `/${locale}/products/${encodeURIComponent(p.slug)}`,
     imageUrl: p.images[0]?.url ?? null,
-    imageAlt: p.images[0]?.altText ?? p.name,
+    imageAlt: productListingImageAlt(loc, p.category?.slug ?? null, p.name, p.images[0]?.altText ?? null),
+    categorySlug: p.category?.slug ?? null,
     weight: p.weight ?? null,
     productId: p.id,
     stockLocation: p.stockLocation ?? null,
@@ -64,13 +68,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title =
     locale === "lv"
-      ? "YerbaTea – Premium yerba mate un mate trauciņi"
-      : "YerbaTea – Premium Yerba Mate & Mate Gourds";
+      ? "YerbaTea – Premium Yerba Mate tēja un mate trauciņi"
+      : "YerbaTea – Premium Yerba Mate Tea & Gourds";
 
   const description =
     locale === "lv"
-      ? "Premium yerba mate un mate trauciņi, piegādāti līdz jūsu durvīm."
-      : "Premium yerba mate and mate gourds, delivered to your door.";
+      ? "Premium Yerba Mate tēja, mate trauciņi un aksesuāri – ātra piegāde Latvijā. Iepērciet tiešsaistē YerbaTea."
+      : "Premium yerba mate tea, gourds & accessories – fast shipping across Europe. Shop YerbaTea.";
 
   const canonical = `${baseUrl}/${locale}`;
 
@@ -112,6 +116,7 @@ export default async function HomePage({ params }: Props) {
       orderBy: { createdAt: "desc" },
       take: 12,
       include: {
+        category: { select: { slug: true } },
         images: { orderBy: { position: "asc" }, take: 1 },
         variants: { include: { inventoryItems: true } },
       },
@@ -168,6 +173,7 @@ export default async function HomePage({ params }: Props) {
             include: {
               product: {
                 include: {
+                  category: { select: { slug: true } },
                   images: { orderBy: { position: "asc" }, take: 1 },
                   variants: { include: { inventoryItems: true } },
                 },
@@ -185,6 +191,7 @@ export default async function HomePage({ params }: Props) {
             include: {
               product: {
                 include: {
+                  category: { select: { slug: true } },
                   images: { orderBy: { position: "asc" }, take: 1 },
                   variants: { include: { inventoryItems: true } },
                 },

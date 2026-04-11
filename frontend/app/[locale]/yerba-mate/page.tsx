@@ -5,6 +5,7 @@ import { ProductCard } from "@/app/components/product-card";
 import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
+import { YERBA_MATE_CATEGORY_SLUG } from "@/lib/seo-yerba";
 
 export const dynamic = "force-dynamic";
 
@@ -25,8 +26,11 @@ export async function generateMetadata({
   const category = t("products.categoryYerbaMate");
 
   return {
-    title: `${category} – YerbaTea`,
-    description: t("products.browseCategorySelection", { category }),
+    title: `${category} | YerbaTea`,
+    description:
+      locale === "lv"
+        ? t("products.seoDescriptionYerbaCategoryPageLv")
+        : t("products.seoDescriptionYerbaCategoryPageEn"),
   };
 }
 
@@ -76,6 +80,7 @@ export default async function YerbaMatePage({ params }: Props) {
         currency: p.currency,
         imageUrl: img?.url ?? null,
         imageAlt: img?.altText ?? null,
+        categorySlug: YERBA_MATE_CATEGORY_SLUG,
         quantityLeft,
         stockLocation: location,
         description: localizedDescription,

@@ -45,19 +45,22 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   const categoryKey = category && CATEGORY_KEYS[category] ? CATEGORY_KEYS[category] : null;
   const categoryLabel = categoryKey ? t(categoryKey) : category ?? null;
 
-  const title =
-    q
-      ? t("products.searchTitle", { q })
-      : categoryLabel
-        ? categoryLabel
-        : t("products.allProducts");
+  const title = q
+    ? `${t("products.searchTitle", { q })} | YerbaTea`
+    : categoryLabel
+      ? `${categoryLabel} | YerbaTea`
+      : `${t("products.allProducts")} | YerbaTea`;
 
   const description =
-    categoryLabel
-      ? t("products.browseCategorySelection", { category: categoryLabel })
-      : q
-        ? t("products.tryAdjustingFilters")
-        : t("products.browseCatalog");
+    category === "yerba-mate"
+      ? locale === "lv"
+        ? t("products.seoBrowseYerbaMateLv")
+        : t("products.seoBrowseYerbaMateEn")
+      : categoryLabel
+        ? t("products.browseCategorySelection", { category: categoryLabel })
+        : q
+          ? t("products.tryAdjustingFilters")
+          : t("products.browseCatalog");
 
   const canonical = `${baseUrl}/${locale}/products`;
 
@@ -222,6 +225,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
       currency: p.currency,
       imageUrl: img?.url ?? null,
       imageAlt: img?.altText ?? null,
+      categorySlug: p.category?.slug ?? null,
       quantityLeft,
       stockStatus,
       stockLocation: location,

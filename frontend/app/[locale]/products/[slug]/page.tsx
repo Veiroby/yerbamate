@@ -9,6 +9,14 @@ import { AddToCartForm } from "@/app/products/[slug]/add-to-cart-form";
 import { ProductReviewsSection } from "@/app/products/[slug]/product-reviews-section";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 import type { Metadata } from "next";
+import {
+  isYerbaMateCategory,
+  lvYerbaImageAlt,
+  enYerbaImageAlt,
+  productSeoDescription,
+  productSeoTitle,
+  lvYerbaDescriptionLead,
+} from "@/lib/seo-yerba";
 
 export const dynamic = "force-dynamic";
 
@@ -24,9 +32,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const locale = localeParam as "lv" | "en";
   const slug = decodeURIComponent(rawSlug).trim();
 
-  const translations = await getTranslations(locale);
-  const t = createT(translations);
-
   const product = await prisma.product.findUnique({
     where: { slug },
     select: {
@@ -36,6 +41,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       descriptionEn: true,
       descriptionLv: true,
       description: true,
+      category: { select: { slug: true } },
       images: { orderBy: { position: "asc" }, take: 1, select: { url: true, altText: true } },
       currency: true,
       price: true,
@@ -71,8 +77,19 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
         ? `${baseUrl}${primaryImage.url}`
         : undefined;
 
-  const title = `${product.name} – YerbaTea`;
-  const description = localizedDescription ?? t("product.noDescription");
+  const priceLabel =
+    product.currency === "EUR"
+      ? `€${Number(product.price).toFixed(2)}`
+      : `${Number(product.price).toFixed(2)} ${product.currency}`;
+
+  const title = productSeoTitle(locale, product.name, product.category?.slug);
+  const description = productSeoDescription(
+    locale,
+    localizedDescription,
+    product.name,
+    product.category?.slug,
+    priceLabel,
+  );
 
   return {
     title,
@@ -110,6 +127,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     prisma.product.findUnique({
       where: { slug },
       include: {
+        category: { select: { slug: true } },
         images: { orderBy: { position: "asc" } },
         variants: { include: { inventoryItems: true } },
       },
@@ -163,6 +181,25 @@ export default async function ProductPage({ params }: ProductPageProps) {
       ? product.descriptionLv ?? product.descriptionEn ?? product.description ?? null
       : product.descriptionEn ?? product.descriptionLv ?? product.description ?? null;
 
+  const yerbaLead =
+    locale === "lv" && isYerbaMateCategory(product.category?.slug)
+      ? lvYerbaDescriptionLead(product.name, localizedDescription)
+      : null;
+
+  const primaryImageAlt =
+    locale === "lv" && isYerbaMateCategory(product.category?.slug)
+      ? lvYerbaImageAlt(product.name, primaryImage?.altText)
+      : locale === "en" && isYerbaMateCategory(product.category?.slug)
+        ? enYerbaImageAlt(product.name, primaryImage?.altText)
+        : primaryImage?.altText ?? product.name;
+
+  const thumbAlt = (alt: string | null | undefined) =>
+    locale === "lv" && isYerbaMateCategory(product.category?.slug)
+      ? lvYerbaImageAlt(product.name, alt)
+      : locale === "en" && isYerbaMateCategory(product.category?.slug)
+        ? enYerbaImageAlt(product.name, alt)
+        : alt ?? product.name;
+
   const productBundles = bundleOffers.filter(
     (b) => b.productId === product.id || b.productId === null,
   );
@@ -203,7 +240,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {primaryImage ? (
                 <Image
                   src={primaryImage.url}
-                  alt={primaryImage.altText ?? product.name}
+                  alt={primaryImageAlt}
                   fill
                   className="object-contain"
                   sizes="(max-width: 1024px) 100vw, 50vw"
@@ -232,7 +269,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   >
                     <Image
                       src={image.url}
-                      alt={image.altText ?? product.name}
+                      alt={thumbAlt(image.altText)}
                       fill
                       className="object-contain"
                       sizes="80px"
@@ -316,6 +353,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
         <section className="mt-12 border-t border-gray-200 pt-10">
           <h2 className="text-lg font-bold uppercase tracking-wide text-black">{t("product.productDetails")}</h2>
           <div className="mt-4 rounded-xl border border-gray-200 bg-gray-50 p-6">
+            {yerbaLead ? (
+              <p className="mb-3 text-sm font-semibold leading-relaxed text-gray-900">{yerbaLead}</p>
+            ) : null}
             <p className="whitespace-pre-line text-sm leading-relaxed text-gray-700">
               {localizedDescription ?? t("product.noDescription")}
             </p>

@@ -8,6 +8,7 @@ import { ProductWishlistHeart } from "@/app/components/product-wishlist-heart";
 import { useTranslation } from "@/lib/translation-context";
 import { useCart } from "@/lib/cart-context";
 import type { Locale } from "@/lib/locale";
+import { productListingImageAlt } from "@/lib/seo-yerba";
 
 export type CarouselProduct = {
   title: string;
@@ -15,6 +16,7 @@ export type CarouselProduct = {
   href: string;
   imageUrl?: string | null;
   imageAlt?: string;
+  categorySlug?: string | null;
   weight?: string | null;
   productId?: string;
   quantityLeft?: number;
@@ -41,6 +43,7 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
   const { addToCart, isLoading: cartLoading } = useCart();
   const [addingToCart, setAddingToCart] = useState(false);
   const locale: Locale = p.href.startsWith("/en") ? "en" : "lv";
+  const carouselAlt = productListingImageAlt(locale, p.categorySlug ?? null, p.title, p.imageAlt ?? null);
   const qty = p.quantityLeft ?? 0;
   const location = (p.stockLocation ?? "instock").toLowerCase();
   const isWarehouse = location === "warehouse";
@@ -82,7 +85,7 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
           {p.imageUrl ? (
             <Image
               src={p.imageUrl}
-              alt={p.imageAlt || p.title}
+              alt={carouselAlt}
               fill
               className="object-contain transition group-hover:scale-[1.02]"
               sizes="(max-width: 640px) 220px, (max-width: 768px) 260px, 300px"

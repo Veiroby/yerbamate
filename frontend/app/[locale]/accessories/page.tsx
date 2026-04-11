@@ -53,6 +53,7 @@ export default async function AccessoriesPage({ params }: Props) {
       },
       orderBy: { createdAt: "desc" },
       include: {
+        category: { select: { slug: true } },
         images: { orderBy: { position: "asc" }, take: 1 },
         variants: { include: { inventoryItems: true } },
       },
@@ -84,6 +85,7 @@ export default async function AccessoriesPage({ params }: Props) {
         currency: p.currency,
         imageUrl: img?.url ?? null,
         imageAlt: img?.altText ?? null,
+        categorySlug: p.category?.slug ?? null,
         quantityLeft,
         stockLocation: location,
         description: localizedDescription,
