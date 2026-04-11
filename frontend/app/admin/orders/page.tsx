@@ -25,6 +25,7 @@ export default async function AdminOrdersPage({
     where: { archived: archivedOnly },
     orderBy: { createdAt: "desc" },
     include: {
+      user: { select: { email: true, name: true } },
       items: {
         include: {
           product: true,
@@ -37,6 +38,16 @@ export default async function AdminOrdersPage({
     id: order.id,
     orderNumber: order.orderNumber,
     email: order.email,
+    userId: order.userId,
+    accountEmail: order.user?.email ?? null,
+    accountName: order.user?.name ?? null,
+    phone: order.phone,
+    companyAddress: order.companyAddress,
+    vatNumber: order.vatNumber,
+    billingAddress: order.billingAddress,
+    sessionId: order.sessionId,
+    stripePaymentIntentId: order.stripePaymentIntentId,
+    maksekeskusTransactionId: order.maksekeskusTransactionId,
     status: order.status,
     archived: order.archived,
     createdAt: order.createdAt.toISOString(),

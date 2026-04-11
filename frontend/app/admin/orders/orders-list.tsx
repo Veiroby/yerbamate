@@ -25,6 +25,16 @@ export type AdminSerializedOrder = {
   id: string;
   orderNumber: string;
   email: string;
+  userId: string | null;
+  accountEmail: string | null;
+  accountName: string | null;
+  phone: string | null;
+  companyAddress: string | null;
+  vatNumber: string | null;
+  billingAddress: unknown | null;
+  sessionId: string | null;
+  stripePaymentIntentId: string | null;
+  maksekeskusTransactionId: string | null;
   status: OrderStatus;
   archived: boolean;
   createdAt: string;
@@ -46,6 +56,23 @@ export type AdminSerializedOrder = {
 };
 
 const NEW_ORDER_DAYS = 7;
+
+function formatBillingSnapshot(addr: unknown): string | null {
+  if (addr == null) return null;
+  if (typeof addr !== "object" || Array.isArray(addr)) {
+    return JSON.stringify(addr, null, 2);
+  }
+  const o = addr as Record<string, unknown>;
+  const keys = ["name", "line1", "line2", "city", "postalCode", "country"];
+  const lines: string[] = [];
+  for (const k of keys) {
+    const v = o[k];
+    if (typeof v === "string" && v.trim()) lines.push(v);
+  }
+  if (lines.length > 0) return lines.join("\n");
+  if (Object.keys(o).length === 0) return null;
+  return JSON.stringify(o, null, 2);
+}
 
 function isNewOrder(createdAtIso: string, archived: boolean) {
   if (archived) return false;
@@ -77,6 +104,7 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
       {orders.map((order) => {
         const shippingAddress = order.shippingAddress;
         const isDpdOrder = !!shippingAddress?.dpdPickupPointId;
+        const billingText = formatBillingSnapshot(order.billingAddress);
         const isNew = isNewOrder(order.createdAt, order.archived);
         const expanded = expandedId === order.id;
         const itemCount = order.items.reduce((a, i) => a + i.quantity, 0);
@@ -125,6 +153,9 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
                   )}
                 </div>
                 <p className="truncate text-xs text-zinc-500">{order.email}</p>
+                {order.phone && (
+                  <p className="truncate text-xs text-zinc-400">{order.phone}</p>
+                )}
               </div>
 
               <div className="hidden shrink-0 text-xs text-zinc-500 sm:block">
@@ -253,6 +284,85 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
                   {new Date(order.createdAt).toLocaleString()}
                 </p>
 
+                {/* Customer */}
+                <div className="mb-3 rounded-lg bg-white p-3 text-xs shadow-sm ring-1 ring-zinc-100">
+                  <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                    Customer
+                  </p>
+                  {shippingAddress?.name && (
+                    <p className="text-zinc-800">
+                      <span className="text-zinc-500">Name: </span>
+                      {shippingAddress.name}
+                    </p>
+                  )}
+                  <p className="text-zinc-800">
+                    <span className="text-zinc-500">Email: </span>
+                    {order.email}
+                  </p>
+                  <p className="text-zinc-800">
+                    <span className="text-zinc-500">Phone: </span>
+                    {order.phone ?? "—"}
+                  </p>
+                  <p className="text-zinc-800">
+                    <span className="text-zinc-500">Type: </span>
+                    {order.customerType === "BUSINESS" ? "Business" : "Individual"}
+                  </p>
+                  {order.customerType === "BUSINESS" && (
+                    <>
+                      {order.companyName && (
+                        <p className="text-zinc-800">
+                          <span className="text-zinc-500">Company: </span>
+                          {order.companyName}
+                        </p>
+                      )}
+                      {order.vatNumber && (
+                        <p className="text-zinc-800">
+                          <span className="text-zinc-500">VAT: </span>
+                          <span className="font-mono">{order.vatNumber}</span>
+                        </p>
+                      )}
+                      {order.companyAddress && (
+                        <p className="mt-1 whitespace-pre-wrap text-zinc-700">
+                          <span className="text-zinc-500">Company address: </span>
+                          {order.companyAddress}
+                        </p>
+                      )}
+                    </>
+                  )}
+                  {(order.userId || order.accountEmail) && (
+                    <div className="mt-2 border-t border-zinc-100 pt-2 text-zinc-600">
+                      <p className="text-[11px] font-medium text-zinc-500">Account</p>
+                      {order.userId && (
+                        <p>
+                          <span className="text-zinc-500">User ID: </span>
+                          <span className="font-mono text-[11px]">{order.userId}</span>
+                        </p>
+                      )}
+                      {order.accountEmail && (
+                        <p>
+                          <span className="text-zinc-500">Account email: </span>
+                          {order.accountEmail}
+                        </p>
+                      )}
+                      {order.accountName && (
+                        <p>
+                          <span className="text-zinc-500">Account name: </span>
+                          {order.accountName}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {billingText && (
+                  <div className="mb-3 rounded-lg bg-white p-3 text-xs shadow-sm ring-1 ring-zinc-100">
+                    <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                      Billing address
+                    </p>
+                    <p className="whitespace-pre-wrap text-zinc-700">{billingText}</p>
+                  </div>
+                )}
+
                 {/* Shipping */}
                 {shippingAddress && (
                   <div className="mb-3 rounded-lg bg-white p-3 text-xs shadow-sm ring-1 ring-zinc-100">
@@ -261,16 +371,25 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
                         <p className="font-medium text-zinc-700">
                           {isDpdOrder ? "📦 DPD Pickup" : "🚚 Delivery"}
                         </p>
-                        {isDpdOrder ? (
+                        {isDpdOrder && (
                           <>
                             <p className="text-zinc-600">
+                              <span className="text-zinc-500">Recipient: </span>
+                              {shippingAddress.name ?? "—"}
+                            </p>
+                            <p className="text-zinc-600">
+                              <span className="text-zinc-500">Contact: </span>
+                              {order.phone ?? "—"}
+                            </p>
+                            <p className="mt-1 text-zinc-600">
                               {shippingAddress.dpdPickupPointName}
                             </p>
                             <p className="text-zinc-500">
                               ID: {shippingAddress.dpdPickupPointId}
                             </p>
                           </>
-                        ) : (
+                        )}
+                        {!isDpdOrder && (
                           <>
                             <p className="text-zinc-600">{shippingAddress.name}</p>
                             <p className="text-zinc-500">
@@ -368,6 +487,36 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
                     </span>
                   )}
                 </div>
+                {(order.stripePaymentIntentId ||
+                  order.maksekeskusTransactionId ||
+                  order.sessionId) && (
+                  <div className="mt-2 space-y-1 text-[11px] text-zinc-500">
+                    {order.stripePaymentIntentId && (
+                      <p>
+                        Stripe payment intent:{" "}
+                        <span className="font-mono text-zinc-700">
+                          {order.stripePaymentIntentId}
+                        </span>
+                      </p>
+                    )}
+                    {order.maksekeskusTransactionId && (
+                      <p>
+                        Maksekeskus transaction:{" "}
+                        <span className="font-mono text-zinc-700">
+                          {order.maksekeskusTransactionId}
+                        </span>
+                      </p>
+                    )}
+                    {order.sessionId && (
+                      <p>
+                        Cart session:{" "}
+                        <span className="font-mono text-zinc-700">
+                          {order.sessionId}
+                        </span>
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
