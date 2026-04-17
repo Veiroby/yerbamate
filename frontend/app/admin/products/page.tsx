@@ -4,14 +4,7 @@ import { prisma } from "@/lib/db";
 import { saveProductImage } from "@/lib/upload";
 import { setProductQuantityWithLocation } from "./product-quantity";
 import { AdminProductsEditor } from "./AdminProductsEditor";
-
-function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "");
-}
+import { slugify } from "@/lib/slugify";
 
 async function deleteProductAction(formData: FormData) {
   // no-op: delete is handled by `app/admin/products/actions.ts`
