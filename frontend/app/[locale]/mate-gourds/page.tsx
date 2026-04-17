@@ -5,6 +5,7 @@ import { ProductCard } from "@/app/components/product-card";
 import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
+import { categorySlugIncludingAdminDuplicates } from "@/lib/category-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -44,7 +45,11 @@ export default async function MateGourdsPage({ params }: Props) {
     getCurrentUser(),
     getTranslations(locale),
     prisma.product.findMany({
-      where: { active: true, archived: false, category: { slug: "mate-gourds" } },
+      where: {
+        active: true,
+        archived: false,
+        category: categorySlugIncludingAdminDuplicates("mate-gourds"),
+      },
       orderBy: { createdAt: "desc" },
       include: {
         category: { select: { slug: true } },

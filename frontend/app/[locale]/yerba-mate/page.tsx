@@ -6,6 +6,7 @@ import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 import { YERBA_MATE_CATEGORY_SLUG } from "@/lib/seo-yerba";
+import { categorySlugIncludingAdminDuplicates } from "@/lib/category-filters";
 
 export const dynamic = "force-dynamic";
 
@@ -48,7 +49,11 @@ export default async function YerbaMatePage({ params }: Props) {
     getCurrentUser(),
     getTranslations(locale),
     prisma.product.findMany({
-      where: { active: true, archived: false, category: { slug: "yerba-mate" } },
+      where: {
+        active: true,
+        archived: false,
+        category: categorySlugIncludingAdminDuplicates("yerba-mate"),
+      },
       orderBy: { createdAt: "desc" },
       include: {
         images: { orderBy: { position: "asc" }, take: 1 },

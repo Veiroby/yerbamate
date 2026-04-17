@@ -7,6 +7,7 @@ import { Footer } from "@/app/components/landing/Footer";
 import { ProductFilters, ActiveFilters } from "@/app/components/product-filters";
 import { Prisma } from "@/app/generated/prisma/client";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
+import { categorySlugIncludingAdminDuplicates } from "@/lib/category-filters";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -111,7 +112,10 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   }
 
   if (category) {
-    where.category = { slug: category };
+    where.category =
+      category === "mate-gourds" || category === "yerba-mate"
+        ? categorySlugIncludingAdminDuplicates(category)
+        : { slug: category };
   }
 
   if (brand) {
