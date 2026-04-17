@@ -70,14 +70,14 @@ export function ProductCard({ product }: Props) {
         className={`block flex-1 min-h-0 ${soldOut ? "pointer-events-none" : "cursor-pointer"}`}
         aria-label={`View ${product.name}`}
       >
-        {/* Centered product image */}
-        <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-transparent">
+        {/* Product image — fills the frame (crop with focal point when set) */}
+        <div className="relative aspect-square w-full overflow-hidden rounded-t-2xl bg-stone-100">
           {product.imageUrl ? (
             <Image
               src={product.imageUrl}
               alt={listingAlt}
               fill
-              className="object-contain transition duration-200 group-hover:scale-[1.02]"
+              className="object-cover transition duration-200 group-hover:scale-[1.02]"
               sizes="(max-width: 1024px) 50vw, 25vw"
               unoptimized
               style={
