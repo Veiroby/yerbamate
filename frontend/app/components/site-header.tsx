@@ -68,7 +68,6 @@ const PROMO_DISMISS_KEY = "yerbatea-promo-dismissed";
 
 export function SiteHeader({ user, locale }: SiteHeaderProps) {
   const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [promoDismissed, setPromoDismissed] = useState(false);
   const { itemCount } = useCart();
   const { t } = useTranslation();
@@ -78,19 +77,6 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
       setPromoDismissed(true);
     }
   }, []);
-
-  useEffect(() => {
-    if (typeof document === "undefined") return;
-    const previous = document.body.style.overflow;
-    if (menuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = previous || "";
-    }
-    return () => {
-      document.body.style.overflow = previous || "";
-    };
-  }, [menuOpen]);
 
   const dismissPromo = () => {
     setPromoDismissed(true);
@@ -178,26 +164,8 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
             </div>
           </div>
 
-          {/* Desktop left: logo + menu button */}
+          {/* Desktop left: logo */}
           <div className="hidden min-w-0 flex-1 items-center gap-2 sm:gap-3 lg:flex lg:flex-none lg:min-w-0">
-            <button
-              type="button"
-              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-none text-gray-700 hover:text-black lg:hover:bg-transparent"
-              onClick={() => setMenuOpen((o) => !o)}
-              aria-expanded={menuOpen}
-              aria-controls="mobile-nav"
-            >
-              <span className="sr-only">{menuOpen ? t("nav.closeMenu") : t("nav.openMenu")}</span>
-              {menuOpen ? (
-                <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              ) : (
-                <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              )}
-            </button>
             <Link href={localePrefix} className="p-0 hover:opacity-90">
               <Image
                 src="/images/yerbatea-logo.png"
@@ -210,14 +178,14 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
             </Link>
           </div>
 
-          <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-8 lg:flex">
+          <div className="absolute left-1/2 hidden max-w-[min(100%-12rem,52rem)] -translate-x-1/2 flex-nowrap items-center justify-center gap-4 xl:gap-6 lg:flex">
             {navLinkKeys.map(({ path, labelKey }) => {
               const href = path ? `${localePrefix}/${path}` : localePrefix;
               return (
                 <Link
                   key={labelKey}
                   href={href}
-                  className={`text-sm font-medium text-gray-700 hover:text-black ${isActive(path) ? "text-black font-semibold" : ""}`}
+                  className={`shrink-0 whitespace-nowrap text-sm font-medium text-gray-700 hover:text-black ${isActive(path) ? "text-black font-semibold" : ""}`}
                 >
                   {t(labelKey)}
                 </Link>
@@ -285,60 +253,6 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
 
           </div>
         </nav>
-
-        <div
-          id="mobile-nav"
-          className={`fixed inset-0 z-50 bg-white px-6 pb-8 pt-24 lg:hidden ${menuOpen ? "block" : "hidden"}`}
-        >
-          <div className="flex h-full flex-col gap-2 overflow-y-auto">
-            <Link
-              href={`${localePrefix}/search`}
-              className="rounded-xl px-3 py-4 text-xl font-semibold text-gray-800 hover:bg-gray-50"
-              onClick={() => setMenuOpen(false)}
-            >
-              {t("nav.search")}
-            </Link>
-            {navLinkKeys.map(({ path, labelKey }) => (
-              <Link
-                key={labelKey}
-                href={path ? `${localePrefix}/${path}` : localePrefix}
-                className="rounded-lg px-3 py-4 text-2xl font-semibold text-gray-800 hover:bg-gray-50"
-                onClick={() => setMenuOpen(false)}
-              >
-                {t(labelKey)}
-              </Link>
-            ))}
-            <div className="mt-2 border-t border-gray-100 pt-3">
-              {user ? (
-                <Link
-                  href={`/${locale}/account/profile`}
-                  className="flex items-center gap-3 rounded-lg px-3 py-4 text-2xl font-semibold text-gray-800 hover:bg-gray-50"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  <ProfileIcon className="h-7 w-7" />
-                  {t("nav.account")}
-                </Link>
-              ) : (
-                <>
-                  <Link
-                    href={`/${locale}/account/profile`}
-                    className="block rounded-lg px-3 py-4 text-2xl font-semibold text-gray-800 hover:bg-gray-50"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    {t("nav.logIn")}
-                  </Link>
-                  <Link
-                    href={`/${locale}/account/profile`}
-                    className="mt-2 block rounded-lg border-2 border-black py-4 text-center text-xl font-semibold text-black hover:bg-black hover:text-white"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    {t("nav.signUp")}
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
       </header>
     </>
   );
