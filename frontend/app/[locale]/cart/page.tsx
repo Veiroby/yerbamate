@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { cookies } from "next/headers";
 import { getCurrentUser } from "@/lib/auth";
+import { hasAdminAccess } from "@/lib/admin-access";
 import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
 import { CartOrderSummary } from "@/app/cart/cart-order-summary";
@@ -92,7 +93,7 @@ export default async function CartPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-[#f5f5f7] text-[#1a1a1a] lg:bg-white">
-      <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
+      <SiteHeader user={user ? { isAdmin: hasAdminAccess(user) } : null} locale={locale} />
       <main className="mx-auto w-full max-w-6xl px-3 py-5 max-lg:max-w-none sm:px-4 sm:py-8 lg:px-6 lg:py-8">
         <nav className="mb-4 text-sm text-gray-500" aria-label="Breadcrumb">
           <ol className="flex items-center gap-1.5">

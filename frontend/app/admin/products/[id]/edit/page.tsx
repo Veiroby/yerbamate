@@ -4,9 +4,13 @@ import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { hasAdminAccess, hasAdminWriteAccess } from "@/lib/admin-access";
+import { requireAdminWrite } from "@/lib/admin-auth";
+import { writeAuditLog } from "@/lib/admin-audit";
 import { saveProductImage } from "@/lib/upload";
 import { FocalPointPicker } from "../focal-point-picker";
 import { setProductQuantityWithLocation } from "../../product-quantity";
+import { ConfirmDeleteImageForm } from "@/app/admin/components/confirm-delete-image-form";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -25,13 +29,15 @@ async function deleteImageAction(formData: FormData) {
   if (!productId || !imageId) return;
 
   const user = await getCurrentUser();
-  if (!user?.isAdmin) {
+  if (!user || !hasAdminWriteAccess(user)) {
     notFound();
   }
 
   await prisma.productImage.delete({
     where: { id: imageId },
   });
+
+  await writeAuditLog(user.id, "product.image_deleted", "Product", productId, { imageId });
 
   await revalidatePath(`/admin/products/${productId}/edit`);
   await revalidatePath("/admin/products");
@@ -56,7 +62,7 @@ async function updateFocalPointAction(formData: FormData) {
   }
 
   const user = await getCurrentUser();
-  if (!user?.isAdmin) {
+  if (!user || !hasAdminWriteAccess(user)) {
     notFound();
   }
 
@@ -102,7 +108,7 @@ async function updateProductNameAndSlugAction(formData: FormData) {
   }
 
   const user = await getCurrentUser();
-  if (!user?.isAdmin) {
+  if (!user || !hasAdminWriteAccess(user)) {
     notFound();
   }
 
@@ -120,6 +126,8 @@ async function updateProductNameAndSlugAction(formData: FormData) {
     data: { name, slug },
   });
 
+  await writeAuditLog(user.id, "product.name_slug_updated", "Product", productId, { name, slug });
+
   revalidatePath(`/admin/products/${productId}/edit`);
   revalidatePath("/admin/products");
   redirect(`/admin/products/${productId}/edit?updated=name`);
@@ -131,7 +139,7 @@ async function updateProductDetailsAction(formData: FormData) {
   if (!productId) redirect("/admin/products");
 
   const user = await getCurrentUser();
-  if (!user?.isAdmin) notFound();
+  if (!user || !hasAdminWriteAccess(user)) notFound();
 
   const descriptionEn = toOptionalString(formData.get("descriptionEn") ?? null);
   const descriptionLv = toOptionalString(formData.get("descriptionLv") ?? null);
@@ -167,6 +175,17 @@ async function updateProductDetailsAction(formData: FormData) {
   const safeQty = Number.isFinite(quantity) ? Math.max(0, quantity) : 0;
 
   const active = formData.get("active") === "on";
+  const isDraft = formData.get("isDraft") === "on";
+
+  const compareAtRaw = formData.get("compareAtPrice")?.toString().trim() ?? "";
+  let compareAtPrice: number | null = null;
+  if (compareAtRaw !== "") {
+    const cap = Number.parseFloat(compareAtRaw);
+    if (!Number.isFinite(cap) || cap < 0) {
+      redirect(`/admin/products/${productId}/edit?error=invalid_compare_at`);
+    }
+    compareAtPrice = cap;
+  }
 
   const categoryIdRaw = formData.get("categoryId")?.toString() ?? "";
   const categoryId = categoryIdRaw ? categoryIdRaw : null;
@@ -182,8 +201,10 @@ async function updateProductDetailsAction(formData: FormData) {
       shippingWeightKg: shippingWeightKgRaw === "" ? null : shippingWeightKg,
       barcode: barcode ?? undefined,
       price,
+      compareAtPrice: compareAtRaw === "" ? null : compareAtPrice,
       stockLocation,
       active,
+      isDraft,
       categoryId: categoryId ?? undefined,
     },
   });
@@ -192,7 +213,16 @@ async function updateProductDetailsAction(formData: FormData) {
     productId,
     safeQty,
     stockLocation === "warehouse" ? "warehouse" : undefined,
+    { actorId: user.id, reason: "admin_product_edit_details" },
   );
+
+  await writeAuditLog(user.id, "product.details_updated", "Product", productId, {
+    price,
+    active,
+    isDraft,
+    compareAtPrice: compareAtRaw === "" ? null : compareAtPrice,
+    stockLocation,
+  });
 
   revalidatePath(`/admin/products/${productId}/edit`);
   revalidatePath("/admin/products");
@@ -201,7 +231,7 @@ async function updateProductDetailsAction(formData: FormData) {
 
 export default async function AdminProductEditPage({ params, searchParams }: Props) {
   const user = await getCurrentUser();
-  if (!user?.isAdmin) notFound();
+  if (!user || !hasAdminAccess(user)) notFound();
 
   const { id } = await params;
   const { saved, updated, error: errorParam } = await searchParams;
@@ -262,6 +292,11 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
           Shipping weight must be empty or a valid non-negative number (kg).
         </p>
       )}
+      {errorParam === "invalid_compare_at" && (
+        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+          Compare-at price must be empty or a valid non-negative number.
+        </p>
+      )}
       {errorParam &&
         ![
           "slug_taken",
@@ -269,6 +304,7 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
           "name_required",
           "invalid_price",
           "invalid_shipping_weight",
+          "invalid_compare_at",
         ].includes(errorParam) && (
         <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
           Upload failed. Check file type (JPEG, PNG, WebP, GIF) and size (max 10MB). See terminal for details.
@@ -366,6 +402,23 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
           </label>
 
           <label className="flex flex-col gap-1 text-xs text-zinc-600">
+            Compare-at price (optional)
+            <input
+              type="number"
+              name="compareAtPrice"
+              step="0.01"
+              min={0}
+              defaultValue={
+                product.compareAtPrice != null
+                  ? Number(product.compareAtPrice).toString()
+                  : ""
+              }
+              className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
+              placeholder="Strike-through / “was” price"
+            />
+          </label>
+
+          <label className="flex flex-col gap-1 text-xs text-zinc-600">
             Weight
             <input
               type="text"
@@ -453,6 +506,16 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
             Active
           </label>
 
+          <label className="flex items-center gap-2 text-sm text-zinc-700 md:col-span-2">
+            <input
+              type="checkbox"
+              name="isDraft"
+              defaultChecked={product.isDraft}
+              className="h-4 w-4 rounded border-zinc-300"
+            />
+            Draft (hidden from storefront)
+          </label>
+
           <div className="flex items-center justify-start md:col-span-2">
             <button
               type="submit"
@@ -498,7 +561,7 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
                     Save focal point
                   </button>
                 </form>
-                <form action={deleteImageAction} className="text-xs">
+                <ConfirmDeleteImageForm action={deleteImageAction}>
                   <input type="hidden" name="productId" value={product.id} />
                   <input type="hidden" name="imageId" value={img.id} />
                   <button
@@ -507,7 +570,7 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
                   >
                     Delete
                   </button>
-                </form>
+                </ConfirmDeleteImageForm>
               </div>
             ))
           )}
@@ -521,6 +584,7 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
         <form
           action={async (formData) => {
             "use server";
+            const actor = await requireAdminWrite();
             const productId = formData.get("productId")?.toString();
             if (!productId) {
               redirect("/admin/products");
@@ -577,6 +641,7 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
               }
               revalidatePath(`/admin/products/${productId}/edit`);
               revalidatePath("/admin/products");
+              await writeAuditLog(actor.id, "product.images_replaced", "Product", productId, {});
               redirect(`/admin/products/${productId}/edit?saved=1`);
             } catch (err) {
               // Allow Next.js redirects (NEXT_REDIRECT) to bubble up without being treated as errors

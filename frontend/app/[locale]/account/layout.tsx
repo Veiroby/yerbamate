@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { getCurrentUser } from "@/lib/auth";
+import { hasAdminAccess } from "@/lib/admin-access";
 import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
 import { AccountSidebar } from "@/app/account/account-sidebar";
@@ -30,7 +31,7 @@ export default async function AccountLayout({
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a]">
       <SaveNotification />
-      <SiteHeader user={{ isAdmin: user.isAdmin }} locale={locale} />
+      <SiteHeader user={{ isAdmin: hasAdminAccess(user) }} locale={locale} />
       <main className="mx-auto w-full max-w-6xl px-3 py-6 max-lg:max-w-none sm:px-4 sm:py-8 lg:px-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:gap-8">
           <AccountSidebar variant="sidebar" />

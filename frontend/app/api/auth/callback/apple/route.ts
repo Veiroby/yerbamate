@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getAppleProfile, mergeAppleName } from "@/lib/oauth";
 import { createSession, findOrCreateUserFromOAuth } from "@/lib/auth";
 import { authRedirectToLocalePath, getLocaleForAuthRedirect, sameOriginRedirectUrl } from "@/lib/auth-redirect";
+import { hasAdminAccess } from "@/lib/admin-access";
 
 /** Apple uses response_mode=form_post, so callback is POST with code, id_token, and optionally user (name) */
 export async function POST(request: Request) {
@@ -51,9 +52,9 @@ export async function POST(request: Request) {
     await createSession(userId);
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { isAdmin: true },
+      select: { isAdmin: true, adminRole: true },
     });
-    if (user?.isAdmin) {
+    if (hasAdminAccess(user)) {
       return NextResponse.redirect(sameOriginRedirectUrl(request, "/admin"), { status: 303 });
     }
     const locale = await getLocaleForAuthRedirect(request);

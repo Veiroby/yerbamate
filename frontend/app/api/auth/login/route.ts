@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { createSession, verifyPassword } from "@/lib/auth";
+import { hasAdminAccess } from "@/lib/admin-access";
 import {
   authRedirectToLocalePath,
   getLocaleForAuthRedirect,
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
 
   await createSession(user.id);
 
-  if (user.isAdmin) {
+  if (hasAdminAccess(user)) {
     return NextResponse.redirect(sameOriginRedirectUrl(request, "/admin"), { status: 303 });
   }
 

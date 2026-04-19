@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
 import { getCurrentUser } from "@/lib/auth";
+import { hasAdminAccess } from "@/lib/admin-access";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
 type Props = {
@@ -20,7 +21,7 @@ export default async function WireTransferSuccessPage({ params, searchParams }: 
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
+      <SiteHeader user={user ? { isAdmin: hasAdminAccess(user) } : null} locale={locale} />
       <main className="mx-auto w-full max-w-2xl px-3 py-16 max-lg:max-w-none sm:px-4">
         <div className="rounded-2xl border border-[#606C38]/20 bg-[#FEFAE0] p-8 shadow-sm text-center">
           <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-[#606C38]/20">

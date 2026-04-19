@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { hasAdminAccess } from "@/lib/admin-access";
 import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
 import { AddToCartForm } from "@/app/products/[slug]/add-to-cart-form";
@@ -38,6 +39,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       name: true,
       active: true,
       archived: true,
+      isDraft: true,
       descriptionEn: true,
       descriptionLv: true,
       description: true,
@@ -48,7 +50,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     },
   });
 
-  if (!product || !product.active || product.archived) {
+  if (!product || !product.active || product.archived || product.isDraft) {
     return {
       title: "YerbaTea",
       description: "",
@@ -156,7 +158,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const t = createT(translations);
 
-  if (!product || !product.active || product.archived) {
+  if (!product || !product.active || product.archived || product.isDraft) {
     notFound();
   }
 
@@ -223,7 +225,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
+      <SiteHeader user={user ? { isAdmin: hasAdminAccess(user) } : null} locale={locale} />
 
       <main className="mx-auto w-full max-w-7xl px-3 py-8 max-lg:max-w-none sm:px-6 sm:py-10 lg:px-8">
         <nav aria-label="Breadcrumb" className="mb-6 text-sm text-gray-500">

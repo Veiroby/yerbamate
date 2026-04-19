@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAdminTheme } from "./admin-frame";
 
 function IconDashboard({ className }: { className?: string }) {
   return (
@@ -122,6 +123,7 @@ const navGroups = [
     label: "Commerce",
     items: [
       { href: "/admin/products", label: "Products", icon: IconPackage },
+      { href: "/admin/categories", label: "Categories", icon: IconTag },
       { href: "/admin/collections", label: "Collections", icon: IconFolder },
       { href: "/admin/orders", label: "Orders", icon: IconShoppingCart },
       { href: "/admin/invoices", label: "Invoices", icon: IconDocument },
@@ -143,7 +145,10 @@ const navGroups = [
   },
 ];
 
-const bottomItems = [{ href: "/admin/settings", label: "Settings", icon: IconCog }];
+const bottomItems = [
+  { href: "/admin/audit-log", label: "Audit log", icon: IconDocument },
+  { href: "/admin/settings", label: "Settings", icon: IconCog },
+];
 
 const allNavItems = [
   ...navGroups.flatMap((g) => g.items),
@@ -156,12 +161,14 @@ function NavLink({
   icon: Icon,
   active,
   iconsOnly,
+  dark,
 }: {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   active: boolean;
   iconsOnly?: boolean;
+  dark: boolean;
 }) {
   return (
     <Link
@@ -174,8 +181,12 @@ function NavLink({
           : "gap-3 px-3 py-2"
       } ${
         active
-          ? "bg-emerald-50 text-emerald-800"
-          : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900"
+          ? dark
+            ? "bg-emerald-950/80 text-emerald-300"
+            : "bg-emerald-50 text-emerald-800"
+          : dark
+            ? "text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
+            : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900"
       }`}
     >
       <Icon className="h-5 w-5 shrink-0 opacity-80" />
@@ -186,11 +197,18 @@ function NavLink({
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const { dark } = useAdminTheme();
 
   return (
     <>
       {/* Mobile: narrow icon-only strip */}
-      <aside className="fixed left-0 top-0 z-20 flex w-14 shrink-0 flex-col border-r border-zinc-200 bg-white md:hidden">
+      <aside
+        className={
+          dark
+            ? "fixed left-0 top-0 z-20 flex w-14 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900 md:hidden"
+            : "fixed left-0 top-0 z-20 flex w-14 shrink-0 flex-col border-r border-zinc-200 bg-white md:hidden"
+        }
+      >
         <div className="flex flex-1 flex-col gap-1 overflow-y-auto py-2">
           {allNavItems.map(({ href, label, icon }) => {
             const active =
@@ -205,6 +223,7 @@ export function AdminSidebar() {
                 icon={icon}
                 active={active}
                 iconsOnly
+                dark={dark}
               />
             );
           })}
@@ -212,11 +231,23 @@ export function AdminSidebar() {
       </aside>
 
       {/* Desktop: full sidebar with labels */}
-      <aside className="hidden w-60 shrink-0 flex-col border-r border-zinc-200 bg-white md:flex">
+      <aside
+        className={
+          dark
+            ? "hidden w-60 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900 md:flex"
+            : "hidden w-60 shrink-0 flex-col border-r border-zinc-200 bg-white md:flex"
+        }
+      >
         <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-4">
           {navGroups.map((group) => (
             <div key={group.label}>
-              <p className="mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+              <p
+                className={
+                  dark
+                    ? "mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500"
+                    : "mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-400"
+                }
+              >
                 {group.label}
               </p>
               <div className="space-y-0.5">
@@ -232,6 +263,7 @@ export function AdminSidebar() {
                       label={label}
                       icon={icon}
                       active={active}
+                      dark={dark}
                     />
                   );
                 })}
@@ -239,8 +271,18 @@ export function AdminSidebar() {
             </div>
           ))}
         </div>
-        <div className="border-t border-zinc-200 p-4">
-          <p className="mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-400">
+        <div
+          className={
+            dark ? "border-t border-zinc-800 p-4" : "border-t border-zinc-200 p-4"
+          }
+        >
+          <p
+            className={
+              dark
+                ? "mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500"
+                : "mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-400"
+            }
+          >
             Admin
           </p>
           <div className="space-y-0.5">
@@ -251,6 +293,7 @@ export function AdminSidebar() {
                 label={label}
                 icon={icon}
                 active={pathname === href}
+                dark={dark}
               />
             ))}
           </div>

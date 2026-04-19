@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { hasAdminAccess } from "@/lib/admin-access";
 import { SiteHeader } from "@/app/components/site-header";
 import { Hero } from "@/app/components/landing/Hero";
 import {
@@ -112,7 +113,7 @@ export default async function HomePage({ params }: Props) {
       where: { id: "default" },
     }),
     prisma.product.findMany({
-      where: { active: true, archived: false },
+      where: { active: true, archived: false, isDraft: false },
       orderBy: { createdAt: "desc" },
       take: 12,
       include: {
@@ -123,9 +124,9 @@ export default async function HomePage({ params }: Props) {
     }),
     (async () => {
       const [productCount, brands, subscriberEmails, userEmails] = await Promise.all([
-        prisma.product.count({ where: { active: true, archived: false } }),
+        prisma.product.count({ where: { active: true, archived: false, isDraft: false } }),
         prisma.product.findMany({
-          where: { active: true, archived: false, brand: { not: null } },
+          where: { active: true, archived: false, isDraft: false, brand: { not: null } },
           select: { brand: true },
         }),
         prisma.newsletterSubscriber.findMany({ select: { email: true } }),
@@ -211,7 +212,7 @@ export default async function HomePage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
+      <SiteHeader user={user ? { isAdmin: hasAdminAccess(user) } : null} locale={locale} />
 
       <main>
         <Hero

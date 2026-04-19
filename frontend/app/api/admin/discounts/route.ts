@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { adminApiGuard } from "@/lib/admin-api-guard";
+import { writeAuditLog } from "@/lib/admin-audit";
 
 export async function GET() {
-  const user = await getCurrentUser();
-  if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const g = await adminApiGuard(false);
+  if (!g.ok) return g.response;
 
   const discounts = await prisma.discountCode.findMany({
     orderBy: { createdAt: "desc" },
@@ -16,10 +15,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await getCurrentUser();
-  if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const g = await adminApiGuard(true);
+  if (!g.ok) return g.response;
 
   try {
     const body = await request.json();
@@ -66,6 +63,10 @@ export async function POST(request: Request) {
         maxUses: maxUses || null,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
       },
+    });
+
+    await writeAuditLog(g.user.id, "discount.created", "DiscountCode", discount.id, {
+      code: discount.code,
     });
 
     return NextResponse.json({ discount }, { status: 201 });

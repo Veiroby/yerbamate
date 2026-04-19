@@ -32,8 +32,55 @@ export default async function AdminInventoryPage() {
       return nameA.localeCompare(nameB);
     });
 
+  const [adjustments, inventoryRows] = await Promise.all([
+    prisma.inventoryAdjustment.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 50,
+      include: {
+        actor: { select: { email: true } },
+        inventoryItem: {
+          include: {
+            variant: {
+              include: { product: { select: { name: true } } },
+            },
+          },
+        },
+      },
+    }),
+    prisma.inventoryItem.findMany({
+      where: { quantity: { gt: 0 } },
+      include: {
+        variant: {
+          include: { product: { select: { price: true, currency: true } } },
+        },
+      },
+    }),
+  ]);
+
+  let inventoryValue = 0;
+  let valueCurrency = "EUR";
+  for (const row of inventoryRows) {
+    const p = row.variant?.product;
+    if (!p) continue;
+    const unit = Number(row.variant?.priceOverride ?? p.price);
+    inventoryValue += unit * row.quantity;
+    valueCurrency = p.currency ?? valueCurrency;
+  }
+
+  const fmtMoney = (n: number, c: string) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: c, maximumFractionDigits: 2 }).format(n);
+
   return (
     <div className="space-y-6">
+      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <h2 className="text-sm font-semibold text-zinc-900">Inventory value (estimate)</h2>
+        <p className="mt-1 text-xs text-zinc-500">
+          Sum of (unit price or variant override) × quantity for in-stock rows. Mixed currencies are summed
+          naively.
+        </p>
+        <p className="mt-3 text-2xl font-semibold text-zinc-900">{fmtMoney(inventoryValue, valueCurrency)}</p>
+      </section>
+
       <section className="rounded-2xl border bg-white p-5 shadow-sm">
         <h2 className="mb-3 text-sm font-semibold text-zinc-900">
           Adjust inventory
@@ -99,7 +146,32 @@ export default async function AdminInventoryPage() {
           )}
         </div>
       </section>
+
+      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <h2 className="mb-3 text-sm font-semibold text-zinc-900">Recent stock adjustments</h2>
+        {adjustments.length === 0 ? (
+          <p className="text-sm text-zinc-500">No adjustments logged yet.</p>
+        ) : (
+          <ul className="divide-y divide-zinc-100 text-sm">
+            {adjustments.map((a) => (
+              <li key={a.id} className="flex flex-wrap justify-between gap-2 py-2">
+                <span className="text-zinc-600">
+                  {a.createdAt.toLocaleString()} · {a.actor.email}
+                </span>
+                <span className="font-medium text-zinc-900">
+                  {a.inventoryItem.variant?.product?.name ?? a.inventoryItem.sku}{" "}
+                  <span className={a.delta >= 0 ? "text-emerald-700" : "text-red-600"}>
+                    {a.delta >= 0 ? "+" : ""}
+                    {a.delta}
+                  </span>{" "}
+                  → {a.quantityAfter}
+                </span>
+                {a.reason ? <span className="w-full text-xs text-zinc-400">{a.reason}</span> : null}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }
-

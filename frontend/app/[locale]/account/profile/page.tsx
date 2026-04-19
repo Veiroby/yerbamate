@@ -37,7 +37,7 @@ export default async function ProfilePage({ params, searchParams }: Props) {
   const [ordersCount, recentProducts] = await Promise.all([
     prisma.order.count({ where: { userId: user.id } }),
     prisma.product.findMany({
-      where: { active: true, archived: false },
+      where: { active: true, archived: false, isDraft: false },
       orderBy: { createdAt: "desc" },
       take: 6,
       include: { images: { orderBy: { position: "asc" }, take: 1 } },

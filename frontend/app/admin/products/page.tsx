@@ -3,6 +3,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { saveProductImage } from "@/lib/upload";
 import { setProductQuantityWithLocation } from "./product-quantity";
+import { requireAdminWrite } from "@/lib/admin-auth";
+import { writeAuditLog } from "@/lib/admin-audit";
 import { AdminProductsEditor } from "./AdminProductsEditor";
 import { slugify } from "@/lib/slugify";
 
@@ -70,6 +72,7 @@ export default async function AdminProductsPage({
             <form
               action={async (formData) => {
                 "use server";
+                const user = await requireAdminWrite();
                 const name = formData.get("name")?.toString().trim();
                 if (!name) return;
                 const slug = slugify(name) || "category";
@@ -77,8 +80,12 @@ export default async function AdminProductsPage({
                   where: { slug },
                 });
                 const finalSlug = existing ? `${slug}-${Date.now().toString(36)}` : slug;
-                await prisma.category.create({
+                const cat = await prisma.category.create({
                   data: { name, slug: finalSlug },
+                });
+                await writeAuditLog(user.id, "category.created", "Category", cat.id, {
+                  name,
+                  slug: finalSlug,
                 });
                 revalidatePath("/admin/products");
                 redirect("/admin/products?saved=1");
@@ -128,6 +135,7 @@ export default async function AdminProductsPage({
         <form
           action={async (formData) => {
             "use server";
+            const user = await requireAdminWrite();
             const name = formData.get("name")?.toString().trim();
             const slug = formData.get("slug")?.toString().trim();
             const price = Number.parseFloat(
@@ -189,8 +197,13 @@ export default async function AdminProductsPage({
                 product.id,
                 quantity,
                 stockLocation === "warehouse" ? "warehouse" : undefined,
+                { actorId: user.id, reason: "admin_product_create" },
               );
             }
+            await writeAuditLog(user.id, "product.created", "Product", product.id, {
+              name,
+              slug,
+            });
             revalidatePath("/admin/products");
             revalidatePath("/admin/inventory");
             redirect("/admin/products?saved=1");

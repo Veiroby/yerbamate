@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { hasAdminAccess } from "@/lib/admin-access";
 import { ProductCard } from "@/app/components/product-card";
 import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
@@ -49,6 +50,7 @@ export default async function AccessoriesPage({ params }: Props) {
       where: {
         active: true,
         archived: false,
+        isDraft: false,
         category: { slug: { in: categorySlugs } },
       },
       orderBy: { createdAt: "desc" },
@@ -102,7 +104,7 @@ export default async function AccessoriesPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
+      <SiteHeader user={user ? { isAdmin: hasAdminAccess(user) } : null} locale={locale} />
       <main className="mx-auto w-full max-w-7xl px-3 py-10 max-lg:max-w-none sm:px-6 sm:py-14 lg:px-8">
         <header className="mb-10 border-b border-gray-200 pb-8">
           <h1 className="text-2xl font-bold uppercase tracking-wide text-black sm:text-3xl md:text-4xl">

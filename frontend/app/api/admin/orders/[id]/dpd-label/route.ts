@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { adminApiGuard } from "@/lib/admin-api-guard";
+import { writeAuditLog } from "@/lib/admin-audit";
 import { createDpdShipment, getDpdShipmentLabel, DPD_SENDER_DETAILS } from "@/lib/shipping/dpd";
 
 type RouteParams = {
@@ -8,11 +9,9 @@ type RouteParams = {
 };
 
 // GET - Fetch existing DPD label for an order
-export async function GET(request: Request, { params }: RouteParams) {
-  const user = await getCurrentUser();
-  if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function GET(_request: Request, { params }: RouteParams) {
+  const g = await adminApiGuard(false);
+  if (!g.ok) return g.response;
 
   const { id } = await params;
 
@@ -43,10 +42,8 @@ export async function GET(request: Request, { params }: RouteParams) {
 
 // POST - Generate DPD shipment and label for an order
 export async function POST(request: Request, { params }: RouteParams) {
-  const user = await getCurrentUser();
-  if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const g = await adminApiGuard(true);
+  if (!g.ok) return g.response;
 
   const { id } = await params;
 
@@ -67,6 +64,7 @@ export async function POST(request: Request, { params }: RouteParams) {
 
   // Check if label already exists
   if (order.dpdLabelPdf) {
+    await writeAuditLog(g.user.id, "order.dpd_label_viewed", "Order", id, { cached: true });
     return NextResponse.json({
       success: true,
       message: "Label already exists",
@@ -93,6 +91,8 @@ export async function POST(request: Request, { params }: RouteParams) {
           dpdLabelCreatedAt: new Date(),
         },
       });
+
+      await writeAuditLog(g.user.id, "order.dpd_label_fetched", "Order", id, {});
 
       return NextResponse.json({
         success: true,
@@ -170,6 +170,8 @@ export async function POST(request: Request, { params }: RouteParams) {
       },
     });
 
+    await writeAuditLog(g.user.id, "order.dpd_label_placeholder", "Order", id, {});
+
     return NextResponse.json({
       success: true,
       message: "Placeholder label generated (DPD API unavailable)",
@@ -188,6 +190,10 @@ export async function POST(request: Request, { params }: RouteParams) {
       dpdLabelPdf: result.labelPdf,
       dpdLabelCreatedAt: new Date(),
     },
+  });
+
+  await writeAuditLog(g.user.id, "order.dpd_label_created", "Order", id, {
+    shipmentId: result.shipmentId,
   });
 
   return NextResponse.json({

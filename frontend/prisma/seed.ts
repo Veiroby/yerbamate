@@ -23,18 +23,19 @@ async function main() {
   const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, BCRYPT_ROUNDS);
   await prisma.user.upsert({
     where: { email: ADMIN_EMAIL },
-    update: { passwordHash, isAdmin: true, name: "Admin" },
+    update: { passwordHash, isAdmin: true, adminRole: "OWNER", name: "Admin" },
     create: {
       email: ADMIN_EMAIL,
       name: "Admin",
       passwordHash,
       isAdmin: true,
+      adminRole: "OWNER",
     },
   });
   // Only one admin account: demote everyone else (credential rotation / email change).
   await prisma.user.updateMany({
     where: { email: { not: ADMIN_EMAIL } },
-    data: { isAdmin: false },
+    data: { isAdmin: false, adminRole: null },
   });
   console.log(`Admin user ready: ${ADMIN_EMAIL}`);
 }

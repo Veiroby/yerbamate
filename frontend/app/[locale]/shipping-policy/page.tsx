@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
+import { hasAdminAccess } from "@/lib/admin-access";
 import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
 import { PolicyLayout } from "@/app/components/PolicyLayout";
@@ -58,7 +59,7 @@ export default async function ShippingPolicyPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-white text-black">
-      <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
+      <SiteHeader user={user ? { isAdmin: hasAdminAccess(user) } : null} locale={locale} />
       <PolicyLayout
         locale={locale}
         title={t("shipping.title")}

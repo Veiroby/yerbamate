@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { getFacebookProfile } from "@/lib/oauth";
 import { createSession, findOrCreateUserFromOAuth } from "@/lib/auth";
 import { authRedirectToLocalePath, getLocaleForAuthRedirect, sameOriginRedirectUrl } from "@/lib/auth-redirect";
+import { hasAdminAccess } from "@/lib/admin-access";
 
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -28,9 +29,9 @@ export async function GET(request: Request) {
     await createSession(userId);
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { isAdmin: true },
+      select: { isAdmin: true, adminRole: true },
     });
-    if (user?.isAdmin) {
+    if (hasAdminAccess(user)) {
       return NextResponse.redirect(sameOriginRedirectUrl(request, "/admin"), { status: 303 });
     }
     const locale = await getLocaleForAuthRedirect(request);

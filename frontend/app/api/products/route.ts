@@ -25,6 +25,7 @@ export async function GET(request: Request) {
   const where: Prisma.ProductWhereInput = {
     active: true,
     archived: false,
+    isDraft: false,
   };
 
   if (q) {

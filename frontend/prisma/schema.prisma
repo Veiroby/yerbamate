@@ -45,6 +45,13 @@ enum DiscountType {
   PERCENTAGE
 }
 
+enum AdminRole {
+  OWNER
+  ADMIN
+  MANAGER
+  SUPPORT
+}
+
 model DiscountCode {
   id            String       @id @default(cuid())
   code          String       @unique
@@ -86,20 +93,27 @@ model User {
   name               String?
   image              String?
   isAdmin            Boolean   @default(false)
+  /// RBAC: when set, works with isAdmin for admin panel access (see hasAdminAccess).
+  adminRole          AdminRole?
   resetToken         String?   @unique
   resetTokenExpiry   DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  accounts       Account[]
-  carts          Cart[]
-  orders         Order[]
-  reviews        Review[]
-  sessions       Session[]
-  wishlistItems  WishlistItem[]
+  accounts               Account[]
+  carts                  Cart[]
+  orders                 Order[]
+  reviews                Review[]
+  sessions               Session[]
+  wishlistItems          WishlistItem[]
+  adminAuditLogs         AdminAuditLog[]      @relation("AdminAuditActor")
+  orderAdminNotes        OrderAdminNote[]
+  inventoryAdjustments   InventoryAdjustment[]
+  customerProfile        CustomerProfile?
 
   @@index([email])
   @@index([resetToken])
+  @@index([adminRole])
 }
 
 model Account {
@@ -121,12 +135,14 @@ model Category {
   id        String    @id @default(cuid())
   name      String
   slug      String    @unique
+  sortOrder Int       @default(0)
   createdAt DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
   products Product[]
 
   @@index([slug])
+  @@index([sortOrder])
 }
 
 model Product {
@@ -137,6 +153,8 @@ model Product {
   descriptionEn String?       @db.Text
   descriptionLv String?       @db.Text
   price         Decimal        @db.Decimal(10, 2)
+  /// Optional strike-through / “was” price for storefront.
+  compareAtPrice Decimal?      @db.Decimal(10, 2)
   currency      String         @default("EUR")
   barcode       String?        @unique
   brand         String?
@@ -149,6 +167,8 @@ model Product {
   active        Boolean        @default(true)
   /// Hidden from default admin list; excluded from storefront when true
   archived      Boolean        @default(false)
+  /// Draft products never appear on the storefront (even if active).
+  isDraft       Boolean        @default(false)
   categoryId    String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -166,6 +186,7 @@ model Product {
   @@index([slug])
   @@index([active])
   @@index([archived])
+  @@index([isDraft])
   @@index([barcode])
   @@index([categoryId])
   @@index([brand])
@@ -239,6 +260,8 @@ model InventoryItem {
   quantity  Int      @default(0)
   location  String?  // e.g. warehouse name or code
   updatedAt DateTime @updatedAt
+
+  adjustments InventoryAdjustment[]
 
   @@index([sku])
   @@index([variantId])
@@ -334,15 +357,74 @@ model Order {
   createdAt             DateTime      @default(now())
   updatedAt             DateTime      @updatedAt
 
-  items  OrderItem[]
-  reviews Review[]
-  invoice Invoice?
+  items           OrderItem[]
+  reviews         Review[]
+  invoice         Invoice?
+  orderAdminNotes OrderAdminNote[]
 
   @@index([userId])
   @@index([email])
   @@index([status])
   @@index([sessionId])
   @@index([archived])
+}
+
+model AdminAuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  actor      User     @relation("AdminAuditActor", fields: [actorId], references: [id], onDelete: Cascade)
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model OrderAdminNote {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  body      String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([authorId])
+}
+
+/// Internal CRM row: one per normalized customer email (guest or registered).
+model CustomerProfile {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  userId          String?  @unique
+  user            User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  internalNotes   String?  @db.Text
+  tags            String[] @default([])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([email])
+}
+
+model InventoryAdjustment {
+  id              String         @id @default(cuid())
+  inventoryItemId String
+  inventoryItem   InventoryItem  @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  delta           Int
+  quantityAfter   Int
+  reason          String?
+  actorId         String
+  actor           User           @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  createdAt       DateTime       @default(now())
+
+  @@index([inventoryItemId])
+  @@index([actorId])
+  @@index([createdAt])
 }
 
 model InvoiceCounter {

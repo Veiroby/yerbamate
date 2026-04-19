@@ -7,6 +7,7 @@ import {
   sameOriginRedirectUrl,
 } from "@/lib/auth-redirect";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
+import { hasAdminAccess } from "@/lib/admin-access";
 
 function validatePassword(password: string): { valid: boolean; error?: string } {
   if (password.length < 8) {
@@ -103,7 +104,7 @@ export async function POST(request: Request) {
 
   await createSession(user.id);
 
-  if (user.isAdmin) {
+  if (hasAdminAccess(user)) {
     return NextResponse.redirect(sameOriginRedirectUrl(request, "/admin"), { status: 303 });
   }
 

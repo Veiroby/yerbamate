@@ -1,16 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { adminApiGuard } from "@/lib/admin-api-guard";
+import { writeAuditLog } from "@/lib/admin-audit";
 
 type RouteParams = {
   params: Promise<{ id: string }>;
 };
 
 export async function PATCH(request: Request, { params }: RouteParams) {
-  const user = await getCurrentUser();
-  if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const g = await adminApiGuard(true);
+  if (!g.ok) return g.response;
 
   const { id } = await params;
 
@@ -23,6 +22,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       data: { active },
     });
 
+    await writeAuditLog(g.user.id, "discount.updated", "DiscountCode", id, { active });
+
     return NextResponse.json({ discount });
   } catch (error) {
     console.error("Error updating discount code:", error);
@@ -33,11 +34,9 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(request: Request, { params }: RouteParams) {
-  const user = await getCurrentUser();
-  if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export async function DELETE(_request: Request, { params }: RouteParams) {
+  const g = await adminApiGuard(true);
+  if (!g.ok) return g.response;
 
   const { id } = await params;
 
@@ -45,6 +44,8 @@ export async function DELETE(request: Request, { params }: RouteParams) {
     await prisma.discountCode.delete({
       where: { id },
     });
+
+    await writeAuditLog(g.user.id, "discount.deleted", "DiscountCode", id, {});
 
     return NextResponse.json({ success: true });
   } catch (error) {

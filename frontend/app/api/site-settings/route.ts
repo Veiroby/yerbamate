@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { hasAdminWriteAccess } from "@/lib/admin-access";
 
 const DEFAULT_SETTINGS = {
   popupEnabled: true,
@@ -27,7 +28,7 @@ export async function GET() {
 export async function PUT(request: Request) {
   try {
     const user = await getCurrentUser();
-    if (!user?.isAdmin) {
+    if (!user || !hasAdminWriteAccess(user)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
+import { hasAdminAccess } from "@/lib/admin-access";
 import { CollectionProductPicker } from "./collection-product-picker";
 
 type Props = {
@@ -12,7 +13,7 @@ type Props = {
 
 export default async function AdminCollectionEditPage({ params }: Props) {
   const user = await getCurrentUser();
-  if (!user?.isAdmin) notFound();
+  if (!user || !hasAdminAccess(user)) notFound();
 
   const { id } = await params;
   const [collection, allProducts] = await Promise.all([
@@ -32,7 +33,7 @@ export default async function AdminCollectionEditPage({ params }: Props) {
       },
     }),
     prisma.product.findMany({
-      where: { active: true, archived: false },
+      where: { active: true, archived: false, isDraft: false },
       orderBy: { name: "asc" },
       include: { images: { orderBy: { position: "asc" }, take: 1 } },
     }),

@@ -18,7 +18,7 @@ export default async function AdminMainPageEditor() {
       select: { id: true, name: true, slug: true },
     }),
     prisma.product.findMany({
-      where: { active: true, archived: false },
+      where: { active: true, archived: false, isDraft: false },
       orderBy: { name: "asc" },
       select: { id: true, name: true, slug: true },
     }),

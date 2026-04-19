@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { updateOrderFromDpdTracking } from "@/lib/dpd-tracking";
+import { adminApiGuard } from "@/lib/admin-api-guard";
+import { writeAuditLog } from "@/lib/admin-audit";
 
 type RouteParams = {
   params: Promise<{ id: string }>;
 };
 
 export async function POST(_req: NextRequest, { params }: RouteParams) {
+  const g = await adminApiGuard(true);
+  if (!g.ok) return g.response;
+
   const { id } = await params;
 
   const order = await prisma.order.findUnique({
@@ -45,9 +50,10 @@ export async function POST(_req: NextRequest, { params }: RouteParams) {
     },
   });
 
+  await writeAuditLog(g.user.id, "order.dpd_status_refreshed", "Order", id, {});
+
   return NextResponse.json({
     ok: true,
     tracking: updated,
   });
 }
-

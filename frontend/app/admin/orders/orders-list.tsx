@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { OrderStatus } from "@/app/generated/prisma/client";
@@ -146,6 +147,13 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
                   <span className="font-mono text-xs font-semibold text-zinc-900">
                     {order.orderNumber}
                   </span>
+                  <Link
+                    href={`/admin/orders/${order.id}`}
+                    className="text-xs font-medium text-emerald-600 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Open
+                  </Link>
                   {isNew && (
                     <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
                       New

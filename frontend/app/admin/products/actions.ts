@@ -2,14 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { requireAdminWrite } from "@/lib/admin-auth";
+import { writeAuditLog } from "@/lib/admin-audit";
 import { setProductQuantityWithLocation } from "./product-quantity";
-
-async function requireAdmin() {
-  const user = await getCurrentUser();
-  if (!user?.isAdmin) throw new Error("Unauthorized");
-}
 
 export type BulkProductUpdate = {
   id: string;
@@ -25,7 +22,7 @@ export type BulkProductUpdate = {
 };
 
 export async function bulkUpdateProducts(updates: BulkProductUpdate[]) {
-  await requireAdmin();
+  const user = await requireAdminWrite();
   if (!Array.isArray(updates) || updates.length === 0) return;
 
   const normalized = updates
@@ -79,14 +76,20 @@ export async function bulkUpdateProducts(updates: BulkProductUpdate[]) {
         where: { id: u.id },
         data,
       });
+      await writeAuditLog(
+        user.id,
+        "product.bulk_field_update",
+        "Product",
+        u.id,
+        JSON.parse(JSON.stringify(data)) as Prisma.InputJsonValue,
+      );
     }
 
     if (u.quantity !== undefined) {
-      await setProductQuantityWithLocation(
-        u.id,
-        u.quantity,
-        u.stockLocation === "warehouse" ? "warehouse" : undefined,
-      );
+      await setProductQuantityWithLocation(u.id, u.quantity, u.stockLocation === "warehouse" ? "warehouse" : undefined, {
+        actorId: user.id,
+        reason: "admin_products_bulk",
+      });
     }
   }
 
@@ -95,10 +98,13 @@ export async function bulkUpdateProducts(updates: BulkProductUpdate[]) {
 }
 
 export async function setProductArchived(productId: string, archived: boolean) {
-  await requireAdmin();
+  const user = await requireAdminWrite();
   await prisma.product.update({
     where: { id: productId },
     data: { archived },
+  });
+  await writeAuditLog(user.id, archived ? "product.archived" : "product.unarchived", "Product", productId, {
+    archived,
   });
   revalidatePath("/admin/products");
   revalidatePath("/admin/inventory");
@@ -106,7 +112,7 @@ export async function setProductArchived(productId: string, archived: boolean) {
 }
 
 export async function deleteProductAction(formData: FormData) {
-  await requireAdmin();
+  const user = await requireAdminWrite();
   const productId = formData.get("productId")?.toString();
   if (!productId) return;
 
@@ -128,8 +134,9 @@ export async function deleteProductAction(formData: FormData) {
     where: { id: productId },
   });
 
+  await writeAuditLog(user.id, "product.deleted", "Product", productId, {});
+
   revalidatePath("/admin/products");
   revalidatePath("/admin/inventory");
   redirect("/admin/products?saved=1");
 }
-

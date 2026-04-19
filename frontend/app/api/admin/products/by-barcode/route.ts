@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { adminApiGuard } from "@/lib/admin-api-guard";
 
 export async function GET(request: Request) {
-  const user = await getCurrentUser();
-  if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const g = await adminApiGuard(false);
+  if (!g.ok) return g.response;
 
   const url = new URL(request.url);
   const barcode = url.searchParams.get("barcode")?.trim();

@@ -1,14 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { adminApiGuard } from "@/lib/admin-api-guard";
+import { writeAuditLog } from "@/lib/admin-audit";
 import { sendEmail, isEmailConfigured } from "@/lib/email";
 
 export async function GET() {
   try {
-    const user = await getCurrentUser();
-    if (!user?.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const g = await adminApiGuard(false);
+    if (!g.ok) return g.response;
 
     const campaigns = await prisma.emailCampaign.findMany({
       orderBy: { createdAt: "desc" },
@@ -24,10 +23,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const user = await getCurrentUser();
-    if (!user?.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const g = await adminApiGuard(true);
+    if (!g.ok) return g.response;
 
     if (!isEmailConfigured()) {
       return NextResponse.json({ error: "Email not configured" }, { status: 400 });
@@ -106,6 +103,11 @@ export async function POST(request: Request) {
         },
       });
 
+      await writeAuditLog(g.user.id, "email_campaign.sent", "EmailCampaign", campaign.id, {
+        sentCount,
+        recipientCount: toSend.length,
+      });
+
       return NextResponse.json({
         ...campaign,
         sentAt: new Date(),
@@ -113,6 +115,10 @@ export async function POST(request: Request) {
         message: `Campaign sent to ${sentCount} of ${toSend.length} recipients`,
       });
     }
+
+    await writeAuditLog(g.user.id, "email_campaign.created", "EmailCampaign", campaign.id, {
+      name: campaign.name,
+    });
 
     return NextResponse.json(campaign);
   } catch (error) {

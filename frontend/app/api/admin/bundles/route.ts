@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { adminApiGuard } from "@/lib/admin-api-guard";
+import { writeAuditLog } from "@/lib/admin-audit";
 
 export async function GET() {
-  const user = await getCurrentUser();
-  if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const g = await adminApiGuard(false);
+  if (!g.ok) return g.response;
 
   const bundles = await prisma.bundleOffer.findMany({
     include: {
@@ -21,10 +20,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const user = await getCurrentUser();
-  if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const g = await adminApiGuard(true);
+  if (!g.ok) return g.response;
 
   try {
     const body = await request.json();
@@ -65,6 +62,8 @@ export async function POST(request: Request) {
         },
       },
     });
+
+    await writeAuditLog(g.user.id, "bundle.created", "BundleOffer", bundle.id, { name });
 
     return NextResponse.json({ bundle }, { status: 201 });
   } catch (error) {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { adminApiGuard } from "@/lib/admin-api-guard";
+import { writeAuditLog } from "@/lib/admin-audit";
 import { sendEmail, isEmailConfigured, SITE_NAME } from "@/lib/email";
 import {
   renderNewArrivalsEmailHtml,
@@ -15,10 +16,8 @@ const MAX_DAYS = 365;
 
 export async function POST(request: Request) {
   try {
-    const user = await getCurrentUser();
-    if (!user?.isAdmin) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const g = await adminApiGuard(true);
+    if (!g.ok) return g.response;
 
     if (!isEmailConfigured()) {
       return NextResponse.json({ error: "Email not configured" }, { status: 400 });
@@ -38,6 +37,7 @@ export async function POST(request: Request) {
       where: {
         active: true,
         archived: false,
+        isDraft: false,
         createdAt: { gte: since },
       },
       orderBy: { createdAt: "desc" },
@@ -109,6 +109,12 @@ export async function POST(request: Request) {
     await prisma.emailCampaign.update({
       where: { id: campaign.id },
       data: { sentAt: new Date(), sentCount },
+    });
+
+    await writeAuditLog(g.user.id, "email.new_arrivals_sent", "EmailCampaign", campaign.id, {
+      sentCount,
+      days,
+      productCount: products.length,
     });
 
     return NextResponse.json({

@@ -1,6 +1,7 @@
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 import { SiteHeader } from "@/app/components/site-header";
 import { getCurrentUser } from "@/lib/auth";
+import { hasAdminAccess } from "@/lib/admin-access";
 import { FullSearchPage } from "@/app/components/mobile/full-search-page";
 import type { Locale } from "@/lib/i18n";
 import type { Metadata } from "next";
@@ -27,7 +28,7 @@ export default async function SearchRoutePage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <SiteHeader user={user ? { isAdmin: user.isAdmin } : null} locale={locale} />
+      <SiteHeader user={user ? { isAdmin: hasAdminAccess(user) } : null} locale={locale} />
       <FullSearchPage locale={locale} />
     </div>
   );

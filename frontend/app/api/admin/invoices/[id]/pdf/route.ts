@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth";
+import { adminApiGuard } from "@/lib/admin-api-guard";
 import { buildInvoiceFilename } from "@/lib/invoice";
 
 type Props = {
@@ -8,10 +8,8 @@ type Props = {
 };
 
 export async function GET(_request: Request, { params }: Props) {
-  const user = await getCurrentUser();
-  if (!user?.isAdmin) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const g = await adminApiGuard(false);
+  if (!g.ok) return g.response;
 
   const { id } = await params;
   const invoice = await prisma.invoice.findUnique({
