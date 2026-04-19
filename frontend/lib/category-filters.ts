@@ -15,8 +15,12 @@ export function categorySlugIncludingAdminDuplicates(
   };
 }
 
-/** LV category "Mate trauciņi" slugifies to `mate-traucii`, not `mate-gourds`. */
-const MATE_GOURD_CATEGORY_NAME_VARIANTS = ["Mate Gourds", "Mate trauciņi"];
+/**
+ * Display names that slugify to gourd-category slugs other than `mate-gourds`.
+ * - "Mate Gourd" → `mate-gourd` (singular; common in admin)
+ * - "Mate trauciņi" → `mate-traucii` (LV)
+ */
+const MATE_GOURD_CATEGORY_NAME_VARIANTS = ["Mate Gourd", "Mate Gourds", "Mate trauciņi"];
 
 export function mateGourdsCategoryWhere(): Prisma.CategoryWhereInput {
   const bases = new Set<string>(["mate-gourds"]);

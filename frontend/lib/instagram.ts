@@ -1,3 +1,5 @@
+import { createHmac } from "node:crypto";
+
 export type InstagramMediaItem = {
   id: string;
   media_type: "IMAGE" | "VIDEO" | "CAROUSEL_ALBUM";
@@ -36,6 +38,19 @@ function getGraphApiIgUserId(): string | null {
 
 export function isInstagramConfigured(): boolean {
   return Boolean(getGraphApiToken() && getGraphApiIgUserId()) || Boolean(getBasicDisplayToken());
+}
+
+/**
+ * Required for many server-side Graph API calls when the Meta app has
+ * "Require App Secret for Server API calls" (or similar) enabled.
+ * @see https://developers.facebook.com/docs/graph-api/securing-requests#appsecret_proof
+ */
+function appSecretProof(accessToken: string): string | null {
+  const secret = sanitizeEnvValue(
+    process.env.META_APP_SECRET ?? process.env.FACEBOOK_APP_SECRET,
+  );
+  if (!secret) return null;
+  return createHmac("sha256", secret).update(accessToken).digest("hex");
 }
 
 type FetchMeta = {
@@ -84,6 +99,8 @@ export async function fetchInstagramMedia(limit = 9): Promise<InstagramMediaItem
     );
     url.searchParams.set("limit", String(limit));
     url.searchParams.set("access_token", graphToken);
+    const proof = appSecretProof(graphToken);
+    if (proof) url.searchParams.set("appsecret_proof", proof);
     const result = await fetchJsonOrLog(url.toString(), {
       phase: "instagram_graph",
       tokenLength: graphToken.length,

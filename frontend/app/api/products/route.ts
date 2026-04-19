@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/app/generated/prisma/client";
+import { mateGourdsCategoryWhere } from "@/lib/category-filters";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -38,7 +39,10 @@ export async function GET(request: Request) {
   }
 
   if (category) {
-    where.category = { slug: category };
+    where.category =
+      category === "mate-gourds"
+        ? mateGourdsCategoryWhere()
+        : { slug: category };
   }
 
   if (brand) {
