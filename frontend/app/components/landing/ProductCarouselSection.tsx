@@ -87,7 +87,7 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
               src={p.imageUrl}
               alt={carouselAlt}
               fill
-              className="object-contain transition group-hover:scale-[1.02]"
+              className="object-cover transition group-hover:scale-[1.02]"
               sizes="(max-width: 640px) 220px, (max-width: 768px) 260px, 300px"
               unoptimized
             />
