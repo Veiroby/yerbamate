@@ -30,6 +30,9 @@ export const metadata: Metadata = {
   title: "YerbaTea – Premium Yerba Mate & Mate Gourds",
   description: "Premium yerba mate and mate gourds, delivered to your door.",
   metadataBase: new URL("https://www.yerbatea.lv"),
+  verification: {
+    google: "KlUE3ndrXncJdQne9WPWq_kFNhUyGV4gTk8PlE9gpe0",
+  },
   icons: {
     icon: "/images/yerbatea-favicon-32.png",
     apple: "/images/yerbatea-apple-touch-icon-180.png",
