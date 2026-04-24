@@ -52,6 +52,24 @@ enum AdminRole {
   SUPPORT
 }
 
+enum AbandonedCartStatus {
+  ACTIVE
+  ABANDONED
+  RECOVERED
+  CONVERTED
+}
+
+enum AbandonedReminderStage {
+  FIRST
+  SECOND
+  THIRD
+}
+
+enum ReminderSendSource {
+  MANUAL
+  AUTOMATIC
+}
+
 model DiscountCode {
   id            String       @id @default(cuid())
   code          String       @unique
@@ -110,6 +128,8 @@ model User {
   orderAdminNotes        OrderAdminNote[]
   inventoryAdjustments   InventoryAdjustment[]
   customerProfile        CustomerProfile?
+  abandonedCartRecoveries AbandonedCartRecovery[]
+  sentAbandonedCartReminders AbandonedCartReminderLog[] @relation("AbandonedReminderSender")
 
   @@index([email])
   @@index([resetToken])
@@ -278,8 +298,83 @@ model Cart {
   updatedAt DateTime @updatedAt
 
   items CartItem[]
+  recovery AbandonedCartRecovery?
 
   @@index([userId])
+}
+
+model AbandonedCartRecovery {
+  id                String               @id @default(cuid())
+  cartId             String               @unique
+  cart               Cart                 @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  sessionId          String?              @unique
+  userId             String?
+  user               User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
+  email              String?
+  customerName       String?
+  isGuest            Boolean              @default(true)
+  status             AbandonedCartStatus  @default(ACTIVE)
+  lastActivityAt     DateTime
+  abandonedAt        DateTime?
+  recoveredAt        DateTime?
+  convertedAt        DateTime?
+  recoveryToken      String?              @unique
+  reminderCount      Int                  @default(0)
+  lastReminderSentAt DateTime?
+  nextReminderAt     DateTime?
+  lastReminderStage  AbandonedReminderStage?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  reminders AbandonedCartReminderLog[]
+
+  @@index([email])
+  @@index([status])
+  @@index([lastActivityAt])
+  @@index([abandonedAt])
+  @@index([nextReminderAt])
+  @@index([userId])
+}
+
+model AbandonedCartReminderLog {
+  id            String                @id @default(cuid())
+  recoveryId    String
+  recovery      AbandonedCartRecovery @relation(fields: [recoveryId], references: [id], onDelete: Cascade)
+  stage         AbandonedReminderStage
+  source        ReminderSendSource
+  sentByAdminId String?
+  sentByAdmin   User?                 @relation("AbandonedReminderSender", fields: [sentByAdminId], references: [id], onDelete: SetNull)
+  sentAt        DateTime              @default(now())
+  email         String
+  subject       String
+  success       Boolean               @default(true)
+  error         String?
+
+  @@index([recoveryId])
+  @@index([sentAt])
+  @@index([source])
+  @@index([stage])
+  @@index([sentByAdminId])
+}
+
+model AbandonedCartSettings {
+  id                 String   @id @default("default")
+  enabled            Boolean  @default(true)
+  autoSendEnabled    Boolean  @default(false)
+  timeoutMinutes     Int      @default(1440)
+  cooldownHours      Int      @default(24)
+  firstDelayHours    Int      @default(24)
+  secondDelayHours   Int      @default(72)
+  thirdDelayHours    Int      @default(168)
+  senderName         String?
+  senderEmail        String?
+  firstSubject       String?
+  secondSubject      String?
+  thirdSubject       String?
+  firstBody          String?  @db.Text
+  secondBody         String?  @db.Text
+  thirdBody          String?  @db.Text
+  updatedAt          DateTime @updatedAt
 }
 
 model NewsletterSubscriber {

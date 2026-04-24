@@ -14,6 +14,11 @@ import {
 import { allocateNextInvoiceOrderNumber } from "@/lib/invoice-number";
 import { stripe } from "@/lib/stripe";
 import { calculateBundleSavings } from "@/lib/pricing/bundles";
+import { getCurrentUser } from "@/lib/auth";
+import {
+  markRecoveryForOrderConversion,
+  syncRecoveryIdentityFromCart,
+} from "@/lib/abandoned-cart";
 
 function getSiteOrigin(request: Request): string {
   const configured = process.env.NEXT_PUBLIC_APP_ORIGIN?.trim();
@@ -61,6 +66,7 @@ export async function POST(request: Request) {
   }
 
   const formData = await request.formData();
+  const currentUser = await getCurrentUser();
 
   const email = formData.get("email")?.toString();
   const name = formData.get("name")?.toString();
@@ -105,6 +111,15 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   }
+
+  await prisma.cart.update({
+    where: { id: cart.id },
+    data: {
+      email: email.trim().toLowerCase(),
+      userId: cart.userId ?? currentUser?.id ?? undefined,
+    },
+  });
+  await syncRecoveryIdentityFromCart(cart.id);
 
   if (customerType === "BUSINESS") {
     if (!companyName || !companyAddress || !vatNumber || !phone) {
@@ -324,6 +339,7 @@ export async function POST(request: Request) {
       },
     },
   });
+  await markRecoveryForOrderConversion(sessionId, email.trim().toLowerCase());
 
   if (discountCode) {
     await prisma.discountCode.update({

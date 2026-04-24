@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { sendEmail, renderAbandonedCartHtml, isEmailConfigured } from "@/lib/email";
+import { isEmailConfigured } from "@/lib/email";
+import {
+  getAbandonedCartSettings,
+  getEligibleAbandonedRecoveries,
+  updateRecoveryStatusByActivity,
+} from "@/lib/abandoned-cart";
+import { sendAbandonedCartReminder } from "@/lib/abandoned-cart-email";
 
 export const dynamic = "force-dynamic";
-const ABANDONED_HOURS = 24;
 
 /**
  * Call this from a cron job (e.g. Vercel Cron or external) to send abandoned-cart emails.
@@ -30,92 +35,31 @@ export async function GET(request: Request) {
     });
   }
 
-  const cutoff = new Date();
-  cutoff.setHours(cutoff.getHours() - ABANDONED_HOURS);
-
-  const ordersWithSession = await prisma.order.findMany({
-    where: { sessionId: { not: null } },
-    select: { sessionId: true },
-  });
-  const convertedSessions = new Set(
-    ordersWithSession.map((o) => o.sessionId).filter(Boolean),
-  );
-
-  const carts = await prisma.cart.findMany({
-    where: {
-      sessionId: { not: null },
-      updatedAt: { lt: cutoff },
-      abandonedCartEmailSentAt: null,
-      items: { some: {} },
-    },
-    include: {
-      items: {
-        include: {
-          product: true,
-          variant: true,
-        },
-      },
-      user: { select: { email: true } },
-    },
-    orderBy: { updatedAt: "desc" },
-    take: 100,
-  });
-
-  const siteOrigin =
-    process.env.NEXT_PUBLIC_APP_ORIGIN ?? "https://localhost:3000";
-  const cartUrl = `${siteOrigin}/cart`;
+  const settings = await getAbandonedCartSettings();
+  if (!settings.enabled || !settings.autoSendEnabled) {
+    return NextResponse.json({ ok: true, sent: 0, message: "Automatic reminders disabled" });
+  }
+  const recoveries = await getEligibleAbandonedRecoveries(settings);
   let sent = 0;
+  let failed = 0;
 
-  for (const cart of carts) {
-    if (!cart.sessionId || convertedSessions.has(cart.sessionId)) continue;
-
-    const email = cart.email ?? cart.user?.email ?? null;
-    if (!email) continue;
-
-    const currency = cart.items[0]?.product?.currency ?? "USD";
-    const items = cart.items.map((item) => {
-      const total = Number(item.unitPrice) * item.quantity;
-      return {
-        productName: item.product?.name ?? "Product",
-        quantity: item.quantity,
-        lineTotal: new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency,
-        }).format(total),
-      };
+  for (const recovery of recoveries) {
+    const result = await sendAbandonedCartReminder({
+      recovery,
+      source: "AUTOMATIC",
+      settings,
     });
-    const cartTotal = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-    }).format(
-      cart.items.reduce(
-        (sum, i) => sum + Number(i.unitPrice) * i.quantity,
-        0,
-      ),
-    );
-
-    const html = renderAbandonedCartHtml({
-      items,
-      cartTotal,
-      currency,
-      cartUrl,
-      siteOrigin,
-    });
-
-    const result = await sendEmail({
-      to: email,
-      subject: "You left something in your cart",
-      html,
-    });
-
     if (result.ok) {
-      await prisma.cart.update({
-        where: { id: cart.id },
+      sent++;
+      await prisma.cart.updateMany({
+        where: { id: recovery.cartId },
         data: { abandonedCartEmailSentAt: new Date() },
       });
-      sent++;
+      continue;
     }
+    failed++;
+    await updateRecoveryStatusByActivity(recovery.id, "ABANDONED");
   }
 
-  return NextResponse.json({ ok: true, sent });
+  return NextResponse.json({ ok: true, sent, failed });
 }

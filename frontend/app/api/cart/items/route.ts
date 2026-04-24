@@ -4,6 +4,8 @@ import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { recordEvent } from "@/lib/analytics";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
+import { getCurrentUser } from "@/lib/auth";
+import { syncRecoveryIdentityFromCart, touchRecoveryFromSession } from "@/lib/abandoned-cart";
 
 async function getOrCreateSessionId() {
   const cookieStore = await cookies();
@@ -56,11 +58,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });
   }
 
+  const currentUser = await getCurrentUser();
   const cart =
     (await prisma.cart.findUnique({ where: { sessionId } })) ??
     (await prisma.cart.create({
-      data: { sessionId },
+      data: {
+        sessionId,
+        userId: currentUser?.id ?? null,
+        email: currentUser?.email ?? null,
+      },
     }));
+
+  if (currentUser && (!cart.userId || !cart.email)) {
+    await prisma.cart.update({
+      where: { id: cart.id },
+      data: {
+        userId: cart.userId ?? currentUser.id,
+        email: cart.email ?? currentUser.email,
+      },
+    });
+  }
 
   const existingItem = await prisma.cartItem.findFirst({
     where: {
@@ -98,6 +115,8 @@ export async function POST(request: Request) {
       value: Number(product.price) * quantity,
     },
   });
+  await syncRecoveryIdentityFromCart(cart.id);
+  await touchRecoveryFromSession(sessionId);
 
   // Check if the client wants a JSON response (for fetch-based add-to-cart)
   const acceptHeader = request.headers.get("Accept") ?? "";

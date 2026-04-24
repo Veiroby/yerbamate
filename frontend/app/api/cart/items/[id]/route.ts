@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
+import { touchRecoveryFromSession } from "@/lib/abandoned-cart";
 
 type RouteParams = {
   params: Promise<{ id: string }>;
@@ -37,6 +38,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
   if (quantity === 0) {
     await prisma.cartItem.delete({ where: { id } });
+    await touchRecoveryFromSession(sessionId);
     return NextResponse.json({ success: true, deleted: true });
   }
 
@@ -44,6 +46,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     where: { id },
     data: { quantity },
   });
+  await touchRecoveryFromSession(sessionId);
 
   return NextResponse.json({ success: true, item: updatedItem });
 }
@@ -71,6 +74,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
   }
 
   await prisma.cartItem.delete({ where: { id } });
+  await touchRecoveryFromSession(sessionId);
 
   return NextResponse.json({ success: true });
 }

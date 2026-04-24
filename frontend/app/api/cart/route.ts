@@ -2,6 +2,8 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
+import { getCurrentUser } from "@/lib/auth";
+import { syncRecoveryIdentityFromCart, touchRecoveryFromSession } from "@/lib/abandoned-cart";
 
 async function getOrCreateSessionId() {
   const cookieStore = await cookies();
@@ -20,6 +22,7 @@ async function getOrCreateSessionId() {
 
 export async function GET() {
   const sessionId = await getOrCreateSessionId();
+  const user = await getCurrentUser();
 
   const cart = await prisma.cart.findUnique({
     where: { sessionId },
@@ -42,11 +45,23 @@ export async function GET() {
     return NextResponse.json({ cart: null });
   }
 
+  if (user && (!cart.userId || !cart.email)) {
+    await prisma.cart.update({
+      where: { id: cart.id },
+      data: {
+        userId: cart.userId ?? user.id,
+        email: cart.email ?? user.email,
+      },
+    });
+    await syncRecoveryIdentityFromCart(cart.id);
+  }
+
   return NextResponse.json({ cart });
 }
 
 export async function PATCH(request: Request) {
   const sessionId = await getOrCreateSessionId();
+  const user = await getCurrentUser();
   const body = await request.json().catch(() => ({}));
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : null;
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -60,8 +75,13 @@ export async function PATCH(request: Request) {
 
   await prisma.cart.update({
     where: { id: cart.id },
-    data: { email: email || undefined },
+    data: {
+      email: email || user?.email || undefined,
+      userId: cart.userId ?? user?.id ?? undefined,
+    },
   });
+  await syncRecoveryIdentityFromCart(cart.id);
+  await touchRecoveryFromSession(sessionId);
   return NextResponse.json({ ok: true });
 }
 
