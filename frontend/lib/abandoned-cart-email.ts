@@ -8,7 +8,7 @@ import type {
   ReminderSendSource,
 } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/db";
-import { sendEmail, renderAbandonedCartHtml } from "@/lib/email";
+import { sendAbandonedCartTemplateEmail } from "@/lib/email";
 import {
   calculateNextReminderAt,
   computeReminderStage,
@@ -89,22 +89,19 @@ export async function sendAbandonedCartReminder(options: {
   }));
   const siteOrigin = process.env.NEXT_PUBLIC_APP_ORIGIN ?? "http://localhost:3000";
   const recoveryUrl = getRecoveryUrl(recovery.recoveryToken);
-  const html = renderAbandonedCartHtml({
+  const formattedCartTotal = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency,
+  }).format(total);
+
+  const subject = getSubjectForStage(stage, settings);
+  const result = await sendAbandonedCartTemplateEmail({
+    to: email,
     items,
-    cartTotal: new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-    }).format(total),
+    cartTotal: formattedCartTotal,
     currency,
     cartUrl: recoveryUrl,
     siteOrigin,
-  });
-
-  const subject = getSubjectForStage(stage, settings);
-  const result = await sendEmail({
-    to: email,
-    subject,
-    html,
   });
 
   const logData: Omit<AbandonedCartReminderLog, "id"> = {

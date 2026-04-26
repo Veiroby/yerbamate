@@ -3,6 +3,7 @@ import { isEmailConfigured } from "@/lib/email";
 import { EmailCampaignForm } from "./email-campaign-form";
 import { NewArrivalsEmailForm } from "./new-arrivals-email-form";
 import { PopupSettingsForm } from "./popup-settings-form";
+import { EmailTemplateEditor } from "./email-template-editor";
 
 export default async function AdminEmailPage() {
   const [subscriberCount, userCount, resendConfigured, subscribers, users, settings, campaigns] =
@@ -132,6 +133,14 @@ export default async function AdminEmailPage() {
           userTotal={userCount}
           resendConfigured={resendConfigured}
         />
+      </section>
+
+      <section className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-2 text-lg font-semibold text-stone-900">Email template editor</h2>
+        <p className="mb-4 text-sm text-stone-600">
+          Build and preview reusable templates with blocks, fonts, and colors. Templates are used by core transactional and marketing email flows.
+        </p>
+        <EmailTemplateEditor />
       </section>
 
       {/* Recent Campaigns */}

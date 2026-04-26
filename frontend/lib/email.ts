@@ -10,6 +10,7 @@ import {
   escapeHtml,
   formatMoney,
 } from "@/lib/email-layout";
+import type { EmailTemplateKey } from "@/lib/email-template-registry";
 
 const resend =
   process.env.RESEND_API_KEY && process.env.RESEND_FROM
@@ -18,6 +19,36 @@ const resend =
 
 const FROM = process.env.RESEND_FROM ?? "onboarding@resend.dev";
 const SITE_NAME = process.env.SITE_NAME ?? "Yerba Mate";
+
+function applyTemplateVariables(template: string, variables: Record<string, string>): string {
+  let out = template;
+  for (const [k, v] of Object.entries(variables)) {
+    out = out.replaceAll(`{{${k}}}`, v);
+  }
+  return out;
+}
+
+async function resolveTemplateOverride(options: {
+  key: EmailTemplateKey;
+  fallbackSubject: string;
+  fallbackHtml: string;
+  variables?: Record<string, string>;
+}) {
+  const template = await prisma.emailTemplate.findUnique({
+    where: { key: options.key },
+    select: { subject: true, html: true },
+  });
+  if (!template?.html) {
+    return {
+      subject: applyTemplateVariables(options.fallbackSubject, options.variables ?? {}),
+      html: applyTemplateVariables(options.fallbackHtml, options.variables ?? {}),
+    };
+  }
+  return {
+    subject: applyTemplateVariables(template.subject || options.fallbackSubject, options.variables ?? {}),
+    html: applyTemplateVariables(template.html, options.variables ?? {}),
+  };
+}
 
 export function isEmailConfigured(): boolean {
   return Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM);
@@ -142,6 +173,18 @@ export async function sendOrderConfirmationEmail(options: {
     items: options.items,
     siteOrigin,
   });
+  const resolved = await resolveTemplateOverride({
+    key: "order_confirmation",
+    fallbackSubject: `Order ${options.orderNumber} confirmed`,
+    fallbackHtml: html,
+    variables: {
+      orderNumber: options.orderNumber,
+      total: formatMoney(Number(options.total), options.currency),
+      currency: options.currency,
+      customerEmail: options.email,
+      siteUrl: siteOrigin,
+    },
+  });
 
   const invoice = await getOrCreateStoredInvoice({
     orderId: options.orderId,
@@ -166,8 +209,8 @@ export async function sendOrderConfirmationEmail(options: {
 
   return sendEmail({
     to: Array.from(new Set([options.email, NOTIFY_EMAIL])),
-    subject: `Order ${options.orderNumber} confirmed`,
-    html,
+    subject: resolved.subject,
+    html: resolved.html,
     attachments: [
       {
         filename: buildInvoiceFilename(invoice.invoiceNumber),
@@ -207,6 +250,18 @@ export async function sendWireTransferInvoiceEmail(options: {
     currency: options.currency,
     siteOrigin,
   });
+  const resolved = await resolveTemplateOverride({
+    key: "wire_transfer_invoice",
+    fallbackSubject: `Invoice for Order ${options.orderNumber} - Payment Required`,
+    fallbackHtml: html,
+    variables: {
+      orderNumber: options.orderNumber,
+      total: formatMoney(Number(options.total), options.currency),
+      currency: options.currency,
+      customerEmail: options.email,
+      siteUrl: siteOrigin,
+    },
+  });
 
   const invoice = await getOrCreateStoredInvoice({
     orderId: options.orderId,
@@ -229,8 +284,8 @@ export async function sendWireTransferInvoiceEmail(options: {
 
   return sendEmail({
     to: options.email,
-    subject: `Invoice for Order ${options.orderNumber} - Payment Required`,
-    html,
+    subject: resolved.subject,
+    html: resolved.html,
     attachments: [
       {
         filename: buildInvoiceFilename(invoice.invoiceNumber),
@@ -421,6 +476,39 @@ export function renderAbandonedCartHtml(options: {
   });
 }
 
+export async function sendAbandonedCartTemplateEmail(options: {
+  to: string;
+  items: { productName: string; quantity: number; lineTotal: string }[];
+  cartTotal: string;
+  currency: string;
+  cartUrl: string;
+  siteOrigin: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  const fallbackHtml = renderAbandonedCartHtml({
+    items: options.items,
+    cartTotal: options.cartTotal,
+    currency: options.currency,
+    cartUrl: options.cartUrl,
+    siteOrigin: options.siteOrigin,
+  });
+  const resolved = await resolveTemplateOverride({
+    key: "abandoned_cart",
+    fallbackSubject: "You left something in your cart",
+    fallbackHtml,
+    variables: {
+      cartTotal: options.cartTotal,
+      currency: options.currency,
+      cartUrl: options.cartUrl,
+      siteUrl: options.siteOrigin,
+    },
+  });
+  return sendEmail({
+    to: options.to,
+    subject: resolved.subject,
+    html: resolved.html,
+  });
+}
+
 export async function sendPasswordResetEmail(options: {
   email: string;
   resetUrl: string;
@@ -440,7 +528,7 @@ export async function sendPasswordResetEmail(options: {
     This link expires in one hour. If you did not request a reset, you can ignore this email.
   </p>`;
 
-  const html = brandedEmailLayout({
+  const fallbackHtml = brandedEmailLayout({
     siteOrigin,
     previewText: "Reset your YerbaTea password",
     title: "Reset your password",
@@ -449,10 +537,21 @@ export async function sendPasswordResetEmail(options: {
     showSubscriptionFooter: false,
   });
 
+  const resolved = await resolveTemplateOverride({
+    key: "password_reset",
+    fallbackSubject: `Reset your ${SITE_NAME} password`,
+    fallbackHtml,
+    variables: {
+      resetUrl: options.resetUrl,
+      customerEmail: options.email,
+      siteUrl: siteOrigin,
+    },
+  });
+
   return sendEmail({
     to: options.email,
-    subject: `Reset your ${SITE_NAME} password`,
-    html,
+    subject: resolved.subject,
+    html: resolved.html,
   });
 }
 
@@ -475,7 +574,7 @@ export async function sendReviewRequestEmail(options: {
     process.env.NEXT_PUBLIC_APP_ORIGIN ??
     "http://localhost:3000";
 
-  const html = renderReviewRequestHtml({
+  const fallbackHtml = renderReviewRequestHtml({
     customerName: options.customerName,
     productLinks: options.productLinks.map((p) => ({
       name: p.name,
@@ -484,10 +583,85 @@ export async function sendReviewRequestEmail(options: {
     siteOrigin,
   });
 
+  const resolved = await resolveTemplateOverride({
+    key: "review_request",
+    fallbackSubject: `How was your order? Leave a review (1–5 stars)`,
+    fallbackHtml,
+    variables: {
+      customerName: options.customerName ?? "",
+      siteUrl: siteOrigin,
+    },
+  });
+
   return sendEmail({
     to: options.email,
-    subject: `How was your order? Leave a review (1–5 stars)`,
-    html,
+    subject: resolved.subject,
+    html: resolved.html,
+  });
+}
+
+export async function sendUnpaidOrderReminderEmail(options: {
+  orderNumber: string;
+  email: string;
+  total: number | string;
+  currency: string;
+  paymentMethod: "STRIPE" | "WIRE_TRANSFER" | "MAKSEKESKUS";
+  siteOriginOverride?: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  if (!isEmailConfigured()) {
+    return { ok: false, error: "Email not configured" };
+  }
+  const siteOrigin =
+    options.siteOriginOverride ??
+    process.env.NEXT_PUBLIC_APP_ORIGIN ??
+    "http://localhost:3000";
+
+  const paymentHint =
+    options.paymentMethod === "WIRE_TRANSFER"
+      ? "Please complete the bank transfer using your invoice details."
+      : options.paymentMethod === "MAKSEKESKUS"
+        ? "Your payment has not been completed yet. You can return to checkout and finish payment."
+        : "Your Stripe payment is still pending. You can return to checkout and complete payment.";
+
+  const fallbackHtml = brandedEmailLayout({
+    siteOrigin,
+    previewText: `Payment reminder for order ${options.orderNumber}`,
+    title: "Complete your order payment",
+    innerHtml: `
+      <p style="margin:0 0 10px;font-size:14px;color:#78716c;">
+        Order <strong style="color:#1c1917;font-family:ui-monospace,monospace;">${escapeHtml(options.orderNumber)}</strong>
+      </p>
+      <p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:#44403c;">
+        We noticed this order is still unpaid.
+      </p>
+      <p style="margin:0 0 16px;font-size:15px;font-weight:600;color:#1c1917;">
+        Total due: ${escapeHtml(formatMoney(Number(options.total), options.currency))}
+      </p>
+      <p style="margin:0;font-size:14px;line-height:1.65;color:#44403c;">
+        ${escapeHtml(paymentHint)}
+      </p>
+    `,
+    primaryCta: { label: "Return to store", href: siteOrigin },
+    showSubscriptionFooter: false,
+  });
+
+  const resolved = await resolveTemplateOverride({
+    key: "unpaid_order_reminder",
+    fallbackSubject: `Payment reminder for order ${options.orderNumber}`,
+    fallbackHtml,
+    variables: {
+      orderNumber: options.orderNumber,
+      total: formatMoney(Number(options.total), options.currency),
+      currency: options.currency,
+      customerEmail: options.email,
+      siteUrl: siteOrigin,
+    },
+  });
+
+  return sendEmail({
+    to: options.email,
+    subject: resolved.subject,
+    html: resolved.html,
   });
 }
 

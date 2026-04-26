@@ -666,6 +666,19 @@ model EmailCampaign {
   @@index([sentAt])
 }
 
+model EmailTemplate {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  name       String
+  subject    String?
+  html       String?  @db.Text
+  designJson Json?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([key])
+}
+
 model SiteSettings {
   id                           String   @id @default("default")
   popupEnabled                 Boolean  @default(true)

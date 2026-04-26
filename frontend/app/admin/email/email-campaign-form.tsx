@@ -1,7 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
+import dynamic from "next/dynamic";
 import { wrapCampaignContentHtml } from "@/lib/email-layout";
+
+const EmailEditor = dynamic(() => import("react-email-editor"), { ssr: false });
 
 type Recipient = {
   email: string;
@@ -33,6 +36,8 @@ export function EmailCampaignForm({
   const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [previewHtml, setPreviewHtml] = useState("");
+  const editorRef = useRef<any>(null);
 
   const allRecipients = useMemo(() => {
     const emailMap = new Map<string, Recipient>();
@@ -102,9 +107,9 @@ export function EmailCampaignForm({
       return;
     }
 
-    if (!name || !subject || !content) {
+    if (!name || !subject) {
       setStatus("error");
-      setMessage("Please fill in all fields");
+      setMessage("Please fill in campaign name and subject");
       return;
     }
 
@@ -112,12 +117,31 @@ export function EmailCampaignForm({
     setMessage("");
 
     const siteOrigin = process.env.NEXT_PUBLIC_APP_ORIGIN || "https://yerbatea.lv";
-    const htmlContent = wrapCampaignContentHtml({
-      siteOrigin,
-      previewText: subject,
-      title: subject,
-      bodyHtml: content.replace(/\n/g, "<br>"),
-    });
+    let bodyHtml = content.replace(/\n/g, "<br>");
+    let exportedBuilderHtml: string | null = null;
+    if (editorRef.current?.editor) {
+      exportedBuilderHtml = await new Promise<string>((resolve) => {
+        editorRef.current.editor.exportHtml((data: any) => {
+          resolve(data?.html || content.replace(/\n/g, "<br>"));
+        });
+      });
+      setPreviewHtml(exportedBuilderHtml);
+    }
+
+    if (!(exportedBuilderHtml?.trim() || bodyHtml.trim())) {
+      setStatus("error");
+      setMessage("Email content is empty");
+      return;
+    }
+
+    const htmlContent = exportedBuilderHtml
+      ? exportedBuilderHtml
+      : wrapCampaignContentHtml({
+          siteOrigin,
+          previewText: subject,
+          title: subject,
+          bodyHtml,
+        });
 
     try {
       const res = await fetch("/api/admin/email-campaigns", {
@@ -210,9 +234,18 @@ export function EmailCampaignForm({
               onChange={(e) => setContent(e.target.value)}
               placeholder="Write your email content here. You can use basic HTML tags like <b>, <i>, <a href='...'>, <br>, <p>."
               className="w-full rounded-xl border border-stone-300 px-3 py-2 text-sm focus:border-teal-500 focus:ring-2 focus:ring-teal-100"
-              required
             />
-            <p className="text-xs text-stone-500">Supports basic HTML formatting</p>
+            <p className="text-xs text-stone-500">Optional fallback text/html. Prefer the block editor below.</p>
+          </div>
+
+          <div className="space-y-1">
+            <p className="block text-sm font-medium text-stone-700">Block editor</p>
+            <div className="overflow-hidden rounded-xl border border-stone-200">
+              <EmailEditor ref={editorRef} minHeight={420} />
+            </div>
+            <p className="text-xs text-stone-500">
+              Build with blocks, fonts, colors, and sections. Sent email uses exported builder HTML.
+            </p>
           </div>
         </div>
 
@@ -329,6 +362,13 @@ export function EmailCampaignForm({
           {message}
         </p>
       )}
+
+      {previewHtml ? (
+        <details className="rounded-xl border border-stone-200 bg-white p-3">
+          <summary className="cursor-pointer text-sm font-medium text-stone-700">Preview last exported HTML</summary>
+          <iframe title="campaign-preview" className="mt-3 h-[420px] w-full rounded-lg border border-stone-200" srcDoc={previewHtml} />
+        </details>
+      ) : null}
 
       <div className="flex gap-3">
         <button
