@@ -6,13 +6,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const EmailEditor = dynamic(() => import("react-email-editor"), { ssr: false });
 
-type EditorRefShape = {
-  editor?: {
-    loadDesign: (design: object) => void;
-    exportHtml: (cb: (data: { html?: string; design?: object }) => void) => void;
-  };
-};
-
 type BlogPost = {
   id: string;
   slug: string;
@@ -37,7 +30,7 @@ type Props = {
 type EditorLocale = "en" | "lv";
 
 export function BlogPostEditor({ postId }: Props) {
-  const editorRef = useRef<EditorRefShape | null>(null);
+  const editorRef = useRef<any>(null);
   const [post, setPost] = useState<BlogPost | null>(null);
   const [editorLocale, setEditorLocale] = useState<EditorLocale>("en");
   const [previewHtml, setPreviewHtml] = useState("");
