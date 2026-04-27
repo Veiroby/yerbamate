@@ -19,6 +19,7 @@ const navLinkKeys = [
   { path: "mate-gourds", labelKey: "products.categoryMateGourds" },
   { path: "accessories", labelKey: "landing.accessories" },
   { path: "about", labelKey: "nav.about" },
+  { path: "blog", labelKey: "nav.blog" },
   { path: "contact", labelKey: "nav.contact" },
 ] as const;
 

@@ -110,6 +110,17 @@ function IconLanguage({ className }: { className?: string }) {
     </svg>
   );
 }
+function IconAcademicCap({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 14.25L3 9.75l9-4.5 9 4.5-9 4.5zM6.75 11.625v3.25c0 .918 2.35 2.125 5.25 2.125s5.25-1.207 5.25-2.125v-3.25"
+      />
+    </svg>
+  );
+}
 
 const navGroups = [
   {
@@ -138,6 +149,7 @@ const navGroups = [
       { href: "/admin/customers", label: "Customers", icon: IconUsers },
       { href: "/admin/reviews", label: "Reviews", icon: IconStar },
       { href: "/admin/email", label: "Email marketing", icon: IconMail },
+      { href: "/admin/blog", label: "Blog", icon: IconAcademicCap },
       { href: "/admin/discounts", label: "Discounts & Bundles", icon: IconTag },
       { href: "/admin/main-page", label: "Main page", icon: IconHome },
       { href: "/admin/privacy", label: "Privacy policy", icon: IconDocument },

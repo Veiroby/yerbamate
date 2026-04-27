@@ -47,6 +47,18 @@ function OrdersIcon({ className }: { className?: string }) {
   );
 }
 
+function BlogIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M12 14.25L3 9.75l9-4.5 9 4.5-9 4.5zM6.75 11.625v3.25c0 .918 2.35 2.125 5.25 2.125s5.25-1.207 5.25-2.125v-3.25"
+      />
+    </svg>
+  );
+}
+
 function CartIcon({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -98,6 +110,7 @@ export function MobileAppChrome({ locale }: Props) {
   const isHome = pathname === prefix || pathname === `${prefix}/`;
   const isSearch = pathname.startsWith(`${prefix}/search`);
   const isOrders = pathname.startsWith(`${prefix}/account/orders`);
+  const isBlog = pathname === `${prefix}/blog` || pathname.startsWith(`${prefix}/blog/`);
 
   const subtotal = lines.reduce((sum, line) => {
     const p = Number(line.unitPrice);
@@ -139,6 +152,14 @@ export function MobileAppChrome({ locale }: Props) {
             >
               <OrdersIcon className="h-5 w-5" />
               <span className="sr-only">{t("mobile.orders")}</span>
+            </Link>
+            <Link
+              href={`${prefix}/blog`}
+              className={`flex h-11 w-11 items-center justify-center rounded-full transition ${isBlog ? "bg-black text-white" : "text-gray-700 hover:bg-gray-100"}`}
+              aria-current={isBlog ? "page" : undefined}
+            >
+              <BlogIcon className="h-5 w-5" />
+              <span className="sr-only">{t("nav.blog")}</span>
             </Link>
           </nav>
 
