@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/db";
 import { recordEvent } from "@/lib/analytics";
@@ -8,13 +9,40 @@ import {
 } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
+/** Stripe signature verification uses Node crypto; avoid edge where body/signature handling can differ. */
+export const runtime = "nodejs";
 
 const DEFAULT_SKU_PREFIX = "default-";
+
+function parseWebhookSecrets(raw: string | undefined): string[] {
+  if (!raw) return [];
+  return raw
+    .split(/[\n,]+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0);
+}
+
+function constructStripeEvent(
+  rawBody: string,
+  signature: string,
+  secrets: string[],
+): Stripe.Event {
+  let lastErr: unknown;
+  for (const secret of secrets) {
+    try {
+      return stripe.webhooks.constructEvent(rawBody, signature, secret);
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  throw lastErr;
+}
 
 export async function POST(request: Request) {
   const signature = request.headers.get("stripe-signature");
 
-  if (!process.env.STRIPE_WEBHOOK_SECRET || !signature) {
+  const secrets = parseWebhookSecrets(process.env.STRIPE_WEBHOOK_SECRET);
+  if (secrets.length === 0 || !signature) {
     return NextResponse.json(
       { error: "Webhook not configured" },
       { status: 400 },
@@ -23,13 +51,9 @@ export async function POST(request: Request) {
 
   const rawBody = await request.text();
 
-  let event;
+  let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(
-      rawBody,
-      signature,
-      process.env.STRIPE_WEBHOOK_SECRET,
-    );
+    event = constructStripeEvent(rawBody, signature, secrets);
   } catch (err) {
     console.error("Stripe webhook signature verification failed", err);
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
@@ -135,5 +159,16 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ received: true }, { status: 200 });
+}
+
+/** Lets you confirm routing (browser/curl GET); Stripe always uses POST. */
+export async function GET() {
+  return NextResponse.json(
+    {
+      ok: true,
+      message: "Stripe webhooks use POST with Stripe-Signature and raw JSON body.",
+    },
+    { status: 200 },
+  );
 }
 
