@@ -15,15 +15,46 @@ type TemplateRow = {
   updatedAt: string | null;
 };
 
+const ORDER_TEMPLATE_VARS = [
+  "{{orderNumber}}",
+  "{{total}}",
+  "{{currency}}",
+  "{{customerEmail}}",
+  "{{customerName}}",
+  "{{siteUrl}}",
+  "{{orderDetails}}",
+  "{{orderSummary}}",
+  "{{shippingAddress}}",
+];
+
 const TEMPLATE_VARIABLES: Record<EmailTemplateKey, string[]> = {
   marketing_campaign: ["{{siteUrl}}", "{{customerEmail}}"],
-  order_confirmation: ["{{orderNumber}}", "{{total}}", "{{currency}}", "{{customerEmail}}", "{{siteUrl}}"],
-  wire_transfer_invoice: ["{{orderNumber}}", "{{total}}", "{{currency}}", "{{customerEmail}}", "{{siteUrl}}"],
+  order_confirmation: ORDER_TEMPLATE_VARS,
+  order_shipped: [
+    ...ORDER_TEMPLATE_VARS,
+    "{{trackingNumber}}",
+    "{{trackingUrl}}",
+    "{{trackingBlock}}",
+  ],
+  wire_transfer_invoice: [...ORDER_TEMPLATE_VARS, "{{paymentDetails}}"],
   unpaid_order_reminder: ["{{orderNumber}}", "{{total}}", "{{currency}}", "{{customerEmail}}", "{{siteUrl}}"],
   abandoned_cart: ["{{cartTotal}}", "{{currency}}", "{{cartUrl}}", "{{siteUrl}}"],
   review_request: ["{{customerName}}", "{{siteUrl}}"],
   password_reset: ["{{resetUrl}}", "{{customerEmail}}", "{{siteUrl}}"],
 };
+
+function defaultEditorHtml(key: EmailTemplateKey): string {
+  switch (key) {
+    case "order_confirmation":
+      return `<p>Hi {{customerName}},</p><p>Thank you for your order <strong>{{orderNumber}}</strong>. We have received your payment (total {{total}}).</p><p>{{orderDetails}}</p>`;
+    case "order_shipped":
+      return `<p>Hi {{customerName}},</p><p>Your order <strong>{{orderNumber}}</strong> has shipped.</p>{{trackingBlock}}<p>{{orderDetails}}</p>`;
+    case "wire_transfer_invoice":
+      return `<p>Please complete payment for order <strong>{{orderNumber}}</strong> ({{total}}).</p>{{paymentDetails}}<p>{{orderDetails}}</p>`;
+    default:
+      return `<h1>${EMAIL_TEMPLATE_LABELS[key]}</h1><p>Edit this template. Use merge tags from the cheat sheet below.</p>`;
+  }
+}
 
 export function EmailTemplateEditor() {
   const editorRef = useRef<any>(null);
@@ -73,7 +104,7 @@ export function EmailTemplateEditor() {
                     {
                       type: "text",
                       values: {
-                        text: `<h1>${EMAIL_TEMPLATE_LABELS[selected.key]}</h1><p>Edit this template and use variables like {{orderNumber}}, {{total}}, {{cartUrl}}.</p>`,
+                        text: defaultEditorHtml(selected.key),
                       },
                     },
                   ],
@@ -239,7 +270,8 @@ export function EmailTemplateEditor() {
           ))}
         </div>
         <p className="mt-2 text-[11px] text-stone-500">
-          Test emails use sample values for these variables.
+          Use <code className="rounded bg-white px-1">{"{{orderDetails}}"}</code> for the line-item table and totals.
+          Shipped emails can use <code className="rounded bg-white px-1">{"{{trackingBlock}}"}</code>. Test emails fill all tags with sample data.
         </p>
       </section>
 

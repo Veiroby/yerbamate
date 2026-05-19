@@ -3,15 +3,14 @@ import { prisma } from "@/lib/db";
 import { adminApiGuard } from "@/lib/admin-api-guard";
 import { EMAIL_TEMPLATE_KEYS, EMAIL_TEMPLATE_LABELS } from "@/lib/email-template-registry";
 import { writeAuditLog } from "@/lib/admin-audit";
+import {
+  applyTemplateVariables,
+  buildSampleOrderEmailVariables,
+  hasUnreplacedPlaceholders,
+  isFullHtmlDocument,
+} from "@/lib/email-order-blocks";
+import { brandedEmailLayout } from "@/lib/email-layout";
 import { isEmailConfigured, sendEmail } from "@/lib/email";
-
-function applyTemplateVariables(template: string, variables: Record<string, string>): string {
-  let out = template;
-  for (const [k, v] of Object.entries(variables)) {
-    out = out.replaceAll(`{{${k}}}`, v);
-  }
-  return out;
-}
 
 export async function GET() {
   const g = await adminApiGuard(false);
@@ -100,19 +99,46 @@ export async function POST(request: Request) {
   const to = String(body.to ?? g.user.email).trim().toLowerCase();
   if (!to) return NextResponse.json({ error: "No recipient email" }, { status: 400 });
 
+  const siteUrl = process.env.NEXT_PUBLIC_APP_ORIGIN ?? "http://localhost:3000";
+  const orderSampleVars = buildSampleOrderEmailVariables(siteUrl, to);
   const sampleVars: Record<string, string> = {
-    orderNumber: "INV-TEST-1234",
-    total: "€39.99",
-    currency: "EUR",
-    customerEmail: to,
-    customerName: "Test Customer",
+    ...orderSampleVars,
     cartTotal: "€55.00",
-    cartUrl: `${process.env.NEXT_PUBLIC_APP_ORIGIN ?? "http://localhost:3000"}/cart`,
-    resetUrl: `${process.env.NEXT_PUBLIC_APP_ORIGIN ?? "http://localhost:3000"}/account/reset-password?token=test`,
-    siteUrl: process.env.NEXT_PUBLIC_APP_ORIGIN ?? "http://localhost:3000",
+    cartUrl: `${siteUrl}/cart`,
+    resetUrl: `${siteUrl}/account/reset-password?token=test`,
+    siteUrl,
   };
-  const renderedHtml = applyTemplateVariables(html, sampleVars);
+
+  let bodyHtml = applyTemplateVariables(html, sampleVars);
+  const orderTemplateKeys = ["order_confirmation", "order_shipped", "wire_transfer_invoice"];
+  if (orderTemplateKeys.includes(key) && !html.includes("{{orderDetails}}") && sampleVars.orderDetails) {
+    bodyHtml = `${bodyHtml}${sampleVars.orderDetails}`;
+  }
+
+  const wrapTitles: Record<string, { title: string; preview: string }> = {
+    order_confirmation: { title: "Thanks for your order", preview: "Order confirmed — test" },
+    order_shipped: { title: "Your order has shipped", preview: "Order shipped — test" },
+    wire_transfer_invoice: { title: "Invoice for order", preview: "Invoice — test" },
+  };
+  const wrap = wrapTitles[key];
+  const renderedHtml =
+    !isFullHtmlDocument(bodyHtml) && wrap
+      ? brandedEmailLayout({
+          siteOrigin: siteUrl,
+          previewText: wrap.preview,
+          title: wrap.title,
+          innerHtml: bodyHtml,
+          showSubscriptionFooter: false,
+        })
+      : bodyHtml;
+
   const renderedSubject = applyTemplateVariables(subjectRaw, sampleVars);
+  if (hasUnreplacedPlaceholders(renderedHtml) || hasUnreplacedPlaceholders(renderedSubject)) {
+    return NextResponse.json(
+      { error: "Template still has unreplaced placeholders after test substitution" },
+      { status: 400 },
+    );
+  }
 
   const result = await sendEmail({
     to,

@@ -10,6 +10,16 @@ import {
   escapeHtml,
   formatMoney,
 } from "@/lib/email-layout";
+import {
+  applyTemplateVariables,
+  buildOrderEmailVariables,
+  hasUnreplacedPlaceholders,
+  isFullHtmlDocument,
+  renderOrderDetailsHtml,
+  renderWireTransferPaymentBlockHtml,
+  resolveCustomerName,
+  type OrderItemForEmail,
+} from "@/lib/email-order-blocks";
 import type { EmailTemplateKey } from "@/lib/email-template-registry";
 
 const resend =
@@ -20,33 +30,78 @@ const resend =
 const FROM = process.env.RESEND_FROM ?? "onboarding@resend.dev";
 const SITE_NAME = process.env.SITE_NAME ?? "Yerba Mate";
 
-function applyTemplateVariables(template: string, variables: Record<string, string>): string {
-  let out = template;
-  for (const [k, v] of Object.entries(variables)) {
-    out = out.replaceAll(`{{${k}}}`, v);
-  }
-  return out;
-}
+export { applyTemplateVariables, buildSampleOrderEmailVariables } from "@/lib/email-order-blocks";
 
 async function resolveTemplateOverride(options: {
   key: EmailTemplateKey;
   fallbackSubject: string;
   fallbackHtml: string;
   variables?: Record<string, string>;
+  wrapOptions?: {
+    siteOrigin: string;
+    previewText: string;
+    title: string;
+    primaryCta?: { label: string; href: string };
+  };
+  /** When true, append orderDetails if custom template omits {{orderDetails}} */
+  appendOrderDetailsIfMissing?: boolean;
 }) {
+  const vars = options.variables ?? {};
+
   const template = await prisma.emailTemplate.findUnique({
     where: { key: options.key },
     select: { subject: true, html: true },
   });
-  if (!template?.html) {
+
+  if (!template?.html?.trim()) {
     return {
-      subject: applyTemplateVariables(options.fallbackSubject, options.variables ?? {}),
-      html: applyTemplateVariables(options.fallbackHtml, options.variables ?? {}),
+      subject: applyTemplateVariables(options.fallbackSubject, vars),
+      html: applyTemplateVariables(options.fallbackHtml, vars),
     };
   }
+
+  const rawTemplate = template.html;
+
+  let bodyHtml = applyTemplateVariables(rawTemplate, vars);
+
+  if (
+    options.appendOrderDetailsIfMissing &&
+    !rawTemplate.includes("{{orderDetails}}") &&
+    vars.orderDetails
+  ) {
+    bodyHtml = `${bodyHtml}${vars.orderDetails}`;
+  }
+
+  const resolvedSubject = applyTemplateVariables(
+    template.subject || options.fallbackSubject,
+    vars,
+  );
+
+  if (hasUnreplacedPlaceholders(bodyHtml) || hasUnreplacedPlaceholders(resolvedSubject)) {
+    console.warn(
+      `[email] Template "${options.key}" has unreplaced placeholders; using built-in fallback`,
+    );
+    return {
+      subject: resolvedSubject,
+      html: applyTemplateVariables(options.fallbackHtml, vars),
+    };
+  }
+
+  let html = bodyHtml;
+  if (!isFullHtmlDocument(html) && options.wrapOptions) {
+    html = brandedEmailLayout({
+      siteOrigin: options.wrapOptions.siteOrigin,
+      previewText: options.wrapOptions.previewText,
+      title: options.wrapOptions.title,
+      innerHtml: html,
+      primaryCta: options.wrapOptions.primaryCta,
+      showSubscriptionFooter: false,
+    });
+  }
+
   return {
-    subject: applyTemplateVariables(template.subject || options.fallbackSubject, options.variables ?? {}),
-    html: applyTemplateVariables(template.html, options.variables ?? {}),
+    subject: resolvedSubject,
+    html,
   };
 }
 
@@ -127,13 +182,6 @@ export async function addContactToResend(options: {
   }
 }
 
-type OrderItemForEmail = {
-  quantity: number;
-  unitPrice: { toString(): string };
-  total: { toString(): string };
-  product?: { name: string } | null;
-};
-
 type BusinessFields = {
   customerType?: "INDIVIDUAL" | "BUSINESS";
   companyName?: string;
@@ -165,6 +213,20 @@ export async function sendOrderConfirmationEmail(options: {
     process.env.NEXT_PUBLIC_APP_ORIGIN ??
     "http://localhost:3000";
 
+  const orderVars = buildOrderEmailVariables({
+    orderNumber: options.orderNumber,
+    email: options.email,
+    total: options.total,
+    currency: options.currency,
+    subtotal: options.subtotal,
+    shippingCost: options.shippingCost,
+    tax: options.tax,
+    shippingAddress: options.shippingAddress,
+    items: options.items,
+    siteOrigin,
+    companyName: options.companyName,
+  });
+
   const html = renderOrderConfirmationHtml({
     orderNumber: options.orderNumber,
     email: options.email,
@@ -172,17 +234,23 @@ export async function sendOrderConfirmationEmail(options: {
     currency: options.currency,
     items: options.items,
     siteOrigin,
+    subtotal: options.subtotal,
+    shippingCost: options.shippingCost,
+    tax: options.tax,
+    shippingAddress: options.shippingAddress,
+    companyName: options.companyName,
   });
   const resolved = await resolveTemplateOverride({
     key: "order_confirmation",
     fallbackSubject: `Order ${options.orderNumber} confirmed`,
     fallbackHtml: html,
-    variables: {
-      orderNumber: options.orderNumber,
-      total: formatMoney(Number(options.total), options.currency),
-      currency: options.currency,
-      customerEmail: options.email,
-      siteUrl: siteOrigin,
+    variables: orderVars,
+    appendOrderDetailsIfMissing: true,
+    wrapOptions: {
+      siteOrigin,
+      previewText: `Order ${options.orderNumber} confirmed — thank you`,
+      title: "Thanks for your order",
+      primaryCta: { label: "View store", href: siteOrigin },
     },
   });
 
@@ -244,22 +312,43 @@ export async function sendWireTransferInvoiceEmail(options: {
     process.env.NEXT_PUBLIC_APP_ORIGIN ??
     "http://localhost:3000";
 
+  const orderVars = buildOrderEmailVariables({
+    orderNumber: options.orderNumber,
+    email: options.email,
+    total: options.total,
+    currency: options.currency,
+    subtotal: options.subtotal,
+    shippingCost: options.shippingCost,
+    tax: options.tax,
+    shippingAddress: options.shippingAddress,
+    items: options.items,
+    siteOrigin,
+    companyName: options.companyName,
+  });
+
   const html = renderWireTransferInvoiceHtml({
     orderNumber: options.orderNumber,
     total: String(options.total),
     currency: options.currency,
     siteOrigin,
+    items: options.items,
+    subtotal: options.subtotal,
+    shippingCost: options.shippingCost,
+    tax: options.tax,
+    shippingAddress: options.shippingAddress,
+    email: options.email,
+    companyName: options.companyName,
   });
   const resolved = await resolveTemplateOverride({
     key: "wire_transfer_invoice",
     fallbackSubject: `Invoice for Order ${options.orderNumber} - Payment Required`,
     fallbackHtml: html,
-    variables: {
-      orderNumber: options.orderNumber,
-      total: formatMoney(Number(options.total), options.currency),
-      currency: options.currency,
-      customerEmail: options.email,
-      siteUrl: siteOrigin,
+    variables: orderVars,
+    appendOrderDetailsIfMissing: true,
+    wrapOptions: {
+      siteOrigin,
+      previewText: `Invoice ${options.orderNumber} — payment required`,
+      title: `Invoice for order ${options.orderNumber}`,
     },
   });
 
@@ -296,6 +385,82 @@ export async function sendWireTransferInvoiceEmail(options: {
   });
 }
 
+export async function sendOrderShippedEmail(options: {
+  orderId: string;
+  orderNumber: string;
+  email: string;
+  total: number | string;
+  currency: string;
+  subtotal: { toString(): string };
+  shippingCost: { toString(): string };
+  tax: { toString(): string };
+  shippingAddress: unknown;
+  items: OrderItemForEmail[];
+  dpdTrackingNumber?: string | null;
+  siteOriginOverride?: string;
+  companyName?: string;
+}): Promise<{ ok: boolean; error?: string }> {
+  if (!isEmailConfigured()) {
+    return { ok: false, error: "Email not configured" };
+  }
+
+  const siteOrigin =
+    options.siteOriginOverride ??
+    process.env.NEXT_PUBLIC_APP_ORIGIN ??
+    "http://localhost:3000";
+
+  const orderVars = buildOrderEmailVariables({
+    orderNumber: options.orderNumber,
+    email: options.email,
+    total: options.total,
+    currency: options.currency,
+    subtotal: options.subtotal,
+    shippingCost: options.shippingCost,
+    tax: options.tax,
+    shippingAddress: options.shippingAddress,
+    items: options.items,
+    siteOrigin,
+    companyName: options.companyName,
+    dpdTrackingNumber: options.dpdTrackingNumber,
+  });
+
+  const html = renderOrderShippedHtml({
+    orderNumber: options.orderNumber,
+    currency: options.currency,
+    items: options.items,
+    siteOrigin,
+    subtotal: options.subtotal,
+    shippingCost: options.shippingCost,
+    tax: options.tax,
+    total: options.total,
+    shippingAddress: options.shippingAddress,
+    companyName: options.companyName,
+    dpdTrackingNumber: options.dpdTrackingNumber,
+  });
+
+  const resolved = await resolveTemplateOverride({
+    key: "order_shipped",
+    fallbackSubject: `Your order ${options.orderNumber} has shipped`,
+    fallbackHtml: html,
+    variables: orderVars,
+    appendOrderDetailsIfMissing: true,
+    wrapOptions: {
+      siteOrigin,
+      previewText: `Order ${options.orderNumber} is on its way`,
+      title: "Your order has shipped",
+      primaryCta: orderVars.trackingUrl
+        ? { label: "Track your parcel", href: orderVars.trackingUrl }
+        : { label: "Visit the shop", href: siteOrigin },
+    },
+  });
+
+  return sendEmail({
+    to: options.email,
+    subject: resolved.subject,
+    html: resolved.html,
+  });
+}
+
 async function getOrCreateStoredInvoice(
   order: Omit<InvoiceOrderData, "invoiceNumber"> & { orderId: string },
 ): Promise<{ invoiceNumber: string; pdfBase64: string }> {
@@ -320,7 +485,7 @@ async function getOrCreateStoredInvoice(
         orderId: order.orderId,
         invoiceNumber,
         customerEmail: order.email,
-        customerName: resolveCustomerName(order.shippingAddress, order.companyName),
+        customerName: resolveCustomerNameForInvoice(order.shippingAddress, order.companyName),
         phone: order.phone ?? null,
         pdfBase64,
       },
@@ -337,13 +502,12 @@ async function getOrCreateStoredInvoice(
   }
 }
 
-function resolveCustomerName(shippingAddress: unknown, companyName?: string): string | null {
-  if (companyName?.trim()) return companyName.trim();
-  if (!shippingAddress || typeof shippingAddress !== "object" || Array.isArray(shippingAddress)) {
-    return null;
-  }
-  const name = (shippingAddress as Record<string, unknown>).name;
-  return typeof name === "string" && name.trim() ? name.trim() : null;
+function resolveCustomerNameForInvoice(
+  shippingAddress: unknown,
+  companyName?: string,
+): string | null {
+  const name = resolveCustomerName(shippingAddress, companyName);
+  return name || null;
 }
 
 function renderWireTransferInvoiceHtml(options: {
@@ -351,23 +515,34 @@ function renderWireTransferInvoiceHtml(options: {
   total: string;
   currency: string;
   siteOrigin: string;
+  items: OrderItemForEmail[];
+  subtotal: { toString(): string };
+  shippingCost: { toString(): string };
+  tax: { toString(): string };
+  shippingAddress: unknown;
+  email: string;
+  companyName?: string;
 }): string {
   const { orderNumber, total, currency, siteOrigin } = options;
+  const orderDetails = renderOrderDetailsHtml({
+    orderNumber,
+    email: options.email,
+    total,
+    currency,
+    subtotal: options.subtotal,
+    shippingCost: options.shippingCost,
+    tax: options.tax,
+    shippingAddress: options.shippingAddress,
+    items: options.items,
+    siteOrigin,
+    companyName: options.companyName,
+  });
   const inner = `
   <p style="margin:0 0 16px;font-size:15px;line-height:1.65;color:#44403c;">
     Please find your invoice attached. We ship after payment is received.
   </p>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0;border-radius:12px;background:#fafaf9;border:1px solid #e7e5e4;">
-    <tr>
-      <td style="padding:18px 20px;font-family:system-ui,-apple-system,sans-serif;font-size:14px;line-height:1.7;color:#44403c;">
-        <p style="margin:0 0 8px;font-weight:600;color:#1c1917;">Payment details</p>
-        <p style="margin:0;">Bank: Swedbank</p>
-        <p style="margin:4px 0 0;">IBAN: LV30HABA0551057129470</p>
-        <p style="margin:4px 0 0;">Reference: <span style="font-family:ui-monospace,monospace;">${escapeHtml(orderNumber)}</span></p>
-        <p style="margin:12px 0 0;font-weight:600;color:#0d9488;">Amount: ${escapeHtml(formatMoney(Number(total), currency))}</p>
-      </td>
-    </tr>
-  </table>`;
+  ${renderWireTransferPaymentBlockHtml(orderNumber, total, currency)}
+  ${orderDetails}`;
 
   return brandedEmailLayout({
     siteOrigin,
@@ -385,19 +560,26 @@ export function renderOrderConfirmationHtml(options: {
   currency: string;
   items: OrderItemForEmail[];
   siteOrigin: string;
+  subtotal: { toString(): string };
+  shippingCost: { toString(): string };
+  tax: { toString(): string };
+  shippingAddress: unknown;
+  companyName?: string;
 }): string {
-  const { orderNumber, total, currency, items, siteOrigin } = options;
-  const rows = items
-    .map(
-      (i) =>
-        `<tr>
-          <td style="padding:10px 8px;border-bottom:1px solid #f5f5f4;font-size:14px;color:#44403c;">${escapeHtml(i.product?.name ?? "Item")}</td>
-          <td style="padding:10px 8px;border-bottom:1px solid #f5f5f4;text-align:center;font-size:14px;">${i.quantity}</td>
-          <td style="padding:10px 8px;border-bottom:1px solid #f5f5f4;text-align:right;font-size:14px;">${escapeHtml(formatMoney(Number(i.unitPrice.toString()), currency))}</td>
-          <td style="padding:10px 8px;border-bottom:1px solid #f5f5f4;text-align:right;font-size:14px;font-weight:600;">${escapeHtml(formatMoney(Number(i.total.toString()), currency))}</td>
-        </tr>`,
-    )
-    .join("");
+  const { orderNumber, total, currency, siteOrigin } = options;
+  const orderDetails = renderOrderDetailsHtml({
+    orderNumber,
+    email: options.email,
+    total,
+    currency,
+    subtotal: options.subtotal,
+    shippingCost: options.shippingCost,
+    tax: options.tax,
+    shippingAddress: options.shippingAddress,
+    items: options.items,
+    siteOrigin,
+    companyName: options.companyName,
+  });
 
   const inner = `
   <p style="margin:0 0 8px;font-size:14px;color:#78716c;">
@@ -406,20 +588,7 @@ export function renderOrderConfirmationHtml(options: {
   <p style="margin:0 0 20px;font-size:15px;line-height:1.65;color:#44403c;">
     We have received your payment. Your invoice is attached to this message.
   </p>
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:8px;">
-    <thead>
-      <tr style="border-bottom:2px solid #e7e5e4;">
-        <th align="left" style="padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#78716c;">Product</th>
-        <th style="padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#78716c;">Qty</th>
-        <th align="right" style="padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#78716c;">Price</th>
-        <th align="right" style="padding:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:#78716c;">Total</th>
-      </tr>
-    </thead>
-    <tbody>${rows}</tbody>
-  </table>
-  <p style="margin:16px 0 0;text-align:right;font-size:16px;font-weight:700;color:#134e4a;">
-    Total: ${escapeHtml(formatMoney(Number(total), currency))}
-  </p>`;
+  ${orderDetails}`;
 
   return brandedEmailLayout({
     siteOrigin,
@@ -427,6 +596,57 @@ export function renderOrderConfirmationHtml(options: {
     title: "Thanks for your order",
     innerHtml: inner,
     primaryCta: { label: "View store", href: siteOrigin },
+    showSubscriptionFooter: false,
+  });
+}
+
+export function renderOrderShippedHtml(options: {
+  orderNumber: string;
+  currency: string;
+  items: OrderItemForEmail[];
+  siteOrigin: string;
+  subtotal: { toString(): string };
+  shippingCost: { toString(): string };
+  tax: { toString(): string };
+  total: number | string;
+  shippingAddress: unknown;
+  companyName?: string;
+  dpdTrackingNumber?: string | null;
+}): string {
+  const { orderNumber, siteOrigin } = options;
+  const orderVars = buildOrderEmailVariables({
+    orderNumber,
+    email: "",
+    total: options.total,
+    currency: options.currency,
+    subtotal: options.subtotal,
+    shippingCost: options.shippingCost,
+    tax: options.tax,
+    shippingAddress: options.shippingAddress,
+    items: options.items,
+    siteOrigin,
+    companyName: options.companyName,
+    dpdTrackingNumber: options.dpdTrackingNumber,
+  });
+
+  const inner = `
+  <p style="margin:0 0 8px;font-size:14px;color:#78716c;">
+    Order <strong style="color:#1c1917;font-family:ui-monospace,monospace;">${escapeHtml(orderNumber)}</strong>
+  </p>
+  <p style="margin:0 0 20px;font-size:15px;line-height:1.65;color:#44403c;">
+    Good news — your order is on its way.
+  </p>
+  ${orderVars.trackingBlock}
+  ${orderVars.orderDetails}`;
+
+  return brandedEmailLayout({
+    siteOrigin,
+    previewText: `Order ${orderNumber} is on its way`,
+    title: "Your order has shipped",
+    innerHtml: inner,
+    primaryCta: orderVars.trackingUrl
+      ? { label: "Track your parcel", href: orderVars.trackingUrl }
+      : { label: "Visit the shop", href: siteOrigin },
     showSubscriptionFooter: false,
   });
 }

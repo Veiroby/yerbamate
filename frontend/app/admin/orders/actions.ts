@@ -5,7 +5,12 @@ import { OrderStatus } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { requireAdminWrite } from "@/lib/admin-auth";
 import { writeAuditLog } from "@/lib/admin-audit";
-import { isEmailConfigured, sendOrderConfirmationEmail } from "@/lib/email";
+import {
+  isEmailConfigured,
+  sendOrderConfirmationEmail,
+  sendOrderShippedEmail,
+  sendUnpaidOrderReminderEmail,
+} from "@/lib/email";
 
 export async function updateOrderStatus(orderId: string, formData: FormData) {
   const user = await requireAdminWrite();
@@ -14,7 +19,7 @@ export async function updateOrderStatus(orderId: string, formData: FormData) {
 
   const existing = await prisma.order.findUnique({
     where: { id: orderId },
-    select: { status: true },
+    select: { status: true, shippedEmailSentAt: true },
   });
   if (!existing) return;
 
@@ -70,6 +75,35 @@ export async function updateOrderStatus(orderId: string, formData: FormData) {
     }
   }
 
+  if (
+    transitionToShipped &&
+    isEmailConfigured() &&
+    updated.customerType !== "BUSINESS" &&
+    !existing.shippedEmailSentAt
+  ) {
+    const result = await sendOrderShippedEmail({
+      orderId: updated.id,
+      orderNumber: updated.orderNumber,
+      email: updated.email,
+      total: Number(updated.total),
+      currency: updated.currency,
+      subtotal: updated.subtotal,
+      shippingCost: updated.shippingCost,
+      tax: updated.tax,
+      shippingAddress: updated.shippingAddress,
+      items: updated.items,
+      dpdTrackingNumber: updated.dpdTrackingNumber,
+      companyName: updated.companyName ?? undefined,
+    });
+
+    if (result.ok) {
+      await prisma.order.update({
+        where: { id: updated.id },
+        data: { shippedEmailSentAt: new Date() },
+      });
+    }
+  }
+
   revalidatePath("/admin/orders");
   revalidatePath("/admin");
   revalidatePath(`/admin/orders/${orderId}`);
@@ -112,6 +146,44 @@ export async function addOrderAdminNote(orderId: string, formData: FormData) {
     },
   });
   await writeAuditLog(user.id, "order.note_added", "Order", orderId, { preview: body.slice(0, 120) });
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${orderId}`);
+}
+
+export async function sendUnpaidOrderReminder(orderId: string) {
+  const user = await requireAdminWrite();
+  if (!isEmailConfigured()) return;
+
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: {
+      id: true,
+      orderNumber: true,
+      email: true,
+      total: true,
+      currency: true,
+      status: true,
+      paymentMethod: true,
+    },
+  });
+  if (!order) return;
+  if (!["PENDING", "REQUIRES_PAYMENT"].includes(order.status)) return;
+
+  const result = await sendUnpaidOrderReminderEmail({
+    orderNumber: order.orderNumber,
+    email: order.email,
+    total: Number(order.total),
+    currency: order.currency,
+    paymentMethod: order.paymentMethod,
+  });
+
+  await writeAuditLog(user.id, "order.unpaid_reminder_sent", "Order", orderId, {
+    status: order.status,
+    paymentMethod: order.paymentMethod,
+    success: result.ok,
+    error: result.ok ? null : result.error,
+  });
+
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${orderId}`);
 }

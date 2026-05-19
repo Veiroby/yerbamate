@@ -439,6 +439,7 @@ model Order {
   stripePaymentIntentId     String?
   maksekeskusTransactionId  String?
   confirmationEmailSentAt   DateTime?   // when order confirmation email was last sent
+  shippedEmailSentAt        DateTime?   // when order shipped notification email was sent
   reviewRequestEmailSentAt DateTime? // when "leave a review" email was sent (4 days after order)
   dpdShipmentId         String?       // DPD shipment ID
   dpdTrackingNumber     String?       // DPD tracking number
