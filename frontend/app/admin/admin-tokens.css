@@ -103,3 +103,37 @@
 .admin-root .admin-divider {
   border-color: var(--admin-border);
 }
+
+.admin-root .admin-legacy-content .bg-white {
+  background-color: var(--admin-surface);
+}
+
+.admin-root .admin-legacy-content .border-zinc-200,
+.admin-root .admin-legacy-content .border-zinc-100,
+.admin-root .admin-legacy-content .divide-zinc-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--admin-border);
+}
+
+.admin-root .admin-legacy-content .text-zinc-900,
+.admin-root .admin-legacy-content .text-zinc-800,
+.admin-root .admin-legacy-content .text-zinc-700 {
+  color: var(--admin-text);
+}
+
+.admin-root .admin-legacy-content .text-zinc-600,
+.admin-root .admin-legacy-content .text-zinc-500 {
+  color: var(--admin-text-secondary);
+}
+
+.admin-root .admin-legacy-content .text-zinc-400 {
+  color: var(--admin-text-subdued);
+}
+
+.admin-root .admin-legacy-content .bg-zinc-50,
+.admin-root .admin-legacy-content .bg-zinc-50\/80 {
+  background-color: var(--admin-surface-subdued);
+}
+
+.admin-root .admin-legacy-content .hover\:bg-zinc-50:hover {
+  background-color: var(--admin-surface-hover);
+}

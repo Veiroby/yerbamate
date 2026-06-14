@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import type { OrderStatus } from "@/app/generated/prisma/client";
 import { AdminOrdersList, type AdminSerializedOrder } from "./orders-list";
 import { AdminCard, AdminPage } from "../components/ui/admin-page";
 import { AdminTabs, type AdminTab } from "../components/ui/admin-tabs";
@@ -16,6 +17,9 @@ type ShippingAddress = {
 
 type OrderView = "all" | "unpaid" | "open" | "archived";
 
+const UNPAID_STATUSES: OrderStatus[] = ["PENDING", "REQUIRES_PAYMENT"];
+const OPEN_STATUSES: OrderStatus[] = ["PAID", "PROCESSING"];
+
 function viewWhere(view: OrderView, archivedOnly: boolean) {
   if (archivedOnly || view === "archived") {
     return { archived: true };
@@ -24,13 +28,13 @@ function viewWhere(view: OrderView, archivedOnly: boolean) {
   if (view === "unpaid") {
     return {
       ...base,
-      status: { in: ["PENDING", "REQUIRES_PAYMENT"] as const },
+      status: { in: UNPAID_STATUSES },
     };
   }
   if (view === "open") {
     return {
       ...base,
-      status: { in: ["PAID", "PROCESSING"] as const },
+      status: { in: OPEN_STATUSES },
     };
   }
   return base;
@@ -78,13 +82,13 @@ export default async function AdminOrdersPage({
       prisma.order.count({
         where: {
           archived: false,
-          status: { in: ["PENDING", "REQUIRES_PAYMENT"] },
+          status: { in: UNPAID_STATUSES },
         },
       }),
       prisma.order.count({
         where: {
           archived: false,
-          status: { in: ["PAID", "PROCESSING"] },
+          status: { in: OPEN_STATUSES },
         },
       }),
       prisma.order.count({ where: { archived: true } }),

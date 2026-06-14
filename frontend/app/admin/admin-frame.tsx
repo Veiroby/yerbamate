@@ -97,7 +97,7 @@ export function AdminFrame({
               <AdminSearchBar />
             </Suspense>
           </header>
-          <div className="min-w-0 p-4 sm:p-6 [&_.bg-white]:bg-[var(--admin-surface)] [&_.border-zinc-200]:border-[var(--admin-border)] [&_.border-zinc-100]:border-[var(--admin-border)] [&_.divide-zinc-100]:divide-[var(--admin-border)] [&_.text-zinc-900]:text-[var(--admin-text)] [&_.text-zinc-800]:text-[var(--admin-text)] [&_.text-zinc-700]:text-[var(--admin-text)] [&_.text-zinc-600]:text-[var(--admin-text-secondary)] [&_.text-zinc-500]:text-[var(--admin-text-secondary)] [&_.text-zinc-400]:text-[var(--admin-text-subdued)] [&_.hover\\:bg-zinc-50:hover]:bg-[var(--admin-surface-hover)] [&_.bg-zinc-50]:bg-[var(--admin-surface-subdued)] [&_.bg-zinc-50\\/80]:bg-[var(--admin-surface-subdued)]">
+          <div className="admin-legacy-content min-w-0 p-4 sm:p-6">
             {children}
           </div>
         </main>
