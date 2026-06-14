@@ -1,0 +1,105 @@
+/* Shopify Polaris–inspired admin tokens (scoped to .admin-root) */
+.admin-root {
+  --admin-bg: #f1f1f1;
+  --admin-surface: #ffffff;
+  --admin-surface-hover: #f7f7f7;
+  --admin-surface-subdued: #fafafa;
+  --admin-border: #e3e3e3;
+  --admin-border-strong: #c9c9c9;
+  --admin-text: #303030;
+  --admin-text-secondary: #616161;
+  --admin-text-subdued: #8a8a8a;
+  --admin-nav-bg: #ebebeb;
+  --admin-nav-active: #ffffff;
+  --admin-nav-hover: #f3f3f3;
+  --admin-primary: #303030;
+  --admin-primary-hover: #1a1a1a;
+  --admin-primary-text: #ffffff;
+  --admin-accent: #008060;
+  --admin-accent-hover: #006e52;
+  --admin-accent-subdued: #cdfee1;
+  --admin-accent-text: #004c3f;
+  --admin-critical: #8e1f0b;
+  --admin-critical-subdued: #fee9e8;
+  --admin-warning: #4f4700;
+  --admin-warning-subdued: #fff8db;
+  --admin-info: #003a5a;
+  --admin-info-subdued: #d5ebff;
+  --admin-radius: 12px;
+  --admin-radius-sm: 8px;
+  --admin-shadow: 0 1px 0 rgba(26, 26, 26, 0.07);
+  --admin-shadow-card: 0 0 0 1px rgba(63, 63, 68, 0.05), 0 1px 3px rgba(63, 63, 68, 0.15);
+  --admin-font: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--admin-font);
+  background: var(--admin-bg);
+  color: var(--admin-text);
+}
+
+.admin-root.admin-dark {
+  --admin-bg: #1a1a1a;
+  --admin-surface: #303030;
+  --admin-surface-hover: #3a3a3a;
+  --admin-surface-subdued: #262626;
+  --admin-border: #4a4a4a;
+  --admin-border-strong: #616161;
+  --admin-text: #e3e3e3;
+  --admin-text-secondary: #b5b5b5;
+  --admin-text-subdued: #8a8a8a;
+  --admin-nav-bg: #262626;
+  --admin-nav-active: #3a3a3a;
+  --admin-nav-hover: #333333;
+  --admin-primary: #e3e3e3;
+  --admin-primary-hover: #ffffff;
+  --admin-primary-text: #1a1a1a;
+  --admin-accent-subdued: #0d3d2e;
+  --admin-accent-text: #cdfee1;
+  --admin-critical-subdued: #4a1a12;
+  --admin-warning-subdued: #4f4700;
+  --admin-info-subdued: #003a5a;
+  --admin-shadow: 0 1px 0 rgba(0, 0, 0, 0.4);
+  --admin-shadow-card: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.admin-root .admin-card {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: var(--admin-radius);
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-root .admin-card-padded {
+  padding: 1rem 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .admin-root .admin-card-padded {
+    padding: 1.25rem 1.5rem;
+  }
+}
+
+.admin-root .admin-input {
+  border: 1px solid var(--admin-border-strong);
+  border-radius: var(--admin-radius-sm);
+  background: var(--admin-surface);
+  color: var(--admin-text);
+  font-size: 0.8125rem;
+  line-height: 1.25rem;
+}
+
+.admin-root .admin-input:focus {
+  outline: 2px solid var(--admin-info-subdued);
+  outline-offset: 1px;
+  border-color: #005bd3;
+}
+
+.admin-root .admin-input::placeholder {
+  color: var(--admin-text-subdued);
+}
+
+.admin-root .admin-table-row:hover {
+  background: var(--admin-surface-hover);
+}
+
+.admin-root .admin-divider {
+  border-color: var(--admin-border);
+}

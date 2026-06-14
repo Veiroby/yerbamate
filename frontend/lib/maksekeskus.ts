@@ -46,9 +46,19 @@ export type CreateTransactionParams = {
 
 export type CreateTransactionResponse = {
   id: string;
+  status?: string;
   payment_methods?: {
     other?: Array<{ name: string; url?: string }>;
   };
+};
+
+export type MaksekeskusTransaction = {
+  id: string;
+  status?: string;
+  amount?: string;
+  currency?: string;
+  reference?: string;
+  merchant_data?: string;
 };
 
 export async function createTransaction(
@@ -139,6 +149,67 @@ export function getRedirectUrl(transaction: CreateTransactionResponse): string |
   if (!Array.isArray(other)) return null;
   const redirect = other.find((o) => o.name === "redirect");
   return redirect?.url ?? null;
+}
+
+function getAuthHeader(): { auth: string } | { error: string } {
+  const shopId = process.env.MAKSEKESKUS_SHOP_ID;
+  const secretKey = process.env.MAKSEKESKUS_SECRET_KEY;
+  if (!shopId || !secretKey) {
+    return { error: "Maksekeskus is not configured" };
+  }
+  const auth = Buffer.from(`${shopId}:${secretKey}`).toString("base64");
+  return { auth };
+}
+
+/**
+ * Fetch transaction details from Maksekeskus API (used to confirm payment on return).
+ */
+export async function getTransaction(
+  transactionId: string,
+): Promise<
+  | { ok: true; transaction: MaksekeskusTransaction }
+  | { ok: false; error: string }
+> {
+  const credentials = getAuthHeader();
+  if ("error" in credentials) {
+    return { ok: false, error: credentials.error };
+  }
+
+  const base = getBaseUrl().replace(/\/+$/, "");
+  const url = `${base}/v1/transactions/${encodeURIComponent(transactionId)}`;
+
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Basic ${credentials.auth}`,
+      },
+      cache: "no-store",
+    });
+
+    const data = (await res.json().catch(() => ({}))) as MaksekeskusTransaction & {
+      message?: string;
+      error?: string;
+    };
+
+    if (!res.ok) {
+      const msg =
+        (typeof data.message === "string" && data.message) ||
+        (typeof data.error === "string" && data.error) ||
+        res.statusText ||
+        "Failed to fetch transaction";
+      return { ok: false, error: `Maksekeskus ${res.status}: ${msg}` };
+    }
+
+    if (!data.id) {
+      return { ok: false, error: "Invalid transaction response" };
+    }
+
+    return { ok: true, transaction: data };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Request failed";
+    return { ok: false, error: message };
+  }
 }
 
 /**

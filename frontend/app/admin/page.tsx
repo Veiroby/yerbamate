@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { AdminSalesChart, type SalesChartPoint } from "@/app/components/admin/admin-sales-chart";
+import {
+  AdminBadge,
+  formatOrderStatus,
+  orderStatusTone,
+} from "./components/ui/admin-badge";
+import { AdminCard, AdminPage, AdminStatCard } from "./components/ui/admin-page";
 
 const PAID_LIKE = ["PAID", "PROCESSING", "SHIPPED"] as const;
 
@@ -208,121 +214,113 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
-          Dashboard
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500">
-          Overview of your store · amounts in {shopCurrency} where aggregated
-        </p>
-      </div>
-
+    <AdminPage
+      title="Welcome back"
+      subtitle={`Store overview · amounts in ${shopCurrency} where aggregated`}
+    >
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map(({ label, value, href, sub }) => (
-          <Link
+          <AdminStatCard
             key={label}
+            label={label}
+            value={value}
+            sub={sub}
             href={href}
-            className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm transition hover:border-emerald-200 hover:shadow-md"
-          >
-            <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">{label}</p>
-            <p className="mt-1 text-2xl font-semibold text-zinc-900">{value}</p>
-            <p className="mt-0.5 text-xs text-zinc-500">{sub}</p>
-          </Link>
+          />
         ))}
       </div>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <h2 className="text-sm font-semibold text-zinc-900">Revenue by period</h2>
-        <p className="mt-0.5 text-xs text-zinc-500">Paid / processing / shipped orders</p>
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-xl border border-zinc-100 bg-zinc-50/80 px-4 py-3">
-            <p className="text-xs font-medium uppercase text-zinc-500">Today</p>
-            <p className="mt-1 text-lg font-semibold text-zinc-900">{formatMoney(revTodayN, shopCurrency)}</p>
+      <AdminCard
+        title="Revenue by period"
+        subtitle="Paid, processing, and shipped orders"
+      >
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface-subdued)] px-4 py-3">
+            <p className="text-xs font-medium text-[var(--admin-text-secondary)]">Today</p>
+            <p className="mt-1 text-lg font-semibold text-[var(--admin-text)]">
+              {formatMoney(revTodayN, shopCurrency)}
+            </p>
           </div>
-          <div className="rounded-xl border border-zinc-100 bg-zinc-50/80 px-4 py-3">
-            <p className="text-xs font-medium uppercase text-zinc-500">Last 7 days</p>
-            <p className="mt-1 text-lg font-semibold text-zinc-900">{formatMoney(revWeekN, shopCurrency)}</p>
+          <div className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface-subdued)] px-4 py-3">
+            <p className="text-xs font-medium text-[var(--admin-text-secondary)]">Last 7 days</p>
+            <p className="mt-1 text-lg font-semibold text-[var(--admin-text)]">
+              {formatMoney(revWeekN, shopCurrency)}
+            </p>
           </div>
-          <div className="rounded-xl border border-zinc-100 bg-zinc-50/80 px-4 py-3">
-            <p className="text-xs font-medium uppercase text-zinc-500">This month</p>
-            <p className="mt-1 text-lg font-semibold text-zinc-900">{formatMoney(revMonthN, shopCurrency)}</p>
+          <div className="rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface-subdued)] px-4 py-3">
+            <p className="text-xs font-medium text-[var(--admin-text-secondary)]">This month</p>
+            <p className="mt-1 text-lg font-semibold text-[var(--admin-text)]">
+              {formatMoney(revMonthN, shopCurrency)}
+            </p>
           </div>
         </div>
-      </section>
+      </AdminCard>
 
-      <div className="grid gap-8 lg:grid-cols-3">
-        <section className="lg:col-span-2 space-y-6">
-          <div>
-            <h2 className="text-sm font-semibold text-zinc-900">Sales (14 days)</h2>
-            <p className="mt-0.5 text-xs text-zinc-500">UTC day buckets · paid-like orders</p>
-            <div className="mt-3 rounded-2xl border border-zinc-200 bg-white p-4">
+      <div className="grid gap-5 lg:grid-cols-3">
+        <section className="space-y-5 lg:col-span-2">
+          <AdminCard title="Total sales" subtitle="Last 14 days · UTC day buckets" flush>
+            <div className="p-4">
               <AdminSalesChart points={chartPoints} currency={shopCurrency} />
             </div>
-          </div>
+          </AdminCard>
 
-          <div>
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-zinc-900">Recent orders</h2>
+          <AdminCard
+            title="Recent orders"
+            actions={
               <Link
                 href="/admin/orders"
-                className="text-xs font-medium text-emerald-600 hover:text-emerald-700"
+                className="text-xs font-medium text-[var(--admin-accent)] hover:underline"
               >
-                View all →
+                View all
               </Link>
-            </div>
-            <div className="mt-3 overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
-              {recentOrders.length === 0 ? (
-                <div className="p-6 text-center text-sm text-zinc-500">No orders yet</div>
-              ) : (
-                <ul className="divide-y divide-zinc-100">
-                  {recentOrders.map((order) => (
-                    <li key={order.id}>
-                      <Link
-                        href={`/admin/orders/${order.id}`}
-                        className="flex items-center justify-between gap-4 px-4 py-3 transition hover:bg-zinc-50"
-                      >
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-zinc-900">{order.orderNumber}</p>
-                          <p className="truncate text-xs text-zinc-500">
-                            {order.email} ·{" "}
-                            {order.createdAt.toLocaleDateString(undefined, {
-                              month: "short",
-                              day: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </p>
-                        </div>
-                        <div className="shrink-0 text-right">
-                          <p className="text-sm font-medium text-zinc-900">
-                            {formatMoney(Number(order.total), order.currency)}
-                          </p>
-                          <span
-                            className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-                              order.status === "PAID" || order.status === "SHIPPED"
-                                ? "bg-emerald-50 text-emerald-700"
-                                : order.status === "CANCELLED" || order.status === "REFUNDED"
-                                  ? "bg-zinc-100 text-zinc-600"
-                                  : "bg-amber-50 text-amber-700"
-                            }`}
-                          >
-                            {order.status}
-                          </span>
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
+            }
+            flush
+          >
+            {recentOrders.length === 0 ? (
+              <div className="p-6 text-center text-sm text-[var(--admin-text-secondary)]">
+                No orders yet
+              </div>
+            ) : (
+              <ul className="divide-y divide-[var(--admin-border)]">
+                {recentOrders.map((order) => (
+                  <li key={order.id}>
+                    <Link
+                      href={`/admin/orders/${order.id}`}
+                      className="admin-table-row flex items-center justify-between gap-4 px-4 py-3 transition"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-[var(--admin-text)]">
+                          {order.orderNumber}
+                        </p>
+                        <p className="truncate text-xs text-[var(--admin-text-secondary)]">
+                          {order.email} ·{" "}
+                          {order.createdAt.toLocaleDateString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="text-sm font-medium text-[var(--admin-text)]">
+                          {formatMoney(Number(order.total), order.currency)}
+                        </p>
+                        <AdminBadge tone={orderStatusTone(order.status)}>
+                          {formatOrderStatus(order.status)}
+                        </AdminBadge>
+                      </div>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </AdminCard>
         </section>
 
-        <section className="space-y-6">
-          <div>
-            <h2 className="text-sm font-semibold text-zinc-900">Order status</h2>
-            <div className="mt-3 space-y-1.5 rounded-2xl border border-zinc-200 bg-white p-4 text-sm">
+        <section className="space-y-5">
+          <AdminCard title="Order status" flush>
+            <ul className="divide-y divide-[var(--admin-border)] text-sm">
               {[
                 "PENDING",
                 "REQUIRES_PAYMENT",
@@ -332,58 +330,67 @@ export default async function AdminDashboardPage() {
                 "CANCELLED",
                 "REFUNDED",
               ].map((s) => (
-                <div key={s} className="flex justify-between gap-2">
-                  <span className="text-zinc-600">{s}</span>
-                  <span className="font-medium text-zinc-900">{statusMap[s] ?? 0}</span>
-                </div>
+                <li
+                  key={s}
+                  className="flex items-center justify-between gap-2 px-4 py-2.5"
+                >
+                  <AdminBadge tone={orderStatusTone(s)}>
+                    {formatOrderStatus(s)}
+                  </AdminBadge>
+                  <span className="font-medium text-[var(--admin-text)]">
+                    {statusMap[s] ?? 0}
+                  </span>
+                </li>
               ))}
-            </div>
-          </div>
+            </ul>
+          </AdminCard>
 
-          <div>
-            <h2 className="text-sm font-semibold text-zinc-900">Best sellers (month)</h2>
-            <p className="mt-0.5 text-xs text-zinc-500">By units sold on paid-like orders</p>
-            <ul className="mt-2 space-y-2 rounded-2xl border border-zinc-200 bg-white p-3 text-sm">
+          <AdminCard
+            title="Best sellers"
+            subtitle="By units sold this month"
+          >
+            <ul className="space-y-2 text-sm">
               {topSellingRows.length === 0 ? (
-                <li className="text-zinc-500">No data yet</li>
+                <li className="text-[var(--admin-text-secondary)]">No data yet</li>
               ) : (
                 topSellingRows.map((row) => (
                   <li key={row.productId ?? "x"} className="flex justify-between gap-2">
-                    <span className="truncate text-zinc-800">
-                      {row.productId ? nameById.get(row.productId) ?? row.productId.slice(0, 8) : "—"}
+                    <span className="truncate text-[var(--admin-text)]">
+                      {row.productId
+                        ? nameById.get(row.productId) ?? row.productId.slice(0, 8)
+                        : "—"}
                     </span>
-                    <span className="shrink-0 font-medium text-zinc-900">{row._sum.quantity ?? 0}</span>
+                    <span className="shrink-0 font-medium text-[var(--admin-text)]">
+                      {row._sum.quantity ?? 0}
+                    </span>
                   </li>
                 ))
               )}
             </ul>
-          </div>
+          </AdminCard>
 
-          <div>
-            <h2 className="text-sm font-semibold text-zinc-900">New accounts</h2>
-            <p className="mt-0.5 text-xs text-zinc-500">Registered users this month</p>
-            <p className="mt-2 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-2xl font-semibold text-zinc-900">
-              {newCustomersCount}
-            </p>
-          </div>
+          <AdminStatCard
+            label="New customers"
+            value={newCustomersCount}
+            sub="Registered this month"
+          />
 
-          <div>
-            <h2 className="text-sm font-semibold text-zinc-900">Quick actions</h2>
-            <div className="mt-3 space-y-2">
+          <AdminCard title="Shortcuts">
+            <div className="space-y-2">
               {quickLinks.map(({ href, label, desc }) => (
                 <Link
                   key={href}
                   href={href}
-                  className="block rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-emerald-200 hover:shadow"
+                  className="block rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface-subdued)] p-3 transition hover:bg-[var(--admin-surface-hover)]"
                 >
-                  <p className="font-medium text-zinc-900">{label}</p>
-                  <p className="text-xs text-zinc-500">{desc}</p>
+                  <p className="font-medium text-[var(--admin-text)]">{label}</p>
+                  <p className="text-xs text-[var(--admin-text-secondary)]">{desc}</p>
                 </Link>
               ))}
             </div>
-          </div>
+          </AdminCard>
         </section>
       </div>
-    </div>
+    </AdminPage>
   );
 }

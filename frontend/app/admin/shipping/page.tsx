@@ -5,7 +5,7 @@ import {
   getShippingSettings,
   saveShippingSettings,
 } from "@/lib/shipping/settings";
-import { DPD_BALTIC_COUNTRIES } from "@/lib/shipping/dpd";
+import { DPD_BALTIC_COUNTRIES } from "@/lib/shipping/dpd-constants";
 import { parseEuRegisteredParcelRatesJsonOrThrow } from "@/lib/shipping/latvijas-pasts-eu-rates";
 
 type AdminShippingPageProps = {

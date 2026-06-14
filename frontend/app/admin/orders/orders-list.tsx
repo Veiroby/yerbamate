@@ -6,7 +6,13 @@ import { useState, useTransition } from "react";
 import type { OrderStatus } from "@/app/generated/prisma/client";
 import { DpdLabelButton } from "./dpd-label-button";
 import {
+  AdminBadge,
+  formatOrderStatus,
+  orderStatusTone,
+} from "../components/ui/admin-badge";
+import {
   deleteOrder,
+  sendUnpaidOrderReminder,
   setOrderArchived,
   updateOrderStatus,
 } from "./actions";
@@ -81,16 +87,6 @@ function isNewOrder(createdAtIso: string, archived: boolean) {
   return Date.now() - new Date(createdAtIso).getTime() < ms;
 }
 
-function statusBadgeClass(status: OrderStatus) {
-  if (status === "PAID" || status === "SHIPPED" || status === "PROCESSING") {
-    return "bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200/80";
-  }
-  if (status === "CANCELLED" || status === "REFUNDED") {
-    return "bg-zinc-100 text-zinc-600 ring-1 ring-zinc-200/80";
-  }
-  return "bg-amber-50 text-amber-800 ring-1 ring-amber-200/80";
-}
-
 export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) {
   const router = useRouter();
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -113,10 +109,8 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
         return (
           <div
             key={order.id}
-            className={`overflow-hidden rounded-xl border transition-shadow ${
-              isNew
-                ? "border-emerald-300 bg-gradient-to-r from-emerald-50/90 to-white shadow-[0_0_0_1px_rgba(16,185,129,0.12)]"
-                : "border-zinc-200 bg-white"
+            className={`admin-card overflow-hidden transition-shadow ${
+              isNew ? "ring-2 ring-[var(--admin-accent)] ring-offset-1" : ""
             }`}
           >
             <button
@@ -125,7 +119,7 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
               aria-controls={`order-details-${order.id}`}
               id={`order-summary-${order.id}`}
               onClick={() => toggle(order.id)}
-              className="flex w-full items-center gap-2 px-3 py-2.5 text-left transition hover:bg-zinc-50/80 sm:gap-4 sm:px-4"
+              className="admin-table-row flex w-full items-center gap-2 px-3 py-2.5 text-left transition sm:gap-4 sm:px-4"
             >
               <span
                 className={`shrink-0 transition-transform ${expanded ? "rotate-90" : ""}`}
@@ -144,29 +138,27 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
 
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                  <span className="font-mono text-xs font-semibold text-zinc-900">
+                  <span className="font-mono text-xs font-semibold text-[var(--admin-text)]">
                     {order.orderNumber}
                   </span>
                   <Link
                     href={`/admin/orders/${order.id}`}
-                    className="text-xs font-medium text-emerald-600 hover:underline"
+                    className="text-xs font-medium text-[var(--admin-accent)] hover:underline"
                     onClick={(e) => e.stopPropagation()}
                   >
                     Open
                   </Link>
                   {isNew && (
-                    <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
-                      New
-                    </span>
+                    <AdminBadge tone="success">New</AdminBadge>
                   )}
                 </div>
-                <p className="truncate text-xs text-zinc-500">{order.email}</p>
+                <p className="truncate text-xs text-[var(--admin-text-secondary)]">{order.email}</p>
                 {order.phone && (
-                  <p className="truncate text-xs text-zinc-400">{order.phone}</p>
+                  <p className="truncate text-xs text-[var(--admin-text-subdued)]">{order.phone}</p>
                 )}
               </div>
 
-              <div className="hidden shrink-0 text-xs text-zinc-500 sm:block">
+              <div className="hidden shrink-0 text-xs text-[var(--admin-text-secondary)] sm:block">
                 {new Date(order.createdAt).toLocaleString(undefined, {
                   month: "short",
                   day: "numeric",
@@ -179,14 +171,12 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
                 {itemCount} {itemCount === 1 ? "item" : "items"}
               </div>
 
-              <span
-                className={`hidden shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide sm:inline-flex ${statusBadgeClass(order.status)}`}
-              >
-                {order.status}
-              </span>
+              <AdminBadge tone={orderStatusTone(order.status)} className="hidden sm:inline-flex">
+                {formatOrderStatus(order.status)}
+              </AdminBadge>
 
               <div className="shrink-0 text-right">
-                <p className="text-sm font-semibold tabular-nums text-zinc-900">
+                <p className="text-sm font-semibold tabular-nums text-[var(--admin-text)]">
                   {new Intl.NumberFormat("en-US", {
                     style: "currency",
                     currency: order.currency,
@@ -233,6 +223,22 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
                       Update status
                     </button>
                   </form>
+
+                  {(order.status === "PENDING" || order.status === "REQUIRES_PAYMENT") && (
+                    <button
+                      type="button"
+                      disabled={pending}
+                      onClick={() => {
+                        startTransition(async () => {
+                          await sendUnpaidOrderReminder(order.id);
+                          router.refresh();
+                        });
+                      }}
+                      className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+                    >
+                      Send payment reminder email
+                    </button>
+                  )}
 
                   {!order.archived ? (
                     <button

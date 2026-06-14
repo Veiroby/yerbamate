@@ -1,6 +1,7 @@
-import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { AdminOrdersList, type AdminSerializedOrder } from "./orders-list";
+import { AdminCard, AdminPage } from "../components/ui/admin-page";
+import { AdminTabs, type AdminTab } from "../components/ui/admin-tabs";
 
 type ShippingAddress = {
   name?: string;
@@ -13,26 +14,106 @@ type ShippingAddress = {
   dpdPickupPointName?: string;
 };
 
+type OrderView = "all" | "unpaid" | "open" | "archived";
+
+function viewWhere(view: OrderView, archivedOnly: boolean) {
+  if (archivedOnly || view === "archived") {
+    return { archived: true };
+  }
+  const base = { archived: false };
+  if (view === "unpaid") {
+    return {
+      ...base,
+      status: { in: ["PENDING", "REQUIRES_PAYMENT"] as const },
+    };
+  }
+  if (view === "open") {
+    return {
+      ...base,
+      status: { in: ["PAID", "PROCESSING"] as const },
+    };
+  }
+  return base;
+}
+
 export default async function AdminOrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ view?: string; q?: string }>;
 }) {
-  const { view } = await searchParams;
-  const archivedOnly = view === "archived";
+  const { view: viewParam, q } = await searchParams;
+  const archivedOnly = viewParam === "archived";
+  const view: OrderView =
+    viewParam === "unpaid" || viewParam === "open" || viewParam === "archived"
+      ? viewParam
+      : "all";
 
-  const orders = await prisma.order.findMany({
-    where: { archived: archivedOnly },
-    orderBy: { createdAt: "desc" },
-    include: {
-      user: { select: { email: true, name: true } },
-      items: {
-        include: {
-          product: true,
+  const where = {
+    ...viewWhere(view, archivedOnly),
+    ...(q?.trim()
+      ? {
+          OR: [
+            { orderNumber: { contains: q.trim(), mode: "insensitive" as const } },
+            { email: { contains: q.trim(), mode: "insensitive" as const } },
+          ],
+        }
+      : {}),
+  };
+
+  const [orders, counts] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: { select: { email: true, name: true } },
+        items: {
+          include: {
+            product: true,
+          },
         },
       },
+    }),
+    Promise.all([
+      prisma.order.count({ where: { archived: false } }),
+      prisma.order.count({
+        where: {
+          archived: false,
+          status: { in: ["PENDING", "REQUIRES_PAYMENT"] },
+        },
+      }),
+      prisma.order.count({
+        where: {
+          archived: false,
+          status: { in: ["PAID", "PROCESSING"] },
+        },
+      }),
+      prisma.order.count({ where: { archived: true } }),
+    ]),
+  ]);
+
+  const [allCount, unpaidCount, openCount, archivedCount] = counts;
+
+  const tabs: AdminTab[] = [
+    { id: "all", label: "All", href: "/admin/orders", count: allCount },
+    {
+      id: "unpaid",
+      label: "Unpaid",
+      href: "/admin/orders?view=unpaid",
+      count: unpaidCount,
     },
-  });
+    {
+      id: "open",
+      label: "Open",
+      href: "/admin/orders?view=open",
+      count: openCount,
+    },
+    {
+      id: "archived",
+      label: "Archived",
+      href: "/admin/orders?view=archived",
+      count: archivedCount,
+    },
+  ];
 
   const serialized: AdminSerializedOrder[] = orders.map((order) => ({
     id: order.id,
@@ -75,43 +156,29 @@ export default async function AdminOrdersPage({
   }));
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          <Link
-            href="/admin/orders"
-            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-              !archivedOnly
-                ? "bg-zinc-900 text-white shadow-sm"
-                : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-            }`}
-          >
-            Active orders
-          </Link>
-          <Link
-            href="/admin/orders?view=archived"
-            className={`rounded-full px-4 py-2 text-sm font-medium transition ${
-              archivedOnly
-                ? "bg-zinc-900 text-white shadow-sm"
-                : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
-            }`}
-          >
-            Archived
-          </Link>
-        </div>
-        <p className="text-xs text-zinc-500">
-          {archivedOnly
-            ? "Shipped orders auto-archive. Unarchive anytime."
-            : "New orders (7 days) are highlighted. Click a row for details."}
-        </p>
-      </div>
+    <AdminPage
+      title="Orders"
+      subtitle={
+        archivedOnly || view === "archived"
+          ? "Shipped orders auto-archive. Unarchive anytime."
+          : "New orders from the last 7 days are highlighted."
+      }
+    >
+      <AdminTabs tabs={tabs} activeId={view === "all" && !archivedOnly ? "all" : view} />
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
-        <h2 className="mb-4 text-sm font-semibold text-zinc-900">
-          {archivedOnly ? "Archived orders" : "Orders"}
-        </h2>
-        <AdminOrdersList orders={serialized} />
-      </section>
-    </div>
+      <AdminCard
+        title={archivedOnly || view === "archived" ? "Archived orders" : "All orders"}
+        subtitle={
+          q?.trim()
+            ? `Showing results for “${q.trim()}”`
+            : `${serialized.length} order${serialized.length === 1 ? "" : "s"}`
+        }
+        flush
+      >
+        <div className="p-4 sm:p-5">
+          <AdminOrdersList orders={serialized} />
+        </div>
+      </AdminCard>
+    </AdminPage>
   );
 }

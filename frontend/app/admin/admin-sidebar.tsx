@@ -113,46 +113,42 @@ function IconLanguage({ className }: { className?: string }) {
 function IconAcademicCap({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M12 14.25L3 9.75l9-4.5 9 4.5-9 4.5zM6.75 11.625v3.25c0 .918 2.35 2.125 5.25 2.125s5.25-1.207 5.25-2.125v-3.25"
-      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 14.25L3 9.75l9-4.5 9 4.5-9 4.5zM6.75 11.625v3.25c0 .918 2.35 2.125 5.25 2.125s5.25-1.207 5.25-2.125v-3.25" />
     </svg>
   );
 }
 
 const navGroups = [
   {
-    label: "Overview",
+    label: "Home",
     items: [
-      { href: "/admin", label: "Dashboard", icon: IconDashboard },
+      { href: "/admin", label: "Home", icon: IconDashboard },
       { href: "/admin/analytics", label: "Analytics", icon: IconChart },
     ],
   },
   {
-    label: "Commerce",
+    label: "Sales channels",
     items: [
       { href: "/admin/products", label: "Products", icon: IconPackage },
       { href: "/admin/categories", label: "Categories", icon: IconTag },
       { href: "/admin/collections", label: "Collections", icon: IconFolder },
       { href: "/admin/orders", label: "Orders", icon: IconShoppingCart },
-      { href: "/admin/abandoned-carts", label: "Abandoned carts", icon: IconShoppingCart },
+      { href: "/admin/abandoned-carts", label: "Abandoned checkouts", icon: IconShoppingCart },
       { href: "/admin/invoices", label: "Invoices", icon: IconDocument },
       { href: "/admin/inventory", label: "Inventory", icon: IconCube },
-      { href: "/admin/shipping", label: "Shipping", icon: IconTruck },
+      { href: "/admin/shipping", label: "Shipping and delivery", icon: IconTruck },
     ],
   },
   {
-    label: "People & content",
+    label: "Customers",
     items: [
       { href: "/admin/customers", label: "Customers", icon: IconUsers },
       { href: "/admin/reviews", label: "Reviews", icon: IconStar },
-      { href: "/admin/email", label: "Email marketing", icon: IconMail },
-      { href: "/admin/blog", label: "Blog", icon: IconAcademicCap },
-      { href: "/admin/discounts", label: "Discounts & Bundles", icon: IconTag },
-      { href: "/admin/main-page", label: "Main page", icon: IconHome },
-      { href: "/admin/privacy", label: "Privacy policy", icon: IconDocument },
+      { href: "/admin/email", label: "Marketing", icon: IconMail },
+      { href: "/admin/blog", label: "Blog posts", icon: IconAcademicCap },
+      { href: "/admin/discounts", label: "Discounts", icon: IconTag },
+      { href: "/admin/main-page", label: "Online store", icon: IconHome },
+      { href: "/admin/privacy", label: "Policies", icon: IconDocument },
       { href: "/admin/languages", label: "Languages", icon: IconLanguage },
     ],
   },
@@ -174,55 +170,104 @@ function NavLink({
   icon: Icon,
   active,
   iconsOnly,
-  dark,
 }: {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   active: boolean;
   iconsOnly?: boolean;
-  dark: boolean;
 }) {
   return (
     <Link
       href={href}
       aria-label={label}
       title={iconsOnly ? label : undefined}
-      className={`flex items-center rounded-lg text-sm font-medium transition ${
-        iconsOnly
-          ? "justify-center p-2.5"
-          : "gap-3 px-3 py-2"
+      className={`flex items-center text-sm font-medium transition ${
+        iconsOnly ? "justify-center rounded-lg p-2.5" : "gap-2.5 rounded-lg px-2.5 py-1.5"
       } ${
         active
-          ? dark
-            ? "bg-emerald-950/80 text-emerald-300"
-            : "bg-emerald-50 text-emerald-800"
-          : dark
-            ? "text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
-            : "text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900"
+          ? "bg-[var(--admin-nav-active)] text-[var(--admin-text)] shadow-sm ring-1 ring-[var(--admin-border)]"
+          : "text-[var(--admin-text-secondary)] hover:bg-[var(--admin-nav-hover)] hover:text-[var(--admin-text)]"
       }`}
     >
-      <Icon className="h-5 w-5 shrink-0 opacity-80" />
-      {!iconsOnly && <span>{label}</span>}
+      <Icon className="h-5 w-5 shrink-0" />
+      {!iconsOnly && <span className="truncate">{label}</span>}
     </Link>
+  );
+}
+
+function SidebarContent({ iconsOnly }: { iconsOnly?: boolean }) {
+  const pathname = usePathname();
+
+  return (
+    <>
+      {!iconsOnly ? (
+        <div className="mb-4 px-2.5">
+          <p className="text-sm font-semibold text-[var(--admin-text)]">YerbaTea</p>
+          <p className="text-xs text-[var(--admin-text-subdued)]">Admin</p>
+        </div>
+      ) : null}
+      <div className="flex flex-1 flex-col gap-5 overflow-y-auto">
+        {navGroups.map((group) => (
+          <div key={group.label}>
+            {!iconsOnly ? (
+              <p className="mb-1 px-2.5 text-xs font-medium text-[var(--admin-text-subdued)]">
+                {group.label}
+              </p>
+            ) : null}
+            <div className="space-y-0.5">
+              {group.items.map(({ href, label, icon }) => {
+                const active =
+                  href === "/admin"
+                    ? pathname === "/admin"
+                    : pathname.startsWith(href);
+                return (
+                  <NavLink
+                    key={href}
+                    href={href}
+                    label={label}
+                    icon={icon}
+                    active={active}
+                    iconsOnly={iconsOnly}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-auto border-t border-[var(--admin-border)] pt-4">
+        {!iconsOnly ? (
+          <p className="mb-1 px-2.5 text-xs font-medium text-[var(--admin-text-subdued)]">
+            Store admin
+          </p>
+        ) : null}
+        <div className="space-y-0.5">
+          {bottomItems.map(({ href, label, icon }) => (
+            <NavLink
+              key={href}
+              href={href}
+              label={label}
+              icon={icon}
+              active={pathname === href}
+              iconsOnly={iconsOnly}
+            />
+          ))}
+        </div>
+      </div>
+    </>
   );
 }
 
 export function AdminSidebar() {
   const pathname = usePathname();
-  const { dark } = useAdminTheme();
+  const asideClass =
+    "fixed left-0 top-0 z-20 flex h-screen shrink-0 flex-col border-r border-[var(--admin-border)] bg-[var(--admin-nav-bg)]";
 
   return (
     <>
-      {/* Mobile: narrow icon-only strip */}
-      <aside
-        className={
-          dark
-            ? "fixed left-0 top-0 z-20 flex w-14 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900 md:hidden"
-            : "fixed left-0 top-0 z-20 flex w-14 shrink-0 flex-col border-r border-zinc-200 bg-white md:hidden"
-        }
-      >
-        <div className="flex flex-1 flex-col gap-1 overflow-y-auto py-2">
+      <aside className={`${asideClass} w-14 md:hidden`}>
+        <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-2">
           {allNavItems.map(({ href, label, icon }) => {
             const active =
               href === "/admin"
@@ -236,80 +281,15 @@ export function AdminSidebar() {
                 icon={icon}
                 active={active}
                 iconsOnly
-                dark={dark}
               />
             );
           })}
         </div>
       </aside>
 
-      {/* Desktop: full sidebar with labels */}
-      <aside
-        className={
-          dark
-            ? "hidden w-60 shrink-0 flex-col border-r border-zinc-800 bg-zinc-900 md:flex"
-            : "hidden w-60 shrink-0 flex-col border-r border-zinc-200 bg-white md:flex"
-        }
-      >
-        <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-4">
-          {navGroups.map((group) => (
-            <div key={group.label}>
-              <p
-                className={
-                  dark
-                    ? "mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500"
-                    : "mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-400"
-                }
-              >
-                {group.label}
-              </p>
-              <div className="space-y-0.5">
-                {group.items.map(({ href, label, icon }) => {
-                  const active =
-                    href === "/admin"
-                      ? pathname === "/admin"
-                      : pathname.startsWith(href);
-                  return (
-                    <NavLink
-                      key={href}
-                      href={href}
-                      label={label}
-                      icon={icon}
-                      active={active}
-                      dark={dark}
-                    />
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-        <div
-          className={
-            dark ? "border-t border-zinc-800 p-4" : "border-t border-zinc-200 p-4"
-          }
-        >
-          <p
-            className={
-              dark
-                ? "mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-500"
-                : "mb-1.5 px-3 text-xs font-semibold uppercase tracking-wider text-zinc-400"
-            }
-          >
-            Admin
-          </p>
-          <div className="space-y-0.5">
-            {bottomItems.map(({ href, label, icon }) => (
-              <NavLink
-                key={href}
-                href={href}
-                label={label}
-                icon={icon}
-                active={pathname === href}
-                dark={dark}
-              />
-            ))}
-          </div>
+      <aside className={`${asideClass} hidden w-60 md:flex`}>
+        <div className="flex flex-1 flex-col overflow-y-auto p-3">
+          <SidebarContent />
         </div>
       </aside>
     </>

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { createPortal } from "react-dom";
-import { DPD_PARCEL_MACHINE_METHOD_ID } from "@/lib/shipping/dpd";
+import { DPD_PARCEL_MACHINE_METHOD_ID } from "@/lib/shipping/dpd-constants";
 import { LOCAL_PICKUP_METHOD_ID } from "@/lib/shipping/local-pickup";
 import { useCart } from "@/lib/cart-context";
 

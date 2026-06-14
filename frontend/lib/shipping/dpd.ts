@@ -13,9 +13,13 @@
  * @see DPD API documentation v1.2.1
  */
 
-export const DPD_PARCEL_MACHINE_METHOD_ID = "dpd-parcel-machine";
+import { getDpdCredentials } from "./dpd-credentials";
+import {
+  DPD_BALTIC_COUNTRIES,
+  DPD_PARCEL_MACHINE_METHOD_ID,
+} from "./dpd-constants";
 
-export const DPD_BALTIC_COUNTRIES = ["LV", "EE", "LT"] as const;
+export { DPD_BALTIC_COUNTRIES, DPD_PARCEL_MACHINE_METHOD_ID };
 
 const DPD_API_BASE = "https://eserviss.dpd.lv/api/v1";
 
@@ -80,13 +84,6 @@ function setCachedPickupPoints(code: string, points: DpdPickupPoint[]): void {
   pickupCache.set(code, { points, fetchedAt: Date.now() });
 }
 
-function getDpdCredentials() {
-  return {
-    username: process.env.DPD_USERNAME || "",
-    password: process.env.DPD_PASSWORD || "",
-  };
-}
-
 function hasDpdCredentials(): boolean {
   const { username, password } = getDpdCredentials();
   return !!(username && password);
@@ -128,6 +125,13 @@ async function getOrCreateBearerToken(): Promise<string | null> {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("[DPD API] Token creation failed:", response.status, errorText);
+      if (response.status === 401) {
+        cachedToken = null;
+        console.error(
+          "[DPD API] Login rejected — update DPD_USERNAME and DPD_PASSWORD in "
+          + "frontend/.env (eserviss.dpd.lv password), then: pm2 restart yerbatea",
+        );
+      }
       return null;
     }
 
@@ -257,7 +261,10 @@ export async function createDpdShipment(request: DpdShipmentRequest): Promise<Dp
   if (!token) {
     return {
       success: false,
-      error: "Failed to authenticate with DPD API",
+      error:
+        "DPD login failed (401). Update DPD_USERNAME and DPD_PASSWORD in "
+        + "/opt/yerbamate/frontend/.env to your eserviss.dpd.lv credentials, "
+        + "then run: pm2 restart yerbatea",
     };
   }
 
@@ -427,7 +434,12 @@ export async function getDpdShipmentLabel(
 ): Promise<{ success: boolean; labelPdf?: string; error?: string }> {
   const token = existingToken || (await getOrCreateBearerToken());
   if (!token) {
-    return { success: false, error: "Failed to authenticate with DPD API" };
+    return {
+      success: false,
+      error:
+        "DPD login failed (401). Update DPD_USERNAME/DPD_PASSWORD in .env "
+        + "and restart yerbatea.",
+    };
   }
 
   try {

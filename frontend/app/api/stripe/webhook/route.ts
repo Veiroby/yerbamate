@@ -7,6 +7,7 @@ import {
   isEmailConfigured,
   sendOrderConfirmationEmail,
 } from "@/lib/email";
+import { fireTelegramOrderNotify } from "@/lib/telegram-order-notify-fire";
 
 export const dynamic = "force-dynamic";
 /** Stripe signature verification uses Node crypto; avoid edge where body/signature handling can differ. */
@@ -98,6 +99,10 @@ export async function POST(request: Request) {
       if (!order) {
         return NextResponse.json({ received: true }, { status: 200 });
       }
+
+      fireTelegramOrderNotify(order, {
+        headline: "✅ *YerbaTea order paid*",
+      });
 
       if (isEmailConfigured() && order.customerType !== "BUSINESS") {
         const result = await sendOrderConfirmationEmail({

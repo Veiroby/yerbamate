@@ -1,44 +1,63 @@
-import { prisma } from "@/lib/db";
+import { AdminCard, AdminPage } from "../components/ui/admin-page";
 
 export default async function AdminSettingsPage() {
-  const storeName = "YerbaMate Store";
+  const storeName = "YerbaTea Store";
 
   return (
-    <div className="max-w-2xl space-y-8">
-      <div>
-        <h2 className="text-xl font-semibold tracking-tight text-zinc-900">
-          Settings
-        </h2>
-        <p className="mt-1 text-sm text-zinc-500">
-          Store and account preferences.
-        </p>
-      </div>
-
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h3 className="text-sm font-semibold text-zinc-900">
-          Store information
-        </h3>
-        <p className="mt-1 text-xs text-zinc-500">
-          Store name and basic details (editable in a future release).
-        </p>
-        <dl className="mt-4 space-y-2 text-sm">
+    <AdminPage
+      title="Settings"
+      subtitle="Manage your store and integrations."
+      narrow
+    >
+      <AdminCard title="Store details">
+        <dl className="space-y-3 text-sm">
+          <div className="flex justify-between gap-4 border-b border-[var(--admin-border)] pb-3">
+            <dt className="text-[var(--admin-text-secondary)]">Store name</dt>
+            <dd className="font-medium text-[var(--admin-text)]">{storeName}</dd>
+          </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-zinc-500">Store name</dt>
-            <dd className="font-medium text-zinc-900">{storeName}</dd>
+            <dt className="text-[var(--admin-text-secondary)]">Currency</dt>
+            <dd className="font-medium text-[var(--admin-text)]">EUR</dd>
           </div>
         </dl>
-      </section>
+      </AdminCard>
 
-      <section className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
-        <h3 className="text-sm font-semibold text-zinc-900">Integrations</h3>
-        <p className="mt-1 text-xs text-zinc-500">
-          Payment and shipping are configured via environment variables.
-        </p>
-        <ul className="mt-4 space-y-2 text-sm text-zinc-600">
-          <li>• Stripe (payments)</li>
-          <li>• Internal shipping rules (zones & methods)</li>
+      <AdminCard title="Payments">
+        <ul className="space-y-3 text-sm">
+          <li className="flex items-center justify-between gap-4 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface-subdued)] px-4 py-3">
+            <div>
+              <p className="font-medium text-[var(--admin-text)]">Stripe</p>
+              <p className="text-xs text-[var(--admin-text-secondary)]">
+                Cards and checkout
+              </p>
+            </div>
+            <span className="rounded-lg bg-[var(--admin-accent-subdued)] px-2 py-0.5 text-xs font-medium text-[var(--admin-accent-text)]">
+              Active
+            </span>
+          </li>
+          <li className="flex items-center justify-between gap-4 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface-subdued)] px-4 py-3">
+            <div>
+              <p className="font-medium text-[var(--admin-text)]">MakeCommerce</p>
+              <p className="text-xs text-[var(--admin-text-secondary)]">
+                Bank links and local payments
+              </p>
+            </div>
+            <span className="rounded-lg bg-[var(--admin-surface-subdued)] px-2 py-0.5 text-xs font-medium text-[var(--admin-text-secondary)] ring-1 ring-[var(--admin-border)]">
+              Optional
+            </span>
+          </li>
         </ul>
-      </section>
-    </div>
+      </AdminCard>
+
+      <AdminCard title="Shipping and delivery">
+        <p className="text-sm text-[var(--admin-text-secondary)]">
+          Zones, rates, and carriers are configured under{" "}
+          <a href="/admin/shipping" className="font-medium text-[var(--admin-accent)] hover:underline">
+            Shipping and delivery
+          </a>
+          .
+        </p>
+      </AdminCard>
+    </AdminPage>
   );
 }

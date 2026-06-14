@@ -25,6 +25,7 @@ import {
   markRecoveryForOrderConversion,
   syncRecoveryIdentityFromCart,
 } from "@/lib/abandoned-cart";
+import { fireTelegramOrderNotify } from "@/lib/telegram-order-notify-fire";
 
 function getSiteOrigin(request: Request): string {
   const configured = process.env.NEXT_PUBLIC_APP_ORIGIN?.trim();
@@ -346,7 +347,11 @@ export async function POST(request: Request) {
         })),
       },
     },
+    include: {
+      items: { include: { product: true } },
+    },
   });
+  fireTelegramOrderNotify(order);
   await markRecoveryForOrderConversion(sessionId, email.trim().toLowerCase());
 
   if (discountCode) {
@@ -372,7 +377,7 @@ export async function POST(request: Request) {
     amount: total,
     currency,
     ip: getClientIp(request),
-    return_url: `${origin}${pathPrefix}/checkout/success?provider=maksekeskus&orderNumber=${encodeURIComponent(order.orderNumber)}`,
+    return_url: `${origin}/api/checkout/maksekeskus/return?orderNumber=${encodeURIComponent(order.orderNumber)}&locale=${encodeURIComponent(locale || "en")}`,
     cancel_url: `${origin}${pathPrefix}/cart`,
     notification_url: `${origin}/api/checkout/maksekeskus/notify`,
     reference: order.orderNumber,

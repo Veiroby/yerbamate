@@ -1,26 +1,30 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { adminApiGuard } from "@/lib/admin-api-guard";
+import { agentApiGuard } from "@/lib/agent-api-guard";
+import { getAgentActorId } from "@/lib/agent-actor";
+import { resolveOrderId } from "@/lib/agent-orders";
 import { getOrCreateDpdLabelForOrder } from "@/lib/dpd-label-service";
+import { prisma } from "@/lib/db";
 
-type RouteParams = {
-  params: Promise<{ id: string }>;
-};
+export const dynamic = "force-dynamic";
 
-export async function GET(_request: Request, { params }: RouteParams) {
-  const g = await adminApiGuard(false);
-  if (!g.ok) return g.response;
+type RouteParams = { params: Promise<{ id: string }> };
 
-  const { id } = await params;
+export async function GET(request: Request, { params }: RouteParams) {
+  const denied = agentApiGuard(request);
+  if (denied) return denied;
+
+  const { id: idOrNumber } = await params;
+  const orderId = await resolveOrderId(idOrNumber);
+  if (!orderId) {
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
 
   const order = await prisma.order.findUnique({
-    where: { id },
+    where: { id: orderId },
     select: {
-      id: true,
-      orderNumber: true,
+      dpdLabelPdf: true,
       dpdShipmentId: true,
       dpdTrackingNumber: true,
-      dpdLabelPdf: true,
       dpdLabelCreatedAt: true,
     },
   });
@@ -39,15 +43,24 @@ export async function GET(_request: Request, { params }: RouteParams) {
 }
 
 export async function POST(request: Request, { params }: RouteParams) {
-  const g = await adminApiGuard(true);
-  if (!g.ok) return g.response;
+  const denied = agentApiGuard(request);
+  if (denied) return denied;
 
-  const { id } = await params;
+  const { id: idOrNumber } = await params;
+  const orderId = await resolveOrderId(idOrNumber);
+  if (!orderId) {
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+
   const url = new URL(request.url);
   const refetch = url.searchParams.get("refetch") === "true";
   const force = url.searchParams.get("force") === "true";
+  const actorId = await getAgentActorId();
+  const result = await getOrCreateDpdLabelForOrder(orderId, actorId, {
+    refetch,
+    force,
+  });
 
-  const result = await getOrCreateDpdLabelForOrder(id, g.user.id, { refetch, force });
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: result.status });
   }

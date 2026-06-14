@@ -7,6 +7,7 @@ import { CheckoutSuccessConfirmation } from "@/app/components/checkout/CheckoutS
 import { getCurrentUser } from "@/lib/auth";
 import { hasAdminAccess } from "@/lib/admin-access";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
+import { verifyAndCompleteMaksekeskusOrderByNumber } from "@/lib/maksekeskus-order";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -29,7 +30,12 @@ export default async function CheckoutSuccessPage({ params, searchParams }: Prop
 
   if (provider === "maksekeskus" && orderNumberParam) {
     orderNumber = orderNumberParam;
-    message = t("checkout.orderReceivedMessage", { orderNumber: orderNumberParam });
+    const paymentState = await verifyAndCompleteMaksekeskusOrderByNumber(orderNumberParam);
+    if (paymentState === "paid") {
+      message = t("checkout.paymentConfirmedOrder", { orderNumber: orderNumberParam });
+    } else {
+      message = t("checkout.orderReceivedMessage", { orderNumber: orderNumberParam });
+    }
   }
 
   if (provider !== "maksekeskus" && sessionId && process.env.STRIPE_SECRET_KEY) {

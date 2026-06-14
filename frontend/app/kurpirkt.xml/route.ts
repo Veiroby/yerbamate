@@ -20,6 +20,12 @@ function formatPrice(value: number, currency: string): string {
   return `${value.toFixed(2)} ${currency}`;
 }
 
+function toAbsoluteUrl(url: string): string {
+  if (/^https?:\/\//i.test(url)) return url;
+  const normalized = url.startsWith("/") ? url : `/${url}`;
+  return `${BASE_URL}${normalized}`;
+}
+
 function availabilityFromStock(stockLocation: string | null, quantityLeft: number): "in stock" | "out of stock" {
   if (stockLocation === "warehouse") return "in stock";
   return quantityLeft > 0 ? "in stock" : "out of stock";
@@ -53,7 +59,9 @@ export async function GET() {
         0,
       );
       const availability = availabilityFromStock(product.stockLocation, quantityLeft);
-      const imageUrl = product.images[0]?.url ?? `${BASE_URL}/images/placeholder-product.png`;
+      const imageUrl = toAbsoluteUrl(
+        product.images[0]?.url ?? "/images/placeholder-product.png",
+      );
       const link = `${BASE_URL}/lv/products/${encodeURIComponent(product.slug)}`;
       const description =
         product.descriptionLv?.trim() ||

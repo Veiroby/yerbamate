@@ -19,6 +19,7 @@ import {
   markRecoveryForOrderConversion,
   syncRecoveryIdentityFromCart,
 } from "@/lib/abandoned-cart";
+import { fireTelegramOrderNotify } from "@/lib/telegram-order-notify-fire";
 
 function getSiteOrigin(request: Request): string {
   const configured = process.env.NEXT_PUBLIC_APP_ORIGIN?.trim();
@@ -338,7 +339,11 @@ export async function POST(request: Request) {
         })),
       },
     },
+    include: {
+      items: { include: { product: true } },
+    },
   });
+  fireTelegramOrderNotify(order);
   await markRecoveryForOrderConversion(sessionId, email.trim().toLowerCase());
 
   if (discountCode) {
