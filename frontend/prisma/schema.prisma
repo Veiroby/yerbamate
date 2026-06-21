@@ -189,6 +189,12 @@ model Product {
   archived      Boolean        @default(false)
   /// Draft products never appear on the storefront (even if active).
   isDraft       Boolean        @default(false)
+  /// Featured in catalog sort (bestsellers shown first among in-stock items).
+  isBestseller     Boolean     @default(false)
+  /// Lower = higher priority among bestsellers.
+  bestsellerRank   Int?
+  /// Manual catalog tiebreaker (non-bestsellers).
+  catalogSortOrder Int         @default(0)
   categoryId    String?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt

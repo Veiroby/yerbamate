@@ -12,6 +12,7 @@ import {
   categorySlugIncludingAdminDuplicates,
   mateGourdsCategoryWhere,
 } from "@/lib/category-filters";
+import { sortCatalogProducts } from "@/lib/catalog-sort";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -203,13 +204,6 @@ export default async function ProductsPage({ params, searchParams }: Props) {
 
   const categoryLabel = category && CATEGORY_KEYS[category] ? t(CATEGORY_KEYS[category]) : category ?? null;
 
-  const stockRank = (location: string | null | undefined, quantityLeft: number) => {
-    // Instock with quantity first, then instock sold-out, then warehouse last.
-    if (location === "warehouse") return 2;
-    if (quantityLeft > 0) return 0;
-    return 1;
-  };
-
   const productCardsUnsorted = products.map((p) => {
     const quantityLeft = p.variants.reduce(
       (sum, v) =>
@@ -245,17 +239,13 @@ export default async function ProductsPage({ params, searchParams }: Props) {
       brand: p.brand,
       origin: p.origin,
       weight: p.weight ?? null,
+      isBestseller: p.isBestseller,
+      bestsellerRank: p.bestsellerRank,
+      catalogSortOrder: p.catalogSortOrder,
     };
   });
 
-  const productCards = productCardsUnsorted
-    .map((c, idx) => ({
-      c,
-      idx,
-      rank: stockRank(c.stockLocation, c.quantityLeft),
-    }))
-    .sort((a, b) => a.rank - b.rank || a.idx - b.idx)
-    .map((x) => x.c);
+  const productCards = sortCatalogProducts(productCardsUnsorted);
 
   const getPageTitle = () => {
     if (q) return t("products.searchTitle", { q });

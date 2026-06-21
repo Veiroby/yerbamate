@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { hasAdminAccess } from "@/lib/admin-access";
 import { SiteHeader } from "@/app/components/site-header";
 import { Hero } from "@/app/components/landing/Hero";
+import { MobileWorldCupHero } from "@/app/components/landing/MobileWorldCupHero";
 import {
   ProductCarouselSection,
   type CarouselProduct,
@@ -17,6 +18,11 @@ import type { Metadata } from "next";
 import type { Locale } from "@/lib/i18n";
 import { getTranslations, createT, isValidLocale } from "@/lib/i18n";
 import { productListingImageAlt } from "@/lib/seo-yerba";
+import {
+  getHomeNewArrivalsProducts,
+  getHomeYerbaMateProducts,
+  type HomeCarouselProduct,
+} from "@/lib/home-carousel-products";
 
 export const dynamic = "force-dynamic";
 
@@ -30,17 +36,7 @@ function productQuantityLeft(p: {
 }
 
 function toCarouselProduct(
-  p: {
-    id: string;
-    name: string;
-    price: unknown;
-    slug: string;
-    images: { url: string; altText: string | null }[];
-    weight: string | null;
-    stockLocation: string | null;
-    category?: { slug: string } | null;
-    variants: { inventoryItems: { quantity: number }[] }[];
-  },
+  p: HomeCarouselProduct,
   locale: Locale
 ): CarouselProduct {
   const loc: "lv" | "en" = locale === "en" ? "en" : "lv";
@@ -107,21 +103,9 @@ export default async function HomePage({ params }: Props) {
   const { locale: localeParam } = await params;
   const locale = (localeParam === "lv" || localeParam === "en" ? localeParam : "lv") as Locale;
 
-  const [user, settings, latestProducts, heroStats, translations, testimonials] = await Promise.all([
+  const [user, heroStats, translations, testimonials, newArrivalsProducts, topSellingProducts] =
+    await Promise.all([
     getCurrentUser(),
-    prisma.siteSettings.findUnique({
-      where: { id: "default" },
-    }),
-    prisma.product.findMany({
-      where: { active: true, archived: false, isDraft: false },
-      orderBy: { createdAt: "desc" },
-      take: 12,
-      include: {
-        category: { select: { slug: true } },
-        images: { orderBy: { position: "asc" }, take: 1 },
-        variants: { include: { inventoryItems: true } },
-      },
-    }),
     (async () => {
       const [productCount, brands, subscriberEmails, userEmails] = await Promise.all([
         prisma.product.count({ where: { active: true, archived: false, isDraft: false } }),
@@ -158,50 +142,10 @@ export default async function HomePage({ params }: Props) {
         authorName: true,
       },
     }),
+    getHomeNewArrivalsProducts(8),
+    getHomeYerbaMateProducts(8),
   ]);
   const t = createT(translations);
-
-  const newArrivalsCollectionId = settings?.homeNewArrivalsCollectionId ?? null;
-  const topSellingCollectionId = settings?.homeTopSellingCollectionId ?? null;
-
-  const [newArrivalsProducts, topSellingProducts] = await Promise.all([
-    newArrivalsCollectionId
-      ? prisma.productInCollection
-          .findMany({
-            where: { collectionId: newArrivalsCollectionId },
-            orderBy: { position: "asc" },
-            take: 8,
-            include: {
-              product: {
-                include: {
-                  category: { select: { slug: true } },
-                  images: { orderBy: { position: "asc" }, take: 1 },
-                  variants: { include: { inventoryItems: true } },
-                },
-              },
-            },
-          })
-          .then((rows) => rows.map((r) => r.product))
-      : Promise.resolve(latestProducts.slice(0, 8)),
-    topSellingCollectionId
-      ? prisma.productInCollection
-          .findMany({
-            where: { collectionId: topSellingCollectionId },
-            orderBy: { position: "asc" },
-            take: 8,
-            include: {
-              product: {
-                include: {
-                  category: { select: { slug: true } },
-                  images: { orderBy: { position: "asc" }, take: 1 },
-                  variants: { include: { inventoryItems: true } },
-                },
-              },
-            },
-          })
-          .then((rows) => rows.map((r) => r.product))
-      : Promise.resolve(latestProducts.slice(0, 8)),
-  ]);
 
   const newArrivalsCarousel: CarouselProduct[] = newArrivalsProducts.map((p) =>
     toCarouselProduct(p, locale)
@@ -215,6 +159,7 @@ export default async function HomePage({ params }: Props) {
       <SiteHeader user={user ? { isAdmin: hasAdminAccess(user) } : null} locale={locale} />
 
       <main>
+        <MobileWorldCupHero />
         <Hero
           productCount={heroStats.productCount}
           brandCount={heroStats.brandCount}
@@ -223,6 +168,7 @@ export default async function HomePage({ params }: Props) {
 
         <ProductCarouselSection
           titleKey="home.newArrivals"
+          descriptionKey="home.newArrivalsDescription"
           products={newArrivalsCarousel}
           compactTop
         />

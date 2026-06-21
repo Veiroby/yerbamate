@@ -61,6 +61,19 @@ export async function findProductForAgent(query: string) {
   });
   if (byBarcode) return byBarcode;
 
+  const byBrand = await prisma.product.findFirst({
+    where: {
+      archived: false,
+      OR: [
+        { brand: { equals: trimmed, mode: "insensitive" } },
+        { brand: { contains: trimmed, mode: "insensitive" } },
+      ],
+    },
+    orderBy: { name: "asc" },
+    select: { id: true, name: true, barcode: true },
+  });
+  if (byBrand) return byBrand;
+
   return prisma.product.findFirst({
     where: {
       archived: false,

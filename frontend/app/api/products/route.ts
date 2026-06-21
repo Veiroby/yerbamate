@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { Prisma } from "@/app/generated/prisma/client";
 import { mateGourdsCategoryWhere } from "@/lib/category-filters";
+import { sortCatalogProducts } from "@/lib/catalog-sort";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -94,8 +95,27 @@ export async function GET(request: Request) {
         orderBy: { position: "asc" },
         take: 1,
       },
+      variants: { include: { inventoryItems: true } },
     },
   });
 
-  return NextResponse.json({ products });
+  const withStock = products.map((p) => {
+    const quantityLeft = p.variants.reduce(
+      (sum, v) => sum + v.inventoryItems.reduce((s, i) => s + i.quantity, 0),
+      0,
+    );
+    return {
+      product: p,
+      quantityLeft,
+      stockLocation: p.stockLocation ?? "instock",
+      isBestseller: p.isBestseller,
+      bestsellerRank: p.bestsellerRank,
+      catalogSortOrder: p.catalogSortOrder,
+      name: p.name,
+    };
+  });
+
+  const sorted = sortCatalogProducts(withStock).map((row) => row.product);
+
+  return NextResponse.json({ products: sorted });
 }

@@ -7,6 +7,8 @@ import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 
+import { sortCatalogProducts } from "@/lib/catalog-sort";
+
 export const dynamic = "force-dynamic";
 
 type Props = {
@@ -29,12 +31,6 @@ export async function generateMetadata({
     title: `${category} – YerbaTea`,
     description: t("products.browseCategorySelection", { category }),
   };
-}
-
-function stockRank(stockLocation: string | null | undefined, quantityLeft: number) {
-  if (stockLocation === "warehouse") return 2;
-  if (quantityLeft > 0) return 0;
-  return 1;
 }
 
 export default async function AccessoriesPage({ params }: Props) {
@@ -67,7 +63,7 @@ export default async function AccessoriesPage({ params }: Props) {
 
   const title = t("landing.accessories");
 
-  const productCards = products
+  const productCardsUnsorted = products
     .map((p) => {
       const quantityLeft = p.variants.reduce(
         (sum, v) => sum + v.inventoryItems.reduce((s, i) => s + i.quantity, 0),
@@ -94,13 +90,13 @@ export default async function AccessoriesPage({ params }: Props) {
         brand: p.brand,
         origin: p.origin,
         weight: p.weight ?? null,
+        isBestseller: p.isBestseller,
+        bestsellerRank: p.bestsellerRank,
+        catalogSortOrder: p.catalogSortOrder,
       };
-    })
-    .sort((a, b) => {
-      const r = stockRank(a.stockLocation, a.quantityLeft) - stockRank(b.stockLocation, b.quantityLeft);
-      if (r !== 0) return r;
-      return a.name.localeCompare(b.name);
     });
+
+  const productCards = sortCatalogProducts(productCardsUnsorted);
 
   return (
     <div className="min-h-screen bg-white text-gray-900">

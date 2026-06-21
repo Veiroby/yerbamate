@@ -40,8 +40,21 @@ function formatMessage(order: TelegramOrderNotifyInput): string {
   if (itemLines.length) {
     lines.push("", ...itemLines);
   }
-  lines.push("", `_In Roberts: /order ${order.orderNumber} or /dpd ${order.orderNumber}_`);
+  lines.push("", `_Tap the button below to generate the DPD label and mark shipped._`);
   return lines.join("\n");
+}
+
+function shipButton(orderNumber: string) {
+  return {
+    inline_keyboard: [
+      [
+        {
+          text: "📦 DPD label + mark shipped",
+          callback_data: `ym|ship|${orderNumber}`.slice(0, 64),
+        },
+      ],
+    ],
+  };
 }
 
 export async function notifyTelegramNewOrder(
@@ -74,6 +87,7 @@ export async function notifyTelegramNewOrder(
             text,
             parse_mode: "Markdown",
             disable_web_page_preview: true,
+            reply_markup: shipButton(order.orderNumber),
           }),
         },
       );
