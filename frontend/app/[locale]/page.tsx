@@ -159,7 +159,7 @@ export default async function HomePage({ params }: Props) {
       <SiteHeader user={user ? { isAdmin: hasAdminAccess(user) } : null} locale={locale} />
 
       <main>
-        <MobileWorldCupHero />
+        <MobileWorldCupHero locale={locale} />
         <Hero
           productCount={heroStats.productCount}
           brandCount={heroStats.brandCount}
