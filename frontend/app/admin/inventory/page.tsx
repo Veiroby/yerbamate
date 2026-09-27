@@ -156,7 +156,7 @@ export default async function AdminInventoryPage() {
             {adjustments.map((a) => (
               <li key={a.id} className="flex flex-wrap justify-between gap-2 py-2">
                 <span className="text-zinc-600">
-                  {a.createdAt.toLocaleString()} · {a.actor.email}
+                  {a.createdAt.toLocaleString()} · {a.actor?.email ?? "System"}
                 </span>
                 <span className="font-medium text-zinc-900">
                   {a.inventoryItem.variant?.product?.name ?? a.inventoryItem.sku}{" "}
