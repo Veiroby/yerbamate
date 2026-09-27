@@ -5,6 +5,8 @@ import { hasAdminAccess } from "@/lib/admin-access";
 import { AdminFrame } from "./admin-frame";
 import "./admin-tokens.css";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({
   children,
 }: {
