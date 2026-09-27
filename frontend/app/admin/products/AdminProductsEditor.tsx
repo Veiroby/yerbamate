@@ -335,6 +335,9 @@ export function AdminProductsEditor({
                     )}
                   </div>
                   <p className="truncate text-xs text-zinc-500">/{product.slug}</p>
+                  <p className="truncate text-xs text-zinc-500 sm:hidden">
+                    {product.category?.name ?? "No category"} · {stockLabel}
+                  </p>
                 </div>
 
                 <div className="hidden min-w-0 shrink-0 text-xs text-zinc-600 sm:block md:max-w-[140px]">

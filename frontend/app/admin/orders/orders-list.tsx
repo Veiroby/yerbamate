@@ -151,6 +151,9 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
                   {isNew && (
                     <AdminBadge tone="success">New</AdminBadge>
                   )}
+                  <AdminBadge tone={orderStatusTone(order.status)} className="sm:hidden">
+                    {formatOrderStatus(order.status)}
+                  </AdminBadge>
                 </div>
                 <p className="truncate text-xs text-[var(--admin-text-secondary)]">{order.email}</p>
                 {order.phone && (

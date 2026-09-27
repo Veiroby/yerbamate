@@ -98,7 +98,7 @@ export function AdminLiveSync() {
         Updates{unread > 0 ? ` (${unread})` : ""}
       </button>
       {open ? (
-        <div className="absolute right-0 z-20 mt-2 w-80 rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] p-2 shadow-none">
+        <div className="absolute right-0 z-20 mt-2 w-[min(20rem,calc(100vw-1.5rem))] rounded-lg border border-[var(--admin-border)] bg-[var(--admin-surface)] p-2 shadow-none">
           <div className="mb-2 flex items-center justify-between px-1">
             <p className="text-xs font-medium text-[var(--admin-text-secondary)]">Order updates</p>
             {unread > 0 ? (

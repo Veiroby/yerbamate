@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAdminTheme } from "./admin-frame";
 
 function IconDashboard({ className }: { className?: string }) {
   return (
@@ -159,62 +158,62 @@ const bottomItems = [
   { href: "/admin/settings", label: "Settings", icon: IconCog },
 ];
 
-const allNavItems = [
-  ...navGroups.flatMap((g) => g.items),
-  ...bottomItems,
-];
-
 function NavLink({
   href,
   label,
   icon: Icon,
   active,
-  iconsOnly,
+  onNavigate,
 }: {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   active: boolean;
-  iconsOnly?: boolean;
+  onNavigate?: () => void;
 }) {
   return (
     <Link
       href={href}
       aria-label={label}
-      title={iconsOnly ? label : undefined}
-      className={`flex items-center text-sm font-medium transition ${
-        iconsOnly ? "justify-center rounded-lg p-2.5" : "gap-2.5 rounded-lg px-2.5 py-1.5"
-      } ${
+      onClick={onNavigate}
+      className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition ${
         active
           ? "bg-[var(--admin-nav-active)] text-[var(--admin-text)] shadow-sm ring-1 ring-[var(--admin-border)]"
           : "text-[var(--admin-text-secondary)] hover:bg-[var(--admin-nav-hover)] hover:text-[var(--admin-text)]"
       }`}
     >
       <Icon className="h-5 w-5 shrink-0" />
-      {!iconsOnly && <span className="truncate">{label}</span>}
+      <span className="truncate">{label}</span>
     </Link>
   );
 }
 
-function SidebarContent({ iconsOnly }: { iconsOnly?: boolean }) {
+function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
     <>
-      {!iconsOnly ? (
-        <div className="mb-4 px-2.5">
+      <div className="mb-4 flex items-start justify-between gap-3 px-2.5">
+        <div>
           <p className="text-sm font-semibold text-[var(--admin-text)]">YerbaTea</p>
           <p className="text-xs text-[var(--admin-text-subdued)]">Admin</p>
         </div>
-      ) : null}
+        {onNavigate ? (
+          <button
+            type="button"
+            onClick={onNavigate}
+            className="rounded-lg px-2 py-1 text-xs font-medium text-[var(--admin-text-secondary)] hover:bg-[var(--admin-nav-hover)] md:hidden"
+          >
+            Close
+          </button>
+        ) : null}
+      </div>
       <div className="flex flex-1 flex-col gap-5 overflow-y-auto">
         {navGroups.map((group) => (
           <div key={group.label}>
-            {!iconsOnly ? (
-              <p className="mb-1 px-2.5 text-xs font-medium text-[var(--admin-text-subdued)]">
-                {group.label}
-              </p>
-            ) : null}
+            <p className="mb-1 px-2.5 text-xs font-medium text-[var(--admin-text-subdued)]">
+              {group.label}
+            </p>
             <div className="space-y-0.5">
               {group.items.map(({ href, label, icon }) => {
                 const active =
@@ -228,7 +227,7 @@ function SidebarContent({ iconsOnly }: { iconsOnly?: boolean }) {
                     label={label}
                     icon={icon}
                     active={active}
-                    iconsOnly={iconsOnly}
+                    onNavigate={onNavigate}
                   />
                 );
               })}
@@ -237,11 +236,9 @@ function SidebarContent({ iconsOnly }: { iconsOnly?: boolean }) {
         ))}
       </div>
       <div className="mt-auto border-t border-[var(--admin-border)] pt-4">
-        {!iconsOnly ? (
-          <p className="mb-1 px-2.5 text-xs font-medium text-[var(--admin-text-subdued)]">
-            Store admin
-          </p>
-        ) : null}
+        <p className="mb-1 px-2.5 text-xs font-medium text-[var(--admin-text-subdued)]">
+          Store admin
+        </p>
         <div className="space-y-0.5">
           {bottomItems.map(({ href, label, icon }) => (
             <NavLink
@@ -250,7 +247,7 @@ function SidebarContent({ iconsOnly }: { iconsOnly?: boolean }) {
               label={label}
               icon={icon}
               active={pathname === href}
-              iconsOnly={iconsOnly}
+              onNavigate={onNavigate}
             />
           ))}
         </div>
@@ -259,35 +256,34 @@ function SidebarContent({ iconsOnly }: { iconsOnly?: boolean }) {
   );
 }
 
-export function AdminSidebar() {
-  const pathname = usePathname();
+export function AdminSidebar({
+  mobileOpen,
+  onClose,
+}: {
+  mobileOpen: boolean;
+  onClose: () => void;
+}) {
   const asideClass =
-    "fixed left-0 top-0 z-20 flex h-screen shrink-0 flex-col border-r border-[var(--admin-border)] bg-[var(--admin-nav-bg)]";
+    "fixed left-0 top-0 h-screen shrink-0 flex-col border-r border-[var(--admin-border)] bg-[var(--admin-nav-bg)]";
 
   return (
     <>
-      <aside className={`${asideClass} w-14 md:hidden`}>
-        <div className="flex flex-1 flex-col gap-1 overflow-y-auto p-2">
-          {allNavItems.map(({ href, label, icon }) => {
-            const active =
-              href === "/admin"
-                ? pathname === "/admin"
-                : pathname.startsWith(href);
-            return (
-              <NavLink
-                key={href}
-                href={href}
-                label={label}
-                icon={icon}
-                active={active}
-                iconsOnly
-              />
-            );
-          })}
+      {mobileOpen ? (
+        <button
+          type="button"
+          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          aria-label="Close menu"
+          onClick={onClose}
+        />
+      ) : null}
+
+      <aside className={`${asideClass} z-40 w-[min(100%,18rem)] md:hidden ${mobileOpen ? "flex" : "hidden"}`}>
+        <div className="flex flex-1 flex-col overflow-y-auto p-3">
+          <SidebarContent onNavigate={onClose} />
         </div>
       </aside>
 
-      <aside className={`${asideClass} hidden w-60 md:flex`}>
+      <aside className={`${asideClass} z-20 hidden w-60 md:flex`}>
         <div className="flex flex-1 flex-col overflow-y-auto p-3">
           <SidebarContent />
         </div>
