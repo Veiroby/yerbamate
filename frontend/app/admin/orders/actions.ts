@@ -106,6 +106,11 @@ export async function updateOrderStatus(orderId: string, formData: FormData) {
 
   revalidatePath("/admin/orders");
   revalidatePath("/admin");
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/products");
+  revalidatePath("/admin/customers");
+  revalidatePath("/admin/abandoned-carts");
+  revalidatePath("/admin/discounts");
   revalidatePath(`/admin/orders/${orderId}`);
 }
 

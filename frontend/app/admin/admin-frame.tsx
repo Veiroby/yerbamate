@@ -11,6 +11,7 @@ import {
   Suspense,
 } from "react";
 import Link from "next/link";
+import { AdminLiveSync } from "./admin-live-sync";
 import { AdminSidebar } from "./admin-sidebar";
 import { AdminPageTitle } from "./components/admin-page-title";
 import { AdminSearchBar } from "./components/ui/admin-tabs";
@@ -75,6 +76,7 @@ export function AdminFrame({
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
+                <AdminLiveSync />
                 {mounted ? (
                   <button
                     type="button"

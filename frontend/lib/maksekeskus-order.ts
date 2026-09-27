@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { recordEvent } from "@/lib/analytics";
 import {
@@ -5,8 +6,6 @@ import {
   sendOrderConfirmationEmail,
 } from "@/lib/email";
 import { getTransaction } from "@/lib/maksekeskus";
-
-const DEFAULT_SKU_PREFIX = "default-";
 
 export type MaksekeskusPaymentReturn = {
   amount?: string;
@@ -96,14 +95,11 @@ export async function completeMaksekeskusOrder(orderId: string): Promise<boolean
     },
   });
 
-  for (const item of order.items) {
-    if (!item.productId) continue;
-    const sku = `${DEFAULT_SKU_PREFIX}${item.productId}`;
-    await prisma.inventoryItem.updateMany({
-      where: { sku },
-      data: { quantity: { decrement: item.quantity } },
-    });
-  }
+  revalidatePath("/admin");
+  revalidatePath("/admin/orders");
+  revalidatePath("/admin/inventory");
+  revalidatePath("/admin/products");
+  revalidatePath("/admin/abandoned-carts");
 
   return true;
 }

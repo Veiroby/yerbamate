@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
@@ -12,8 +13,6 @@ import { fireTelegramOrderNotify } from "@/lib/telegram-order-notify-fire";
 export const dynamic = "force-dynamic";
 /** Stripe signature verification uses Node crypto; avoid edge where body/signature handling can differ. */
 export const runtime = "nodejs";
-
-const DEFAULT_SKU_PREFIX = "default-";
 
 function parseWebhookSecrets(raw: string | undefined): string[] {
   if (!raw) return [];
@@ -143,20 +142,11 @@ export async function POST(request: Request) {
         },
       });
 
-      // Decrement inventory for each order item, if inventory records exist.
-      // Stock is tracked via a default variant SKU: "default-<productId>".
-      for (const item of order.items) {
-        if (!item.productId) continue;
-        const sku = `${DEFAULT_SKU_PREFIX}${item.productId}`;
-        await prisma.inventoryItem.updateMany({
-          where: { sku },
-          data: {
-            quantity: {
-              decrement: item.quantity,
-            },
-          },
-        });
-      }
+      revalidatePath("/admin");
+      revalidatePath("/admin/orders");
+      revalidatePath("/admin/inventory");
+      revalidatePath("/admin/products");
+      revalidatePath("/admin/abandoned-carts");
     }
   } catch (err) {
     console.error("Error handling Stripe webhook", err);
