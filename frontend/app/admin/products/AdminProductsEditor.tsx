@@ -162,6 +162,13 @@ export function AdminProductsEditor({
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
+  const isProductActive = (product: ProductRow) => dirty[product.id]?.active ?? product.active;
+
+  const activeProducts =
+    listView === "archived" ? [] : products.filter((product) => isProductActive(product));
+  const inactiveProducts =
+    listView === "archived" ? [] : products.filter((product) => !isProductActive(product));
+
   const handleArchive = (productId: string, archived: boolean) => {
     setArchivePending(productId);
     startTransition(async () => {
@@ -193,7 +200,7 @@ export function AdminProductsEditor({
                     : "bg-white text-zinc-600 ring-1 ring-zinc-200 hover:bg-zinc-100"
                 }`}
               >
-                Active products
+                Catalog
               </Link>
               <Link
                 href={buildListHref(true)}
@@ -246,13 +253,27 @@ export function AdminProductsEditor({
 
         <p className="text-xs leading-relaxed text-zinc-500">
           {listView === "active"
-            ? "Click a row to expand and edit stock, price, and flags. Save once for all pending edits. Archive hides a product from the store and this list."
-            : "Archived products are hidden from the storefront. Restore to edit them in the active list again."}
+            ? "Active products are on the store. Inactive products stay in this list but are hidden from customers. Click a row to edit, then save."
+            : "Archived products are hidden from the storefront. Restore to edit them in the catalog again."}
         </p>
       </div>
 
-      <div className="space-y-2 text-sm">
-        {products.map((product) => {
+      <div className="space-y-6 text-sm">
+        {(listView === "active"
+          ? [
+              { title: "Active", items: activeProducts },
+              { title: "Inactive", items: inactiveProducts },
+            ]
+          : [{ title: "", items: products }]
+        ).map((group) => (
+          <div key={group.title || "archived"} className="space-y-2">
+            {group.title ? <ProductGroup title={group.title} count={group.items.length} /> : null}
+            {group.title && group.items.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-zinc-200 px-3 py-4 text-center text-xs text-zinc-500">
+                No {group.title.toLowerCase()} products.
+              </p>
+            ) : null}
+            {group.items.map((product) => {
           const d = dirty[product.id] ?? {};
           const displayWeight = d.weight ?? product.weight ?? "";
           const displayShippingKg =
@@ -307,17 +328,18 @@ export function AdminProductsEditor({
                 </span>
 
                 {product.images[0] ? (
-                  <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200">
+                  <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200">
                     <Image
                       src={product.images[0].url}
                       alt={product.images[0].altText ?? product.name}
                       fill
+                      unoptimized
                       className="object-cover"
-                      sizes="44px"
+                      sizes="56px"
                     />
                   </div>
                 ) : (
-                  <div className="h-11 w-11 shrink-0 rounded-lg bg-zinc-100 ring-1 ring-zinc-200" />
+                  <div className="h-14 w-14 shrink-0 rounded-lg bg-zinc-100 ring-1 ring-zinc-200" />
                 )}
 
                 <div className="min-w-0 flex-1">
@@ -546,13 +568,13 @@ export function AdminProductsEditor({
               )}
             </div>
           );
-        })}
+            })}
+          </div>
+        ))}
 
-        {products.length === 0 && (
+        {listView === "archived" && products.length === 0 && (
           <p className="rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 py-10 text-center text-sm text-zinc-500">
-            {listView === "archived"
-              ? "No archived products."
-              : "No products match your search."}
+            No archived products.
           </p>
         )}
       </div>
@@ -567,6 +589,17 @@ export function AdminProductsEditor({
           {isSaving ? "Saving…" : "Save all changes"}
         </button>
       </div>
+    </div>
+  );
+}
+
+function ProductGroup({ title, count }: { title: string; count: number }) {
+  return (
+    <div className="flex items-center justify-between border-b border-zinc-200 pb-2">
+      <h3 className="text-sm font-semibold text-zinc-900">{title}</h3>
+      <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-600">
+        {count}
+      </span>
     </div>
   );
 }
