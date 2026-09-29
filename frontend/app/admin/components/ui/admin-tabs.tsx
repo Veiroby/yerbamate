@@ -19,6 +19,7 @@ export function AdminTabs({ tabs, activeId }: { tabs: AdminTab[]; activeId: stri
           <Link
             key={tab.id}
             href={tab.href}
+            prefetch={false}
             className={`relative -mb-px rounded-t-lg px-3 py-2 text-sm font-medium transition ${
               active
                 ? "bg-[var(--admin-surface)] text-[var(--admin-text)] shadow-[inset_0_-2px_0_0_var(--admin-primary)]"

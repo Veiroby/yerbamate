@@ -68,6 +68,10 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "20mb",
     },
+    staleTimes: {
+      dynamic: 0,
+      static: 0,
+    },
   },
   async headers() {
     return [

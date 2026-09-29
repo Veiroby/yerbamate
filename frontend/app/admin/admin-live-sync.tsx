@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 type Notice = {
   id: string;
@@ -31,8 +31,13 @@ function signature(data: LiveState) {
 
 export function AdminLiveSync() {
   const router = useRouter();
+  const pathname = usePathname();
   const [data, setData] = useState<LiveState | null>(null);
   const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    router.refresh();
+  }, [pathname, router]);
 
   useEffect(() => {
     let seen = "";

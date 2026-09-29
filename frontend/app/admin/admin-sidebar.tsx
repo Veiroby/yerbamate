@@ -174,6 +174,7 @@ function NavLink({
   return (
     <Link
       href={href}
+      prefetch={false}
       aria-label={label}
       onClick={onNavigate}
       className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition ${

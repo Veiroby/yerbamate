@@ -1,3 +1,4 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { OrderStatus } from "@/app/generated/prisma/client";
 import { AdminOrdersList, type AdminSerializedOrder } from "./orders-list";
@@ -16,6 +17,9 @@ type ShippingAddress = {
 };
 
 type OrderView = "all" | "unpaid" | "open" | "archived";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 const UNPAID_STATUSES: OrderStatus[] = ["PENDING", "REQUIRES_PAYMENT"];
 const OPEN_STATUSES: OrderStatus[] = ["PAID", "PROCESSING"];
@@ -45,6 +49,7 @@ export default async function AdminOrdersPage({
 }: {
   searchParams: Promise<{ view?: string; q?: string }>;
 }) {
+  noStore();
   const { view: viewParam, q } = await searchParams;
   const archivedOnly = viewParam === "archived";
   const view: OrderView =
