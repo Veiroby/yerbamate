@@ -6,6 +6,7 @@ import { setProductQuantityWithLocation } from "./product-quantity";
 import { requireAdminWrite } from "@/lib/admin-auth";
 import { writeAuditLog } from "@/lib/admin-audit";
 import { AdminProductsEditor } from "./AdminProductsEditor";
+import { ComputerImageFields } from "./computer-image-fields";
 import { slugify } from "@/lib/slugify";
 
 async function deleteProductAction(formData: FormData) {
@@ -173,22 +174,25 @@ export default async function AdminProductsPage({
               },
             });
 
-            for (let i = 0; i < 3; i++) {
-              const file = formData.get(`image${i + 1}`) as File | null;
-              if (file && file.size > 0) {
-                try {
-                  const url = await saveProductImage(product.id, i, file);
-                  await prisma.productImage.create({
-                    data: {
-                      productId: product.id,
-                      url,
-                      position: i,
-                      altText: `${name} image ${i + 1}`,
-                    },
-                  });
-                } catch {
-                  // skip invalid file
-                }
+            const imageFiles = formData
+              .getAll("images")
+              .filter((entry): entry is File => entry instanceof File && entry.size > 0)
+              .slice(0, 3);
+            let imageFailed = false;
+            for (let i = 0; i < imageFiles.length; i++) {
+              try {
+                const url = await saveProductImage(product.id, i, imageFiles[i]);
+                await prisma.productImage.create({
+                  data: {
+                    productId: product.id,
+                    url,
+                    position: i,
+                    altText: `${name} image ${i + 1}`,
+                  },
+                });
+              } catch (err) {
+                imageFailed = true;
+                console.error("Create product image failed:", err);
               }
             }
 
@@ -206,6 +210,9 @@ export default async function AdminProductsPage({
             });
             revalidatePath("/admin/products");
             revalidatePath("/admin/inventory");
+            if (imageFailed) {
+              redirect(`/admin/products/${product.id}/edit?error=upload`);
+            }
             redirect("/admin/products?saved=1");
           }}
           encType="multipart/form-data"
@@ -279,26 +286,8 @@ export default async function AdminProductsPage({
               </select>
             </label>
           )}
-          <div className="md:col-span-4 space-y-2">
-            <p className="text-xs font-medium text-zinc-600">
-              Images (up to 3, optional)
-            </p>
-            <div className="flex flex-wrap gap-3">
-              {[1, 2, 3].map((n) => (
-                <label
-                  key={n}
-                  className="flex flex-col gap-1 text-xs text-zinc-500"
-                >
-                  Image {n}
-                  <input
-                    name={`image${n}`}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                    className="rounded-lg border border-zinc-300 text-zinc-700"
-                  />
-                </label>
-              ))}
-            </div>
+          <div className="md:col-span-4">
+            <ComputerImageFields />
           </div>
           <button
             type="submit"

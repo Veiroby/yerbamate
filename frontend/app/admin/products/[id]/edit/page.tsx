@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { notFound, redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
@@ -11,6 +10,7 @@ import { saveProductImage } from "@/lib/upload";
 import { FocalPointPicker } from "../focal-point-picker";
 import { setProductQuantityWithLocation } from "../../product-quantity";
 import { ConfirmDeleteImageForm } from "@/app/admin/components/confirm-delete-image-form";
+import { ComputerImageFields } from "../../computer-image-fields";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -579,8 +579,11 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
 
       <section className="rounded-2xl border bg-white p-5 shadow-sm">
         <h3 className="mb-3 text-sm font-semibold text-zinc-900">
-          Upload images (replaces existing, max 3)
+          Add a photo from your computer
         </h3>
+        <p className="mb-3 text-xs text-zinc-500">
+          Photos already on this product stay in place. You can keep up to 3.
+        </p>
         <form
           action={async (formData) => {
             "use server";
@@ -599,44 +602,41 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
                 return;
               }
 
-              // Collect files first so we can detect if any new images were selected
-              const files: (File | null)[] = [];
-              for (let i = 0; i < 3; i++) {
-                const file = formData.get(`image${i + 1}`) as File | null;
-                files.push(file && file.size > 0 ? file : null);
-              }
+              const files = formData
+                .getAll("images")
+                .filter((entry): entry is File => entry instanceof File && entry.size > 0);
 
-              const hasNewImages = files.some((file) => file !== null);
-
-              // If no new images were selected, keep existing ones and just return
-              if (!hasNewImages) {
+              if (files.length === 0) {
                 redirect(`/admin/products/${productId}/edit`);
                 return;
               }
 
-              // Replace existing images only when at least one new image is provided
-              await prisma.productImage.deleteMany({
+              const existing = await prisma.productImage.findMany({
                 where: { productId },
+                orderBy: { position: "asc" },
               });
+              const room = Math.max(0, 3 - existing.length);
+              if (room === 0) {
+                redirect(`/admin/products/${productId}/edit?error=upload`);
+                return;
+              }
 
-              for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                if (file) {
-                  try {
-                    const url = await saveProductImage(productId, i, file);
-                    await prisma.productImage.create({
-                      data: {
-                        productId,
-                        url,
-                        position: i,
-                        altText: `${product.name} image ${i + 1}`,
-                      },
-                    });
-                  } catch (err) {
-                    console.error(`Upload image ${i + 1} failed:`, err);
-                    redirect(`/admin/products/${productId}/edit?error=upload`);
-                    return;
-                  }
+              const start = existing.reduce((max, image) => Math.max(max, image.position), -1) + 1;
+              for (let i = 0; i < Math.min(files.length, room); i++) {
+                try {
+                  const url = await saveProductImage(productId, start + i, files[i]);
+                  await prisma.productImage.create({
+                    data: {
+                      productId,
+                      url,
+                      position: start + i,
+                      altText: `${product.name} image ${start + i + 1}`,
+                    },
+                  });
+                } catch (err) {
+                  console.error(`Upload image ${i + 1} failed:`, err);
+                  redirect(`/admin/products/${productId}/edit?error=upload`);
+                  return;
                 }
               }
               revalidatePath(`/admin/products/${productId}/edit`);
@@ -662,22 +662,13 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
           className="space-y-4"
         >
           <input type="hidden" name="productId" value={product.id} />
-          <div className="flex flex-wrap gap-4">
-            {[1, 2, 3].map((n) => (
-              <label
-                key={n}
-                className="flex flex-col gap-2 text-sm text-zinc-600"
-              >
-                Image {n}
-                <input
-                  name={`image${n}`}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  className="rounded-xl border border-zinc-300 px-3 py-2 text-zinc-700"
-                />
-              </label>
-            ))}
-          </div>
+          {product.images.length < 3 ? (
+            <ComputerImageFields max={3 - product.images.length} />
+          ) : (
+            <p className="text-sm text-zinc-500">
+              This product already has 3 photos. Delete one above to add another.
+            </p>
+          )}
           <button
             type="submit"
             className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
