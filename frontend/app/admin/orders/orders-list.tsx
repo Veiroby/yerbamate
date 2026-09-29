@@ -81,6 +81,10 @@ function formatBillingSnapshot(addr: unknown): string | null {
   return JSON.stringify(o, null, 2);
 }
 
+function requestOrdersReload() {
+  window.dispatchEvent(new Event("admin-orders-reload"));
+}
+
 function isNewOrder(createdAtIso: string, archived: boolean) {
   if (archived) return false;
   const ms = NEW_ORDER_DAYS * 24 * 60 * 60 * 1000;
@@ -201,7 +205,8 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
                   <form
                     action={async (fd) => {
                       await updateOrderStatus(order.id, fd);
-                      router.refresh();
+                      requestOrdersReload();
+                        router.refresh();
                     }}
                     className="flex flex-wrap items-center gap-2"
                   >
@@ -234,7 +239,8 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
                       onClick={() => {
                         startTransition(async () => {
                           await sendUnpaidOrderReminder(order.id);
-                          router.refresh();
+                          requestOrdersReload();
+                        router.refresh();
                         });
                       }}
                       className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100 disabled:opacity-50"
@@ -250,7 +256,8 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
                       onClick={() => {
                         startTransition(async () => {
                           await setOrderArchived(order.id, true);
-                          router.refresh();
+                          requestOrdersReload();
+                        router.refresh();
                           setExpandedId(null);
                         });
                       }}
@@ -265,7 +272,8 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
                       onClick={() => {
                         startTransition(async () => {
                           await setOrderArchived(order.id, false);
-                          router.refresh();
+                          requestOrdersReload();
+                        router.refresh();
                         });
                       }}
                       className="rounded-full border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-100 disabled:opacity-50"
@@ -287,6 +295,7 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
                       }
                       startTransition(async () => {
                         await deleteOrder(order.id);
+                        requestOrdersReload();
                         router.refresh();
                         setExpandedId(null);
                       });

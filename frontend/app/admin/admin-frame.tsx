@@ -24,6 +24,8 @@ type AdminThemeContextValue = { dark: boolean };
 
 const AdminThemeContext = createContext<AdminThemeContextValue>({ dark: false });
 
+export const AdminOrdersRefreshContext = createContext(0);
+
 export function useAdminTheme() {
   return useContext(AdminThemeContext);
 }
@@ -38,6 +40,7 @@ export function AdminFrame({
   const [dark, setDark] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [ordersRefresh, setOrdersRefresh] = useState(0);
   const pathname = usePathname();
 
   useEffect(() => {
@@ -48,6 +51,11 @@ export function AdminFrame({
 
   useEffect(() => {
     setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!pathname.startsWith("/admin/orders")) return;
+    setOrdersRefresh((value) => value + 1);
   }, [pathname]);
 
   const toggleDark = useCallback(() => {
@@ -64,6 +72,7 @@ export function AdminFrame({
 
   return (
     <AdminThemeContext.Provider value={themeCtx}>
+    <AdminOrdersRefreshContext.Provider value={ordersRefresh}>
       <div
         className={`admin-root flex min-h-screen ${dark ? "admin-dark" : ""}`}
         style={{ colorScheme: dark ? "dark" : "light" }}
@@ -124,6 +133,7 @@ export function AdminFrame({
           </div>
         </main>
       </div>
+    </AdminOrdersRefreshContext.Provider>
     </AdminThemeContext.Provider>
   );
 }
