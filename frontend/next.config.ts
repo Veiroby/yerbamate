@@ -70,7 +70,7 @@ const nextConfig: NextConfig = {
     },
     staleTimes: {
       dynamic: 0,
-      static: 0,
+      static: 30,
     },
   },
   async headers() {
