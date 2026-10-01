@@ -111,7 +111,7 @@ async function newestVisibleYerba(take: number): Promise<HomeCarouselProduct[]> 
       ...STORE_VISIBLE,
       category: categorySlugIncludingAdminDuplicates("yerba-mate"),
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { updatedAt: "desc" },
     take,
     include: CAROUSEL_INCLUDE,
   });
