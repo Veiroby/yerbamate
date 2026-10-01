@@ -105,25 +105,39 @@ async function mateGourdsForCarousel(take: number): Promise<HomeCarouselProduct[
   }).then((rows) => sortHomeProducts(rows).slice(0, take));
 }
 
-/** New arrivals: bestselling yerba mate (Canarias, Amanda, …) plus mate gourds. */
+async function newestVisibleYerba(take: number): Promise<HomeCarouselProduct[]> {
+  return prisma.product.findMany({
+    where: {
+      ...STORE_VISIBLE,
+      category: categorySlugIncludingAdminDuplicates("yerba-mate"),
+    },
+    orderBy: { createdAt: "desc" },
+    take,
+    include: CAROUSEL_INCLUDE,
+  });
+}
+
+/** New arrivals: newest yerba mate, then bestsellers and mate gourds. */
 export async function getHomeNewArrivalsProducts(
   limit = 8,
 ): Promise<HomeCarouselProduct[]> {
   const yerbaSlots = Math.ceil(limit * 0.55);
   const gourdSlots = limit - yerbaSlots;
 
-  const [yerba, gourds] = await Promise.all([
+  const [newest, yerba, gourds] = await Promise.all([
+    newestVisibleYerba(2),
     yerbaMateBestsellers(yerbaSlots),
     mateGourdsForCarousel(gourdSlots),
   ]);
 
-  return sortHomeProducts(dedupeProducts([...yerba, ...gourds])).slice(0, limit);
+  return dedupeProducts([...newest, ...yerba, ...gourds]).slice(0, limit);
 }
 
-/** Yerba mate carousel: category bestsellers, in-stock first. */
+/** Yerba mate carousel: newest products first, then bestsellers. */
 export async function getHomeYerbaMateProducts(
   limit = 8,
 ): Promise<HomeCarouselProduct[]> {
+  const newest = await newestVisibleYerba(2);
   const products = await prisma.product.findMany({
     where: {
       ...STORE_VISIBLE,
@@ -139,13 +153,16 @@ export async function getHomeYerbaMateProducts(
   });
 
   const flagged = sortHomeProducts(products.filter((p) => p.isBestseller));
-  if (flagged.length >= limit) {
-    return flagged.slice(0, limit);
-  }
+  const rest =
+    flagged.length >= limit
+      ? flagged
+      : sortHomeProducts(
+          dedupeProducts([
+            ...flagged,
+            ...(await yerbaMateBestsellers(limit)),
+            ...products,
+          ]),
+        );
 
-  const hinted = await yerbaMateBestsellers(limit);
-  return sortHomeProducts(dedupeProducts([...flagged, ...hinted, ...products])).slice(
-    0,
-    limit,
-  );
+  return dedupeProducts([...newest, ...rest]).slice(0, limit);
 }
