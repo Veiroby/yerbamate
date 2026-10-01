@@ -39,7 +39,7 @@ export function ComputerImageFields({
         />
       </label>
       <p className="text-xs text-zinc-500">
-        JPEG, PNG, WebP, or GIF. Up to {max} photos, 10MB each.
+        JPEG, PNG, WebP, or GIF. Up to {max} photos, 20MB each. Choose a file from your computer — a web address is not used.
       </p>
       {previews.length > 0 ? (
         <div className="flex flex-wrap gap-3">

@@ -1,18 +1,11 @@
 import { mkdir, writeFile } from "node:fs/promises";
-import { existsSync } from "node:fs";
 import path from "node:path";
 
-// Resolve public directory correctly in both local dev and production.
-// When running with `output: "standalone"`, Next serves from
-// `<project>/.next/standalone/public`. Otherwise it serves from `<project>/public`.
-const CWD = process.cwd(); // should be the frontend project root
-const STANDALONE_PUBLIC = path.join(CWD, ".next", "standalone", "public");
-const PUBLIC_DIR = existsSync(STANDALONE_PUBLIC)
-  ? STANDALONE_PUBLIC
-  : path.join(CWD, "public");
-const UPLOAD_DIR = path.join(PUBLIC_DIR, "uploads", "products");
+// nginx serves /uploads/ from frontend/public/uploads. `next start` serves the
+// same folder. Do not write into .next/standalone — that copy is not what the site uses.
+const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "products");
 const ALLOWED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"];
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+export const MAX_PRODUCT_IMAGE_BYTES = 20 * 1024 * 1024;
 
 function getExt(mime: string, fileName?: string): string {
   const m = (mime || "").toLowerCase();
@@ -50,8 +43,8 @@ export async function saveProductImage(
   if (!ALLOWED_TYPES.includes(mime)) {
     throw new Error(`Invalid file type: ${file.type || "unknown"} (name: ${file.name})`);
   }
-  if (file.size > MAX_SIZE) {
-    throw new Error(`File too large (max ${MAX_SIZE / 1024 / 1024}MB)`);
+  if (file.size > MAX_PRODUCT_IMAGE_BYTES) {
+    throw new Error(`File too large (max ${MAX_PRODUCT_IMAGE_BYTES / 1024 / 1024}MB)`);
   }
   const dir = path.join(UPLOAD_DIR, productId);
   await mkdir(dir, { recursive: true });

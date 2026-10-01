@@ -4,9 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/auth";
 import { hasAdminAccess, hasAdminWriteAccess } from "@/lib/admin-access";
-import { requireAdminWrite } from "@/lib/admin-auth";
 import { writeAuditLog } from "@/lib/admin-audit";
-import { saveProductImage } from "@/lib/upload";
 import { FocalPointPicker } from "../focal-point-picker";
 import { setProductQuantityWithLocation } from "../../product-quantity";
 import { ConfirmDeleteImageForm } from "@/app/admin/components/confirm-delete-image-form";
@@ -297,17 +295,29 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
           Compare-at price must be empty or a valid non-negative number.
         </p>
       )}
-      {errorParam &&
-        ![
-          "slug_taken",
-          "slug_invalid",
-          "name_required",
-          "invalid_price",
-          "invalid_shipping_weight",
-          "invalid_compare_at",
-        ].includes(errorParam) && (
+      {errorParam === "empty" && (
         <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
-          Upload failed. Check file type (JPEG, PNG, WebP, GIF) and size (max 10MB). See terminal for details.
+          Choose a photo from your computer, then save.
+        </p>
+      )}
+      {errorParam === "full" && (
+        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+          This product already has 3 photos. Delete one, then add another. The photos already here stay.
+        </p>
+      )}
+      {errorParam === "type" && (
+        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+          Use a JPEG, PNG, WebP, or GIF file.
+        </p>
+      )}
+      {errorParam === "size" && (
+        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+          That photo is larger than 20MB. Choose a smaller file.
+        </p>
+      )}
+      {errorParam === "upload" && (
+        <p className="rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+          The photo could not be saved. Try again with a JPEG, PNG, WebP, or GIF under 20MB.
         </p>
       )}
       <div className="flex items-center gap-4">
@@ -585,83 +595,11 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
           Photos already on this product stay in place. You can keep up to 3.
         </p>
         <form
-          action={async (formData) => {
-            "use server";
-            const actor = await requireAdminWrite();
-            const productId = formData.get("productId")?.toString();
-            if (!productId) {
-              redirect("/admin/products");
-              return;
-            }
-            try {
-              const product = await prisma.product.findUnique({
-                where: { id: productId },
-              });
-              if (!product) {
-                redirect(`/admin/products`);
-                return;
-              }
-
-              const files = formData
-                .getAll("images")
-                .filter((entry): entry is File => entry instanceof File && entry.size > 0);
-
-              if (files.length === 0) {
-                redirect(`/admin/products/${productId}/edit`);
-                return;
-              }
-
-              const existing = await prisma.productImage.findMany({
-                where: { productId },
-                orderBy: { position: "asc" },
-              });
-              const room = Math.max(0, 3 - existing.length);
-              if (room === 0) {
-                redirect(`/admin/products/${productId}/edit?error=upload`);
-                return;
-              }
-
-              const start = existing.reduce((max, image) => Math.max(max, image.position), -1) + 1;
-              for (let i = 0; i < Math.min(files.length, room); i++) {
-                try {
-                  const url = await saveProductImage(productId, start + i, files[i]);
-                  await prisma.productImage.create({
-                    data: {
-                      productId,
-                      url,
-                      position: start + i,
-                      altText: `${product.name} image ${start + i + 1}`,
-                    },
-                  });
-                } catch (err) {
-                  console.error(`Upload image ${i + 1} failed:`, err);
-                  redirect(`/admin/products/${productId}/edit?error=upload`);
-                  return;
-                }
-              }
-              revalidatePath(`/admin/products/${productId}/edit`);
-              revalidatePath("/admin/products");
-              await writeAuditLog(actor.id, "product.images_replaced", "Product", productId, {});
-              redirect(`/admin/products/${productId}/edit?saved=1`);
-            } catch (err) {
-              // Allow Next.js redirects (NEXT_REDIRECT) to bubble up without being treated as errors
-              if (
-                err &&
-                typeof err === "object" &&
-                "digest" in err &&
-                typeof (err as { digest?: unknown }).digest === "string" &&
-                (err as { digest: string }).digest.startsWith("NEXT_REDIRECT")
-              ) {
-                throw err;
-              }
-              console.error("Upload error:", err);
-              redirect(`/admin/products/${productId}/edit?error=upload`);
-            }
-          }}
+          action={`/api/admin/products/${product.id}/images`}
+          method="POST"
           encType="multipart/form-data"
           className="space-y-4"
         >
-          <input type="hidden" name="productId" value={product.id} />
           {product.images.length < 3 ? (
             <ComputerImageFields max={3 - product.images.length} />
           ) : (

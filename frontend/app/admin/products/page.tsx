@@ -1,8 +1,6 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { saveProductImage } from "@/lib/upload";
-import { setProductQuantityWithLocation } from "./product-quantity";
 import { requireAdminWrite } from "@/lib/admin-auth";
 import { writeAuditLog } from "@/lib/admin-audit";
 import { AdminProductsEditor } from "./AdminProductsEditor";
@@ -18,7 +16,7 @@ async function deleteProductAction(formData: FormData) {
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; view?: string }>;
+  searchParams: Promise<{ q?: string; view?: string; error?: string; saved?: string }>;
 }) {
   const categoryDelegate =
     "category" in prisma && typeof (prisma as { category?: { findMany: (args: unknown) => Promise<unknown[]> } }).category?.findMany === "function"
@@ -133,88 +131,19 @@ export default async function AdminProductsPage({
         <h2 className="mb-3 text-sm font-semibold text-zinc-900">
           Add product
         </h2>
+        {sp?.error === "create" && (
+          <p className="mb-3 rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+            Could not create that product. The slug may already be in use.
+          </p>
+        )}
+        {sp?.error === "invalid" && (
+          <p className="mb-3 rounded-xl bg-red-50 px-4 py-2 text-sm text-red-800">
+            Name, slug, and a valid price are required.
+          </p>
+        )}
         <form
-          action={async (formData) => {
-            "use server";
-            const user = await requireAdminWrite();
-            const name = formData.get("name")?.toString().trim();
-            const slug = formData.get("slug")?.toString().trim();
-            const price = Number.parseFloat(
-              formData.get("price")?.toString() ?? "0",
-            );
-            const description =
-              formData.get("description")?.toString().trim() || null;
-            const barcode =
-              formData.get("barcode")?.toString().trim() || null;
-            const weight =
-              formData.get("weight")?.toString().trim() || null;
-            const quantityRaw = formData.get("quantity")?.toString();
-            const quantity = quantityRaw
-              ? Math.max(0, Math.floor(Number(quantityRaw)))
-              : null;
-
-            if (!name || !slug || !Number.isFinite(price)) {
-              return;
-            }
-
-            const categoryId = formData.get("categoryId")?.toString().trim() || null;
-            const stockLocation = (formData.get("stockLocation")?.toString() || "instock") as "instock" | "warehouse";
-            const product = await prisma.product.create({
-              data: {
-                name,
-                slug,
-                price,
-                descriptionEn: description,
-                // Keep legacy single-language column in sync (English).
-                description,
-                barcode: barcode || undefined,
-                weight: weight || undefined,
-                categoryId: categoryId || undefined,
-                stockLocation: stockLocation === "warehouse" ? "warehouse" : "instock",
-              },
-            });
-
-            const imageFiles = formData
-              .getAll("images")
-              .filter((entry): entry is File => entry instanceof File && entry.size > 0)
-              .slice(0, 3);
-            let imageFailed = false;
-            for (let i = 0; i < imageFiles.length; i++) {
-              try {
-                const url = await saveProductImage(product.id, i, imageFiles[i]);
-                await prisma.productImage.create({
-                  data: {
-                    productId: product.id,
-                    url,
-                    position: i,
-                    altText: `${name} image ${i + 1}`,
-                  },
-                });
-              } catch (err) {
-                imageFailed = true;
-                console.error("Create product image failed:", err);
-              }
-            }
-
-            if (quantity !== null) {
-              await setProductQuantityWithLocation(
-                product.id,
-                quantity,
-                stockLocation === "warehouse" ? "warehouse" : undefined,
-                { actorId: user.id, reason: "admin_product_create" },
-              );
-            }
-            await writeAuditLog(user.id, "product.created", "Product", product.id, {
-              name,
-              slug,
-            });
-            revalidatePath("/admin/products");
-            revalidatePath("/admin/inventory");
-            if (imageFailed) {
-              redirect(`/admin/products/${product.id}/edit?error=upload`);
-            }
-            redirect("/admin/products?saved=1");
-          }}
+          action="/api/admin/products"
+          method="POST"
           encType="multipart/form-data"
           className="grid gap-3 md:grid-cols-4"
         >
