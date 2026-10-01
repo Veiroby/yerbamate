@@ -113,13 +113,13 @@ export function Hero({ productCount, brandCount, customerCount }: HeroProps) {
           </div>
         </div>
         <div className="relative hidden flex-1 md:block">
-          <div className="relative aspect-square max-w-md overflow-hidden rounded-2xl">
+          <div className="relative aspect-[4/5] w-full max-w-md overflow-hidden rounded-2xl">
             <Image
-              src="/hero-mate.png"
+              src="/images/infused-joy-hero.jpg"
               alt={t("hero.imageAlt")}
               fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 28rem"
+              className="object-cover object-center"
+              sizes="(max-width: 1024px) 50vw, 28rem"
               priority
             />
           </div>
