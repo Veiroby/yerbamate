@@ -45,11 +45,12 @@ export function ProductCard({ product }: Props) {
     product.name,
     product.imageAlt,
   );
-  const stockStatus =
-    product.stockLocation === "warehouse"
+  const soldOut = product.stockLocation !== "warehouse" && product.quantityLeft <= 0;
+  const stockStatus = soldOut
+    ? "sold_out"
+    : product.stockLocation === "warehouse"
       ? "get_in_5_7_days"
       : "in_stock";
-  const soldOut = product.stockLocation !== "warehouse" && product.quantityLeft <= 0;
   const { addToCart, isLoading } = useCart();
   const [addingToCart, setAddingToCart] = useState(false);
 
@@ -137,7 +138,9 @@ export function ProductCard({ product }: Props) {
               {product.currency} {product.price.toFixed(2)}
             </p>
             <div className="flex items-center gap-1 text-[10px] font-semibold sm:text-xs">
-              {stockStatus === "in_stock" ? (
+              {stockStatus === "sold_out" ? (
+                <span className="text-gray-500">{t("product.soldOut")}</span>
+              ) : stockStatus === "in_stock" ? (
                 <span className="text-emerald-600">
                   {t("product.inStock")}
                 </span>
