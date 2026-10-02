@@ -117,20 +117,52 @@ async function newestVisibleYerba(take: number): Promise<HomeCarouselProduct[]> 
   });
 }
 
-/** New arrivals: newest yerba mate, then bestsellers and mate gourds. */
+const NEW_ARRIVAL_DAYS = 60;
+
+/** Products added recently, in any category. Newest first. */
+async function newestAddedProducts(take: number): Promise<HomeCarouselProduct[]> {
+  const since = new Date(Date.now() - NEW_ARRIVAL_DAYS * 24 * 60 * 60 * 1000);
+  return prisma.product.findMany({
+    where: {
+      ...STORE_VISIBLE,
+      createdAt: { gte: since },
+    },
+    orderBy: { createdAt: "desc" },
+    take,
+    include: CAROUSEL_INCLUDE,
+  });
+}
+
+/** New arrivals: products added in the last 60 days, then bestsellers to fill the row. */
 export async function getHomeNewArrivalsProducts(
   limit = 8,
 ): Promise<HomeCarouselProduct[]> {
+  const newest = await newestAddedProducts(limit);
+  if (newest.length >= limit) return newest;
+
   const yerbaSlots = Math.ceil(limit * 0.55);
   const gourdSlots = limit - yerbaSlots;
-
-  const [newest, yerba, gourds] = await Promise.all([
-    newestVisibleYerba(2),
+  const [yerba, gourds] = await Promise.all([
     yerbaMateBestsellers(yerbaSlots),
     mateGourdsForCarousel(gourdSlots),
   ]);
 
   return dedupeProducts([...newest, ...yerba, ...gourds]).slice(0, limit);
+}
+
+/** Drinks carousel, in the order set on the product. */
+export async function getHomeDrinksProducts(
+  limit = 8,
+): Promise<HomeCarouselProduct[]> {
+  return prisma.product.findMany({
+    where: {
+      ...STORE_VISIBLE,
+      category: categorySlugIncludingAdminDuplicates("drinks"),
+    },
+    orderBy: [{ catalogSortOrder: "asc" }, { createdAt: "desc" }],
+    take: limit,
+    include: CAROUSEL_INCLUDE,
+  });
 }
 
 /** Yerba mate carousel: newest products first, then bestsellers. */

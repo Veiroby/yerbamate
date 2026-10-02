@@ -13,6 +13,7 @@ import { productListingImageAlt } from "@/lib/seo-yerba";
 export type CarouselProduct = {
   title: string;
   price: string;
+  bottleDeposit?: number;
   href: string;
   imageUrl?: string | null;
   imageAlt?: string;
@@ -122,7 +123,14 @@ function CarouselSectionCard({ p }: { p: CarouselProduct }) {
             <p className="mt-1 text-sm text-gray-500">{p.weight}</p>
           ) : null}
           <div className="mt-auto flex items-end justify-between pt-2">
-            <p className="text-base font-semibold text-black sm:text-lg">{p.price}</p>
+            <div>
+              <p className="text-base font-semibold text-black sm:text-lg">{p.price}</p>
+              {Number(p.bottleDeposit) > 0 && (
+                <p className="text-[11px] leading-tight text-gray-500">
+                  + €{Number(p.bottleDeposit).toFixed(2)} {t("product.bottleDeposit")}
+                </p>
+              )}
+            </div>
             <div className="flex items-center gap-1 text-xs font-semibold">
               {stockBadge === "in_stock" ? (
                 <span className="text-emerald-600">

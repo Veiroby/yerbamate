@@ -19,6 +19,7 @@ import type { Locale } from "@/lib/i18n";
 import { getTranslations, createT, isValidLocale } from "@/lib/i18n";
 import { productListingImageAlt } from "@/lib/seo-yerba";
 import {
+  getHomeDrinksProducts,
   getHomeNewArrivalsProducts,
   getHomeYerbaMateProducts,
   type HomeCarouselProduct,
@@ -43,6 +44,7 @@ function toCarouselProduct(
   return {
     title: p.name,
     price: `€${Number(p.price).toFixed(2)}`,
+    bottleDeposit: p.bottleDeposit != null ? Number(p.bottleDeposit) : 0,
     href: `/${locale}/products/${encodeURIComponent(p.slug)}`,
     imageUrl: p.images[0]?.url ?? null,
     imageAlt: productListingImageAlt(loc, p.category?.slug ?? null, p.name, p.images[0]?.altText ?? null),
@@ -103,7 +105,7 @@ export default async function HomePage({ params }: Props) {
   const { locale: localeParam } = await params;
   const locale = (localeParam === "lv" || localeParam === "en" ? localeParam : "lv") as Locale;
 
-  const [user, heroStats, translations, testimonials, newArrivalsProducts, topSellingProducts] =
+  const [user, heroStats, translations, testimonials, newArrivalsProducts, topSellingProducts, drinksProducts] =
     await Promise.all([
     getCurrentUser(),
     (async () => {
@@ -144,6 +146,7 @@ export default async function HomePage({ params }: Props) {
     }),
     getHomeNewArrivalsProducts(8),
     getHomeYerbaMateProducts(8),
+    getHomeDrinksProducts(8),
   ]);
   const t = createT(translations);
 
@@ -151,6 +154,9 @@ export default async function HomePage({ params }: Props) {
     toCarouselProduct(p, locale)
   );
   const topSellingCarousel: CarouselProduct[] = topSellingProducts.map((p) =>
+    toCarouselProduct(p, locale)
+  );
+  const drinksCarousel: CarouselProduct[] = drinksProducts.map((p) =>
     toCarouselProduct(p, locale)
   );
 
@@ -177,6 +183,12 @@ export default async function HomePage({ params }: Props) {
           titleKey="home.topSelling"
           descriptionKey="home.topSellingDescription"
           products={topSellingCarousel}
+        />
+
+        <ProductCarouselSection
+          titleKey="home.drinks"
+          descriptionKey="home.drinksDescription"
+          products={drinksCarousel}
         />
 
         <MateGuideSection locale={locale} />
