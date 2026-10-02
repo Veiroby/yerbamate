@@ -11,6 +11,7 @@ import {
   sendOrderShippedEmail,
   sendUnpaidOrderReminderEmail,
 } from "@/lib/email";
+import { deductInventoryForFulfilledOrder } from "@/lib/shelf-stock";
 
 export async function updateOrderStatus(orderId: string, formData: FormData) {
   const user = await requireAdminWrite();
@@ -41,6 +42,10 @@ export async function updateOrderStatus(orderId: string, formData: FormData) {
     from: existing.status,
     to: status,
   });
+
+  if (transitionToShipped) {
+    await deductInventoryForFulfilledOrder(orderId);
+  }
 
   if (
     status === "PAID" &&

@@ -24,21 +24,25 @@ import {
   getHomeYerbaMateProducts,
   type HomeCarouselProduct,
 } from "@/lib/home-carousel-products";
+import { getInventoryStockBySlug, storefrontOnHand } from "@/lib/shelf-stock";
 
 export const dynamic = "force-dynamic";
 
-function productQuantityLeft(p: {
-  variants: { inventoryItems: { quantity: number }[] }[];
-}): number {
-  return p.variants.reduce(
+function productQuantityLeft(
+  p: HomeCarouselProduct,
+  stockBySlug: Map<string, number>,
+): number {
+  const local = p.variants.reduce(
     (sum, v) => sum + v.inventoryItems.reduce((s, i) => s + i.quantity, 0),
     0,
   );
+  return storefrontOnHand(stockBySlug, p.slug, p.stockLocation, local);
 }
 
 function toCarouselProduct(
   p: HomeCarouselProduct,
-  locale: Locale
+  locale: Locale,
+  stockBySlug: Map<string, number>,
 ): CarouselProduct {
   const loc: "lv" | "en" = locale === "en" ? "en" : "lv";
   return {
@@ -52,7 +56,7 @@ function toCarouselProduct(
     weight: p.weight ?? null,
     productId: p.id,
     stockLocation: p.stockLocation ?? null,
-    quantityLeft: productQuantityLeft(p),
+    quantityLeft: productQuantityLeft(p, stockBySlug),
   };
 }
 
@@ -105,7 +109,7 @@ export default async function HomePage({ params }: Props) {
   const { locale: localeParam } = await params;
   const locale = (localeParam === "lv" || localeParam === "en" ? localeParam : "lv") as Locale;
 
-  const [user, heroStats, translations, testimonials, newArrivalsProducts, topSellingProducts, drinksProducts] =
+  const [user, heroStats, translations, testimonials, newArrivalsProducts, topSellingProducts, drinksProducts, stockBySlug] =
     await Promise.all([
     getCurrentUser(),
     (async () => {
@@ -147,17 +151,18 @@ export default async function HomePage({ params }: Props) {
     getHomeNewArrivalsProducts(8),
     getHomeYerbaMateProducts(8),
     getHomeDrinksProducts(8),
+    getInventoryStockBySlug(),
   ]);
   const t = createT(translations);
 
   const newArrivalsCarousel: CarouselProduct[] = newArrivalsProducts.map((p) =>
-    toCarouselProduct(p, locale)
+    toCarouselProduct(p, locale, stockBySlug)
   );
   const topSellingCarousel: CarouselProduct[] = topSellingProducts.map((p) =>
-    toCarouselProduct(p, locale)
+    toCarouselProduct(p, locale, stockBySlug)
   );
   const drinksCarousel: CarouselProduct[] = drinksProducts.map((p) =>
-    toCarouselProduct(p, locale)
+    toCarouselProduct(p, locale, stockBySlug)
   );
 
   return (

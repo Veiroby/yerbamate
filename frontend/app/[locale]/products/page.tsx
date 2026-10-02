@@ -13,6 +13,7 @@ import {
   mateGourdsCategoryWhere,
 } from "@/lib/category-filters";
 import { sortCatalogProducts } from "@/lib/catalog-sort";
+import { getInventoryStockBySlug, onHandFromVariants } from "@/lib/shelf-stock";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -166,7 +167,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
       break;
   }
 
-  const [products, categories, allProducts, translations] = await Promise.all([
+  const [products, categories, allProducts, translations, stockBySlug] = await Promise.all([
     prisma.product.findMany({
       where,
       orderBy,
@@ -185,6 +186,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
       select: { brand: true, origin: true, price: true },
     }),
     getTranslations(locale),
+    getInventoryStockBySlug(),
   ]);
   const t = createT(translations);
 
@@ -208,11 +210,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   const categoryLabel = category && CATEGORY_KEYS[category] ? t(CATEGORY_KEYS[category]) : category ?? null;
 
   const productCardsUnsorted = products.map((p) => {
-    const quantityLeft = p.variants.reduce(
-      (sum, v) =>
-        sum + v.inventoryItems.reduce((s, i) => s + i.quantity, 0),
-      0,
-    );
+    const quantityLeft = onHandFromVariants(stockBySlug, p);
     const location = p.stockLocation ?? "instock";
     const stockStatus =
       location === "warehouse"

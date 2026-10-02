@@ -5,6 +5,7 @@ import {
   mateGourdsCategoryWhere,
 } from "@/lib/category-filters";
 import { sortCatalogProducts } from "@/lib/catalog-sort";
+import { getInventoryStockBySlug, storefrontOnHand } from "@/lib/shelf-stock";
 
 const CAROUSEL_INCLUDE = {
   category: { select: { slug: true } },
@@ -31,17 +32,24 @@ const STORE_VISIBLE: Prisma.ProductWhereInput = {
   isDraft: false,
 };
 
-function quantityLeft(p: HomeCarouselProduct): number {
+function localQuantity(p: HomeCarouselProduct): number {
   return p.variants.reduce(
     (sum, v) => sum + v.inventoryItems.reduce((s, i) => s + i.quantity, 0),
     0,
   );
 }
 
-function sortHomeProducts(products: HomeCarouselProduct[]): HomeCarouselProduct[] {
+function quantityLeft(p: HomeCarouselProduct, stockBySlug: Map<string, number>): number {
+  return storefrontOnHand(stockBySlug, p.slug, p.stockLocation, localQuantity(p));
+}
+
+function sortHomeProducts(
+  products: HomeCarouselProduct[],
+  stockBySlug: Map<string, number>,
+): HomeCarouselProduct[] {
   const sortable = products.map((p) => ({
     product: p,
-    quantityLeft: quantityLeft(p),
+    quantityLeft: quantityLeft(p, stockBySlug),
     stockLocation: p.stockLocation,
     isBestseller: p.isBestseller,
     bestsellerRank: p.bestsellerRank,
@@ -93,7 +101,10 @@ async function yerbaMateBestsellers(take: number): Promise<HomeCarouselProduct[]
   return dedupeProducts([...flagged, ...byName]).slice(0, take);
 }
 
-async function mateGourdsForCarousel(take: number): Promise<HomeCarouselProduct[]> {
+async function mateGourdsForCarousel(
+  take: number,
+  stockBySlug: Map<string, number>,
+): Promise<HomeCarouselProduct[]> {
   return prisma.product.findMany({
     where: {
       ...STORE_VISIBLE,
@@ -102,7 +113,7 @@ async function mateGourdsForCarousel(take: number): Promise<HomeCarouselProduct[
     orderBy: { createdAt: "desc" },
     take: take * 2,
     include: CAROUSEL_INCLUDE,
-  }).then((rows) => sortHomeProducts(rows).slice(0, take));
+  }).then((rows) => sortHomeProducts(rows, stockBySlug).slice(0, take));
 }
 
 async function newestVisibleYerba(take: number): Promise<HomeCarouselProduct[]> {
@@ -137,6 +148,7 @@ async function newestAddedProducts(take: number): Promise<HomeCarouselProduct[]>
 export async function getHomeNewArrivalsProducts(
   limit = 8,
 ): Promise<HomeCarouselProduct[]> {
+  const stockBySlug = await getInventoryStockBySlug();
   const newest = await newestAddedProducts(limit);
   if (newest.length >= limit) return newest;
 
@@ -144,7 +156,7 @@ export async function getHomeNewArrivalsProducts(
   const gourdSlots = limit - yerbaSlots;
   const [yerba, gourds] = await Promise.all([
     yerbaMateBestsellers(yerbaSlots),
-    mateGourdsForCarousel(gourdSlots),
+    mateGourdsForCarousel(gourdSlots, stockBySlug),
   ]);
 
   return dedupeProducts([...newest, ...yerba, ...gourds]).slice(0, limit);
@@ -169,6 +181,7 @@ export async function getHomeDrinksProducts(
 export async function getHomeYerbaMateProducts(
   limit = 8,
 ): Promise<HomeCarouselProduct[]> {
+  const stockBySlug = await getInventoryStockBySlug();
   const newest = await newestVisibleYerba(2);
   const products = await prisma.product.findMany({
     where: {
@@ -184,7 +197,7 @@ export async function getHomeYerbaMateProducts(
     include: CAROUSEL_INCLUDE,
   });
 
-  const flagged = sortHomeProducts(products.filter((p) => p.isBestseller));
+  const flagged = sortHomeProducts(products.filter((p) => p.isBestseller), stockBySlug);
   const rest =
     flagged.length >= limit
       ? flagged
@@ -194,6 +207,7 @@ export async function getHomeYerbaMateProducts(
             ...(await yerbaMateBestsellers(limit)),
             ...products,
           ]),
+          stockBySlug,
         );
 
   return dedupeProducts([...newest, ...rest]).slice(0, limit);

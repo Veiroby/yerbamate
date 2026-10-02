@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { writeAuditLog } from "@/lib/admin-audit";
 import { getOrCreateDpdLabelForOrder, type DpdLabelResult } from "@/lib/dpd-label-service";
 import { isEmailConfigured, sendOrderShippedEmail } from "@/lib/email";
+import { deductInventoryForFulfilledOrder } from "@/lib/shelf-stock";
 
 export type ShipOrderResult =
   | (Extract<DpdLabelResult, { ok: true }> & { status: string; alreadyShipped: boolean })
@@ -41,6 +42,8 @@ export async function shipOrderWithDpdLabel(
         via: "agent",
       });
     }
+
+    await deductInventoryForFulfilledOrder(orderId);
 
     if (
       isEmailConfigured() &&

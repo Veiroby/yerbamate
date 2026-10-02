@@ -7,6 +7,7 @@ import { SiteHeader } from "@/app/components/site-header";
 import { Footer } from "@/app/components/landing/Footer";
 import { isValidLocale, getTranslations, createT } from "@/lib/i18n";
 import { sortCatalogProducts } from "@/lib/catalog-sort";
+import { getInventoryStockBySlug, onHandFromVariants } from "@/lib/shelf-stock";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +37,7 @@ export default async function DrinksPage({ params }: Props) {
   const { locale } = await params;
   if (!isValidLocale(locale)) return null;
 
-  const [user, translations, products] = await Promise.all([
+  const [user, translations, products, stockBySlug] = await Promise.all([
     getCurrentUser(),
     getTranslations(locale),
     prisma.product.findMany({
@@ -53,16 +54,14 @@ export default async function DrinksPage({ params }: Props) {
         variants: { include: { inventoryItems: true } },
       },
     }),
+    getInventoryStockBySlug(),
   ]);
 
   const t = createT(translations);
   const title = t("products.categoryDrinks");
 
   const productCardsUnsorted = products.map((p) => {
-    const quantityLeft = p.variants.reduce(
-      (sum, v) => sum + v.inventoryItems.reduce((s, i) => s + i.quantity, 0),
-      0,
-    );
+    const quantityLeft = onHandFromVariants(stockBySlug, p);
     const location = p.stockLocation ?? "instock";
     const img = p.images[0];
     const localizedDescription =

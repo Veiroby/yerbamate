@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { chargedUnitPrice } from "@/lib/product-price";
+import { getInventoryStockBySlug, onHandFromVariants } from "@/lib/shelf-stock";
 import { getCurrentUser } from "@/lib/auth";
 import { hasAdminAccess } from "@/lib/admin-access";
 import { SiteHeader } from "@/app/components/site-header";
@@ -126,7 +127,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const slug = decodeURIComponent(rawSlug).trim();
   const user = await getCurrentUser();
 
-  const [product, bundleOffers, reviews, translations] = await Promise.all([
+  const [product, bundleOffers, reviews, translations, stockBySlug] = await Promise.all([
     prisma.product.findUnique({
       where: { slug },
       include: {
@@ -155,6 +156,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       },
     }),
     getTranslations(locale),
+    getInventoryStockBySlug(),
   ]);
 
   const t = createT(translations);
@@ -163,11 +165,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  const quantityLeft = product.variants.reduce(
-    (sum, v) =>
-      sum + v.inventoryItems.reduce((s, i) => s + i.quantity, 0),
-    0,
-  );
+  const quantityLeft = onHandFromVariants(stockBySlug, product);
   const stockLocation = product.stockLocation ?? "instock";
   const soldOut = stockLocation !== "warehouse" && quantityLeft <= 0;
   const stockLabel =

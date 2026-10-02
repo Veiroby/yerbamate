@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { getInventoryStockBySlug, onHandFromVariants } from "@/lib/shelf-stock";
 
 export const dynamic = "force-dynamic";
 
@@ -52,12 +53,10 @@ export async function GET() {
     orderBy: { updatedAt: "desc" },
   });
 
+  const stockBySlug = await getInventoryStockBySlug();
   const itemsXml = products
     .map((product) => {
-      const quantityLeft = product.variants.reduce(
-        (sum, v) => sum + v.inventoryItems.reduce((acc, i) => acc + i.quantity, 0),
-        0,
-      );
+      const quantityLeft = onHandFromVariants(stockBySlug, product);
       const availability = availabilityFromStock(product.stockLocation, quantityLeft);
       const imageUrl = toAbsoluteUrl(
         product.images[0]?.url ?? "/images/placeholder-product.png",
