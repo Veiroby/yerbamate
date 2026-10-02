@@ -149,7 +149,7 @@ export async function getHomeNewArrivalsProducts(
   limit = 8,
 ): Promise<HomeCarouselProduct[]> {
   const stockBySlug = await getInventoryStockBySlug();
-  const newest = await newestAddedProducts(limit);
+  const newest = sortHomeProducts(await newestAddedProducts(Math.max(limit * 4, 24)), stockBySlug).slice(0, limit);
   if (newest.length >= limit) return newest;
 
   const yerbaSlots = Math.ceil(limit * 0.55);
@@ -159,7 +159,7 @@ export async function getHomeNewArrivalsProducts(
     mateGourdsForCarousel(gourdSlots, stockBySlug),
   ]);
 
-  return dedupeProducts([...newest, ...yerba, ...gourds]).slice(0, limit);
+  return sortHomeProducts(dedupeProducts([...newest, ...yerba, ...gourds]), stockBySlug).slice(0, limit);
 }
 
 /** Drinks carousel, in the order set on the product. */
@@ -210,5 +210,5 @@ export async function getHomeYerbaMateProducts(
           stockBySlug,
         );
 
-  return dedupeProducts([...newest, ...rest]).slice(0, limit);
+  return sortHomeProducts(dedupeProducts([...newest, ...rest]), stockBySlug).slice(0, limit);
 }

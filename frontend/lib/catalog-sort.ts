@@ -1,4 +1,4 @@
-/** Shared storefront catalog ordering: bestsellers first, sold-out last. */
+/** Shared storefront catalog ordering: in stock first, warehouse next, sold-out last. */
 
 export function isSoldOutForCatalog(
   stockLocation: string | null | undefined,
@@ -23,6 +23,10 @@ export function compareCatalogProducts(
   const soldA = isSoldOutForCatalog(a.stockLocation, a.quantityLeft) ? 1 : 0;
   const soldB = isSoldOutForCatalog(b.stockLocation, b.quantityLeft) ? 1 : 0;
   if (soldA !== soldB) return soldA - soldB;
+
+  const warehouseA = (a.stockLocation ?? "instock") === "warehouse" ? 1 : 0;
+  const warehouseB = (b.stockLocation ?? "instock") === "warehouse" ? 1 : 0;
+  if (warehouseA !== warehouseB) return warehouseA - warehouseB;
 
   const bestA = a.isBestseller ? 0 : 1;
   const bestB = b.isBestseller ? 0 : 1;
