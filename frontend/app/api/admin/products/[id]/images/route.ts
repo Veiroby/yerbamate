@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache";
+import { revalidateStorefront } from "@/lib/revalidate-storefront";
 import { NextResponse } from "next/server";
 import { adminApiGuard } from "@/lib/admin-api-guard";
 import { writeAuditLog } from "@/lib/admin-audit";
@@ -27,6 +28,7 @@ export async function POST(req: Request, context: { params: Promise<{ id: string
   const result = await appendProductImages(product.id, product.name, filesFromFormData(formData));
   revalidatePath(`/admin/products/${product.id}/edit`);
   revalidatePath("/admin/products");
+  revalidateStorefront();
 
   if (!result.ok) {
     return back(req, `/admin/products/${product.id}/edit?error=${result.code}`);

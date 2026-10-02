@@ -8,12 +8,13 @@ import { toast } from "sonner";
 import {
   bulkUpdateProducts,
   deleteProductAction,
+  setProductActive,
   setProductArchived,
   type BulkProductUpdate,
 } from "./actions";
 import { DeleteProductButton } from "./delete-product-button";
 
-type Category = { id: string; name: string };
+type Category = { id: string; label: string };
 
 type ProductRow = {
   id: string;
@@ -72,6 +73,7 @@ export function AdminProductsEditor({
   const searchParams = useSearchParams();
   const [isSaving, startTransition] = useTransition();
   const [archivePending, setArchivePending] = useState<string | null>(null);
+  const [activeOverride, setActiveOverride] = useState<Record<string, boolean>>({});
 
   const initialQ = searchParams.get("q") ?? "";
   const [q, setQ] = useState(initialQ);
@@ -85,7 +87,12 @@ export function AdminProductsEditor({
       const raw = sessionStorage.getItem(DIRTY_KEY);
       if (!raw) return;
       const parsed = JSON.parse(raw) as DirtyMap;
-      if (parsed && typeof parsed === "object") setDirty(parsed);
+      if (parsed && typeof parsed === "object") {
+        for (const entry of Object.values(parsed)) {
+          delete entry.active;
+        }
+        setDirty(parsed);
+      }
     } catch {
       // ignore
     }
@@ -162,12 +169,31 @@ export function AdminProductsEditor({
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
-  const isProductActive = (product: ProductRow) => dirty[product.id]?.active ?? product.active;
+  const isProductActive = (product: ProductRow) =>
+    activeOverride[product.id] ?? product.active;
 
   const activeProducts =
     listView === "archived" ? [] : products.filter((product) => isProductActive(product));
   const inactiveProducts =
     listView === "archived" ? [] : products.filter((product) => !isProductActive(product));
+
+  const handleActive = (productId: string, active: boolean) => {
+    setActiveOverride((prev) => ({ ...prev, [productId]: active }));
+    startTransition(async () => {
+      try {
+        await setProductActive(productId, active);
+        toast.success(active ? "Product is on the website" : "Product hidden from the website");
+        router.refresh();
+      } catch {
+        setActiveOverride((prev) => {
+          const next = { ...prev };
+          delete next[productId];
+          return next;
+        });
+        toast.error("Could not update the product");
+      }
+    });
+  };
 
   const handleArchive = (productId: string, archived: boolean) => {
     setArchivePending(productId);
@@ -214,12 +240,6 @@ export function AdminProductsEditor({
               </Link>
             </div>
             <nav className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-zinc-500">
-              <a href="#admin-product-categories" className="font-medium text-emerald-700 hover:underline">
-                Categories
-              </a>
-              <span aria-hidden className="text-zinc-300">
-                ·
-              </span>
               <a href="#admin-product-add" className="font-medium text-emerald-700 hover:underline">
                 Add product
               </a>
@@ -253,7 +273,7 @@ export function AdminProductsEditor({
 
         <p className="text-xs leading-relaxed text-zinc-500">
           {listView === "active"
-            ? "Active products are on the store. Inactive products stay in this list but are hidden from customers. Click a row to edit, then save."
+            ? "Active products are on the website. Turning a product off hides it immediately. Other edits stay here until you save."
             : "Archived products are hidden from the storefront. Restore to edit them in the catalog again."}
         </p>
       </div>
@@ -287,7 +307,17 @@ export function AdminProductsEditor({
             | "warehouse";
           const displayQty = d.quantity ?? totalStock(product.variants);
           const displayPrice = d.price ?? product.price;
-          const displayActive = d.active ?? product.active;
+          const displayActive = isProductActive(product);
+          const categoryOptions =
+            product.categoryId && !categories.some((category) => category.id === product.categoryId)
+              ? [
+                  {
+                    id: product.categoryId,
+                    label: product.category?.name ?? "Current category",
+                  },
+                  ...categories,
+                ]
+              : categories;
           const expanded = expandedId === product.id;
           const stockLabel =
             product.stockLocation === "warehouse"
@@ -424,7 +454,7 @@ export function AdminProductsEditor({
                       </select>
                     </div>
 
-                    {categories.length > 0 && (
+                    {categoryOptions.length > 0 && (
                       <div className="rounded-xl bg-white px-3 py-2 shadow-sm ring-1 ring-zinc-100">
                         <p className="mb-1 text-xs font-medium text-zinc-700">Category</p>
                         <select
@@ -435,9 +465,9 @@ export function AdminProductsEditor({
                           className="w-full rounded-lg border border-zinc-300 px-2 py-1 text-xs"
                         >
                           <option value="">No category</option>
-                          {categories.map((c) => (
+                          {categoryOptions.map((c) => (
                             <option key={c.id} value={c.id}>
-                              {c.name}
+                              {c.label}
                             </option>
                           ))}
                         </select>
@@ -524,10 +554,10 @@ export function AdminProductsEditor({
                         <input
                           type="checkbox"
                           checked={Boolean(displayActive)}
-                          onChange={(e) => setField(product.id, { active: e.target.checked })}
+                          onChange={(e) => handleActive(product.id, e.target.checked)}
                           className="h-4 w-4 rounded border-zinc-300"
                         />
-                        Active on storefront
+                        Active on the website
                       </label>
                       <Link
                         href={`/admin/products/${product.id}/edit`}

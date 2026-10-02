@@ -14,6 +14,7 @@ export type ProductCardData = {
   slug: string;
   name: string;
   price: number;
+  bottleDeposit?: number | null;
   currency: string;
   imageUrl: string | null;
   imageAlt: string | null;
@@ -134,9 +135,16 @@ export function ProductCard({ product }: Props) {
             {product.weight ?? "—"}
           </p>
           <div className="mt-auto flex items-end justify-between pt-2">
-            <p className="text-base font-semibold text-black">
-              {product.currency} {product.price.toFixed(2)}
-            </p>
+            <div>
+              <p className="text-base font-semibold text-black">
+                {product.currency} {product.price.toFixed(2)}
+              </p>
+              {Number(product.bottleDeposit) > 0 && (
+                <p className="text-[11px] leading-tight text-gray-500">
+                  + {product.currency} {Number(product.bottleDeposit).toFixed(2)} {t("product.bottleDeposit")}
+                </p>
+              )}
+            </div>
             <div className="flex items-center gap-1 text-[10px] font-semibold sm:text-xs">
               {stockStatus === "sold_out" ? (
                 <span className="text-gray-500">{t("product.soldOut")}</span>

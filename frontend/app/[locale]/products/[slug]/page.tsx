@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
+import { chargedUnitPrice } from "@/lib/product-price";
 import { getCurrentUser } from "@/lib/auth";
 import { hasAdminAccess } from "@/lib/admin-access";
 import { SiteHeader } from "@/app/components/site-header";
@@ -177,6 +178,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
         : "get_in_5_7_days";
   const primaryImage = product.images[0];
   const price = Number(product.price);
+  const bottleDeposit = product.bottleDeposit != null ? Number(product.bottleDeposit) : 0;
+  const payPrice = chargedUnitPrice(price, bottleDeposit);
 
   const localizedDescription =
     locale === "lv"
@@ -291,7 +294,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {product.name}
             </h1>
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <p className="text-xl font-semibold text-black">{product.currency} {price.toFixed(2)}</p>
+              <div>
+                <p className="text-xl font-semibold text-black">{product.currency} {price.toFixed(2)}</p>
+                {bottleDeposit > 0 && (
+                  <p className="text-sm text-gray-500">
+                    + {product.currency} {bottleDeposit.toFixed(2)} {t("product.bottleDeposit")}
+                  </p>
+                )}
+              </div>
               {!soldOut && (
                 <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-600">
                   {stockLabel === "in_stock" ? t("product.inStock") : t("product.getIn57Days")}
@@ -341,7 +351,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 productId={product.id}
                 productName={product.name}
                 quantityLeft={quantityLeft}
-                price={price}
+                price={payPrice}
                 currency={product.currency}
               />
             )}

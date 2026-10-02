@@ -9,6 +9,7 @@ const categories: { path: string; labelKey: string }[] = [
   { path: "products?category=mate-gourds", labelKey: "landing.mateGourds" },
   { path: "products", labelKey: "landing.blends" },
   { path: "products", labelKey: "landing.accessories" },
+  { path: "drinks", labelKey: "products.categoryDrinks" },
 ];
 
 export function BrowseByCategory({ locale }: { locale: Locale }) {

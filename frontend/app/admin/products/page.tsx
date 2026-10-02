@@ -1,11 +1,7 @@
-import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { requireAdminWrite } from "@/lib/admin-auth";
-import { writeAuditLog } from "@/lib/admin-audit";
 import { AdminProductsEditor } from "./AdminProductsEditor";
 import { ComputerImageFields } from "./computer-image-fields";
-import { slugify } from "@/lib/slugify";
+import { storefrontCategoryChoices } from "@/lib/store-categories";
 
 async function deleteProductAction(formData: FormData) {
   // no-op: delete is handled by `app/admin/products/actions.ts`
@@ -16,7 +12,16 @@ async function deleteProductAction(formData: FormData) {
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; view?: string; error?: string; saved?: string }>;
+  searchParams: Promise<{
+    q?: string;
+    view?: string;
+    error?: string;
+    saved?: string;
+    name?: string;
+    price?: string;
+    barcode?: string;
+    quantity?: string;
+  }>;
 }) {
   const categoryDelegate =
     "category" in prisma && typeof (prisma as { category?: { findMany: (args: unknown) => Promise<unknown[]> } }).category?.findMany === "function"
@@ -26,6 +31,10 @@ export default async function AdminProductsPage({
   const sp = await searchParams;
   const query = sp?.q?.toString().trim() || "";
   const archivedView = sp?.view === "archived";
+  const prefillName = sp?.name?.toString() ?? "";
+  const prefillPrice = sp?.price?.toString() ?? "";
+  const prefillBarcode = sp?.barcode?.toString() ?? "";
+  const prefillQuantity = sp?.quantity?.toString() ?? "";
 
   const [products, categories] = await Promise.all([
     prisma.product.findMany({
@@ -53,76 +62,17 @@ export default async function AdminProductsPage({
       : Promise.resolve([]),
   ]);
 
+  const categoryChoices = storefrontCategoryChoices(categories);
+  const defaultCategoryId =
+    categoryChoices.find((category) => category.label === "Yerba Mate")?.id ??
+    categoryChoices[0]?.id ??
+    "";
+
   return (
     <div className="space-y-6">
-      <section
-        id="admin-product-categories"
-        className="scroll-mt-24 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm"
-      >
-        <h2 className="mb-3 text-sm font-semibold text-zinc-900">
-          Categories
-        </h2>
-        {!categoryDelegate ? (
-          <p className="text-sm text-zinc-500">
-            Restart the dev server (npm run dev) to enable categories.
-          </p>
-        ) : (
-          <>
-            <form
-              action={async (formData) => {
-                "use server";
-                const user = await requireAdminWrite();
-                const name = formData.get("name")?.toString().trim();
-                if (!name) return;
-                const slug = slugify(name) || "category";
-                const existing = await prisma.category.findUnique({
-                  where: { slug },
-                });
-                const finalSlug = existing ? `${slug}-${Date.now().toString(36)}` : slug;
-                const cat = await prisma.category.create({
-                  data: { name, slug: finalSlug },
-                });
-                await writeAuditLog(user.id, "category.created", "Category", cat.id, {
-                  name,
-                  slug: finalSlug,
-                });
-                revalidatePath("/admin/products");
-                redirect("/admin/products?saved=1");
-              }}
-              className="mb-4 flex flex-wrap items-end gap-3"
-            >
-              <label className="flex flex-col gap-1 text-xs text-zinc-600">
-                New category
-                <input
-                  name="name"
-                  placeholder="e.g. Yerba Mate"
-                  className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
-                />
-              </label>
-              <button
-                type="submit"
-                className="rounded-full bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
-              >
-                Add category
-              </button>
-            </form>
-            {categories.length > 0 ? (
-              <ul className="flex flex-wrap gap-2 text-sm text-zinc-600">
-                {categories.map((c) => (
-                  <li
-                    key={c.id}
-                    className="rounded-full bg-zinc-100 px-3 py-1"
-                  >
-                    {c.name}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-zinc-500">No categories yet. Add one above.</p>
-            )}
-          </>
-        )}
-      </section>
+      <p className="text-sm text-zinc-600">
+        This is the catalog customers see on the website. Price, stock, photos, and active status update the shop as soon as you save.
+      </p>
 
       <section
         id="admin-product-add"
@@ -150,6 +100,7 @@ export default async function AdminProductsPage({
           <input
             name="name"
             placeholder="Name"
+            defaultValue={prefillName}
             className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
             required
           />
@@ -164,6 +115,7 @@ export default async function AdminProductsPage({
             placeholder="Price"
             type="number"
             step="0.01"
+            defaultValue={prefillPrice}
             className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
             required
           />
@@ -175,6 +127,7 @@ export default async function AdminProductsPage({
           <input
             name="barcode"
             placeholder="Barcode (optional, for scanning)"
+            defaultValue={prefillBarcode}
             className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
           />
           <input
@@ -197,19 +150,21 @@ export default async function AdminProductsPage({
             placeholder="Quantity (stock)"
             type="number"
             min={0}
+            defaultValue={prefillQuantity}
             className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
           />
-          {categoryDelegate && (
+          {categoryChoices.length > 0 && (
             <label className="flex flex-col gap-1 text-xs text-zinc-600 md:col-span-2">
               Category
               <select
                 name="categoryId"
+                defaultValue={defaultCategoryId}
+                required
                 className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
               >
-                <option value="">No category</option>
-                {categories.map((c) => (
+                {categoryChoices.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name}
+                    {c.label}
                   </option>
                 ))}
               </select>
@@ -257,7 +212,7 @@ export default async function AdminProductsPage({
             images: p.images,
             variants: p.variants,
           }))}
-          categories={categories}
+          categories={categoryChoices}
         />
       </section>
     </div>

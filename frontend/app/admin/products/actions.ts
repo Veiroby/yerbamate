@@ -6,6 +6,7 @@ import type { Prisma } from "@/app/generated/prisma/client";
 import { prisma } from "@/lib/db";
 import { requireAdminWrite } from "@/lib/admin-auth";
 import { writeAuditLog } from "@/lib/admin-audit";
+import { revalidateStorefront } from "@/lib/revalidate-storefront";
 import { setProductQuantityWithLocation } from "./product-quantity";
 
 export type BulkProductUpdate = {
@@ -95,6 +96,21 @@ export async function bulkUpdateProducts(updates: BulkProductUpdate[]) {
 
   revalidatePath("/admin/products");
   revalidatePath("/admin/inventory");
+  revalidateStorefront();
+}
+
+export async function setProductActive(productId: string, active: boolean) {
+  const user = await requireAdminWrite();
+  await prisma.product.update({
+    where: { id: productId },
+    data: { active },
+  });
+  await writeAuditLog(user.id, active ? "product.activated" : "product.deactivated", "Product", productId, {
+    active,
+  });
+  revalidatePath("/admin/products");
+  revalidatePath("/admin/inventory");
+  revalidateStorefront();
 }
 
 export async function setProductArchived(productId: string, archived: boolean) {
@@ -109,6 +125,7 @@ export async function setProductArchived(productId: string, archived: boolean) {
   revalidatePath("/admin/products");
   revalidatePath("/admin/inventory");
   revalidatePath("/admin");
+  revalidateStorefront();
 }
 
 export async function deleteProductAction(formData: FormData) {
@@ -138,5 +155,6 @@ export async function deleteProductAction(formData: FormData) {
 
   revalidatePath("/admin/products");
   revalidatePath("/admin/inventory");
+  revalidateStorefront();
   redirect("/admin/products?saved=1");
 }

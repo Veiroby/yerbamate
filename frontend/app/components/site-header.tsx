@@ -18,6 +18,7 @@ const navLinkKeys = [
   { path: "yerba-mate", labelKey: "products.categoryYerbaMate" },
   { path: "mate-gourds", labelKey: "products.categoryMateGourds" },
   { path: "accessories", labelKey: "landing.accessories" },
+  { path: "drinks", labelKey: "products.categoryDrinks" },
   { path: "about", labelKey: "nav.about" },
   { path: "blog", labelKey: "nav.blog" },
   { path: "contact", labelKey: "nav.contact" },
@@ -98,7 +99,7 @@ export function SiteHeader({ user, locale }: SiteHeaderProps) {
   const switchLocalePath = pathname.replace(new RegExp(`^/${locale}(/|$)`), `/${otherLocale}$1`);
 
   const mobileCategoryLinks = navLinkKeys.filter((x) =>
-    ["products", "yerba-mate", "mate-gourds", "accessories"].includes(x.path),
+    ["products", "yerba-mate", "mate-gourds", "accessories", "drinks"].includes(x.path),
   );
 
   return (

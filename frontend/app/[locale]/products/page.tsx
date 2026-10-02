@@ -20,6 +20,7 @@ export const dynamic = "force-dynamic";
 const CATEGORY_KEYS: Record<string, string> = {
   "yerba-mate": "products.categoryYerbaMate",
   "mate-gourds": "products.categoryMateGourds",
+  drinks: "products.categoryDrinks",
 };
 
 type Props = {
@@ -196,7 +197,9 @@ export default async function ProductsPage({ params, searchParams }: Props) {
   };
 
   const filterOptions = {
-    categories,
+    categories: categories.map((cat) =>
+      cat.slug === "drinks" ? { ...cat, name: t("products.categoryDrinks") } : cat,
+    ),
     brands: brands.sort(),
     origins: origins.sort(),
     priceRange,
@@ -228,6 +231,7 @@ export default async function ProductsPage({ params, searchParams }: Props) {
       slug: p.slug,
       name: p.name,
       price: Number(p.price),
+      bottleDeposit: p.bottleDeposit != null ? Number(p.bottleDeposit) : 0,
       currency: p.currency,
       imageUrl: img?.url ?? null,
       imageAlt: img?.altText ?? null,

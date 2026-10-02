@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache";
+import { revalidateStorefront } from "@/lib/revalidate-storefront";
 import { NextResponse } from "next/server";
 import { adminApiGuard } from "@/lib/admin-api-guard";
 import { writeAuditLog } from "@/lib/admin-audit";
@@ -71,6 +72,7 @@ export async function POST(req: Request) {
   await writeAuditLog(guard.user.id, "product.created", "Product", productId, { name, slug });
   revalidatePath("/admin/products");
   revalidatePath("/admin/inventory");
+  revalidateStorefront();
 
   if (!images.ok) {
     return back(req, `/admin/products/${productId}/edit?error=${images.code}`);

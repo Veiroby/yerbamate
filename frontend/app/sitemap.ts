@@ -14,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/yerba-mate",
     "/mate-gourds",
     "/accessories",
+    "/drinks",
     "/privacy",
     "/terms",
     "/shipping-policy",

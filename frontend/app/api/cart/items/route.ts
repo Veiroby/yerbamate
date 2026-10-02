@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
+import { chargedUnitPrice } from "@/lib/product-price";
 import { recordEvent } from "@/lib/analytics";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/lib/auth";
@@ -100,7 +101,7 @@ export async function POST(request: Request) {
         cartId: cart.id,
         productId: product.id,
         quantity,
-        unitPrice: product.price,
+        unitPrice: chargedUnitPrice(product.price, product.bottleDeposit),
       },
     });
   }
@@ -112,7 +113,7 @@ export async function POST(request: Request) {
       productName: product.name,
       quantity,
       currency: product.currency,
-      value: Number(product.price) * quantity,
+      value: chargedUnitPrice(product.price, product.bottleDeposit) * quantity,
     },
   });
   await syncRecoveryIdentityFromCart(cart.id);

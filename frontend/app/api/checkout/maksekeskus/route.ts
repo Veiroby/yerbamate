@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { chargedUnitPrice } from "@/lib/product-price";
 import { recordEvent } from "@/lib/analytics";
 import { calculateShippingForOrder } from "@/lib/shipping/service";
 import {
@@ -163,7 +164,7 @@ export async function POST(request: Request) {
         productId: product.id,
         name: product.name,
         currency: product.currency,
-        unitPrice: product.price as unknown as number,
+        unitPrice: chargedUnitPrice(product.price, product.bottleDeposit),
         quantity: item.quantity,
         bundleOffers: product.bundleOffers.map((b) => ({
           minQuantity: b.minQuantity,

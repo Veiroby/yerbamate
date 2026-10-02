@@ -9,6 +9,8 @@ import { FocalPointPicker } from "../focal-point-picker";
 import { setProductQuantityWithLocation } from "../../product-quantity";
 import { ConfirmDeleteImageForm } from "@/app/admin/components/confirm-delete-image-form";
 import { ComputerImageFields } from "../../computer-image-fields";
+import { revalidateStorefront } from "@/lib/revalidate-storefront";
+import { storefrontCategoryChoices } from "@/lib/store-categories";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -39,6 +41,7 @@ async function deleteImageAction(formData: FormData) {
 
   await revalidatePath(`/admin/products/${productId}/edit`);
   await revalidatePath("/admin/products");
+  revalidateStorefront();
   redirect(`/admin/products/${productId}/edit?saved=1`);
 }
 
@@ -79,6 +82,7 @@ async function updateFocalPointAction(formData: FormData) {
 
   await revalidatePath(`/admin/products/${productId}/edit`);
   await revalidatePath("/admin/products");
+  revalidateStorefront();
   redirect(`/admin/products/${productId}/edit?saved=1`);
 }
 
@@ -128,6 +132,7 @@ async function updateProductNameAndSlugAction(formData: FormData) {
 
   revalidatePath(`/admin/products/${productId}/edit`);
   revalidatePath("/admin/products");
+  revalidateStorefront();
   redirect(`/admin/products/${productId}/edit?updated=name`);
 }
 
@@ -224,6 +229,7 @@ async function updateProductDetailsAction(formData: FormData) {
 
   revalidatePath(`/admin/products/${productId}/edit`);
   revalidatePath("/admin/products");
+  revalidateStorefront();
   redirect(`/admin/products/${productId}/edit?updated=details`);
 }
 
@@ -243,6 +249,17 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
   if (!product) notFound();
 
   const categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
+  const categoryChoices = storefrontCategoryChoices(categories);
+  if (
+    product.categoryId &&
+    !categoryChoices.some((category) => category.id === product.categoryId)
+  ) {
+    const current = categories.find((category) => category.id === product.categoryId);
+    categoryChoices.unshift({
+      id: product.categoryId,
+      label: current?.name ?? "Current category",
+    });
+  }
   const quantityLeft = product.variants.reduce(
     (sum, v) => sum + v.inventoryItems.reduce((s, i) => s + i.quantity, 0),
     0,
@@ -498,9 +515,9 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
               className="rounded-xl border border-zinc-300 px-3 py-2 text-sm"
             >
               <option value="">No category</option>
-              {categories.map((c) => (
+              {categoryChoices.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name}
+                  {c.label}
                 </option>
               ))}
             </select>
