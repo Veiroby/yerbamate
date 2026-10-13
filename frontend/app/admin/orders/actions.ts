@@ -29,10 +29,7 @@ export async function updateOrderStatus(orderId: string, formData: FormData) {
 
   const updated = await prisma.order.update({
     where: { id: orderId },
-    data: {
-      status,
-      ...(transitionToShipped ? { archived: true } : {}),
-    },
+    data: { status },
     include: {
       items: { include: { product: true } },
     },

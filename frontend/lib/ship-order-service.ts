@@ -29,7 +29,7 @@ export async function shipOrderWithDpdLabel(
   if (!alreadyShipped) {
     const updated = await prisma.order.update({
       where: { id: orderId },
-      data: { status: "SHIPPED", archived: true },
+      data: { status: "SHIPPED" },
       include: {
         items: { include: { product: true } },
       },

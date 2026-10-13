@@ -21,8 +21,8 @@ export default async function AdminOrdersPage({
       title="Orders"
       subtitle={
         archived
-          ? "Shipped orders auto-archive. Unarchive anytime."
-          : "New orders from the last 7 days are highlighted."
+          ? "Archived orders stay here until you restore them."
+          : "New orders stay in this list after they are shipped. Archive one when you are done with it."
       }
     >
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading orders…</p>}>
