@@ -85,6 +85,17 @@ function requestOrdersReload() {
   window.dispatchEvent(new Event("admin-orders-reload"));
 }
 
+function formatOrderMoney(currency: string, total: number) {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency || "EUR",
+    }).format(total);
+  } catch {
+    return `${currency || "EUR"} ${Number(total).toFixed(2)}`;
+  }
+}
+
 function isNewOrder(createdAtIso: string, archived: boolean) {
   if (archived) return false;
   const ms = NEW_ORDER_DAYS * 24 * 60 * 60 * 1000;
@@ -99,6 +110,10 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
   const toggle = (id: string) => {
     setExpandedId((prev) => (prev === id ? null : id));
   };
+
+  if (orders.length === 0) {
+    return <p className="text-sm text-zinc-500">No orders in this view.</p>;
+  }
 
   return (
     <div className="space-y-2 text-sm">
@@ -184,10 +199,7 @@ export function AdminOrdersList({ orders }: { orders: AdminSerializedOrder[] }) 
 
               <div className="shrink-0 text-right">
                 <p className="text-sm font-semibold tabular-nums text-[var(--admin-text)]">
-                  {new Intl.NumberFormat("en-US", {
-                    style: "currency",
-                    currency: order.currency,
-                  }).format(order.total)}
+                  {formatOrderMoney(order.currency, order.total)}
                 </p>
                 <p className="text-[10px] text-zinc-400 sm:hidden">Tap for details</p>
               </div>

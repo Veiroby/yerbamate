@@ -21,20 +21,17 @@ type OrdersPayload = {
   counts: { all: number; unpaid: number; open: number; archived: number };
 };
 
-export function AdminOrdersLive() {
+export function AdminOrdersLive({ initial }: { initial: OrdersPayload }) {
   const refreshNonce = useContext(AdminOrdersRefreshContext);
   const searchParams = useSearchParams();
   const view = parseOrderView(searchParams.get("view"));
   const query = searchParams.get("q")?.trim() ?? "";
-  const requestKey = `${view}|${query}`;
-  const [data, setData] = useState<OrdersPayload | null>(null);
-  const [loadedKey, setLoadedKey] = useState<string | null>(null);
-  const [error, setError] = useState(false);
+  const [data, setData] = useState<OrdersPayload>(initial);
   const [reloadTick, setReloadTick] = useState(0);
 
   useEffect(() => {
-    setLoadedKey(null);
-  }, [refreshNonce, requestKey]);
+    setData(initial);
+  }, [initial]);
 
   useEffect(() => {
     const onReload = () => setReloadTick((value) => value + 1);
@@ -46,19 +43,18 @@ export function AdminOrdersLive() {
     let cancelled = false;
 
     async function load() {
-      const params = new URLSearchParams();
-      if (view !== "all") params.set("view", view);
-      if (query) params.set("q", query);
-      params.set("_", String(Date.now()));
-      const response = await fetch(`/api/admin/orders?${params}`, { cache: "no-store" });
-      if (cancelled) return;
-      if (!response.ok) {
-        setError(true);
-        return;
+      try {
+        const params = new URLSearchParams();
+        if (view !== "all") params.set("view", view);
+        if (query) params.set("q", query);
+        params.set("_", String(Date.now()));
+        const response = await fetch(`/api/admin/orders?${params}`, { cache: "no-store" });
+        if (cancelled || !response.ok) return;
+        const next = (await response.json()) as OrdersPayload;
+        if (!cancelled && Array.isArray(next.orders)) setData(next);
+      } catch {
+        // Keep the orders already rendered.
       }
-      setError(false);
-      setLoadedKey(requestKey);
-      setData((await response.json()) as OrdersPayload);
     }
 
     void load();
@@ -72,17 +68,9 @@ export function AdminOrdersLive() {
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [view, query, requestKey, refreshNonce, reloadTick]);
+  }, [view, query, refreshNonce, reloadTick]);
 
-  const current = loadedKey === requestKey ? data : null;
-
-  if (error) {
-    return <p className="text-sm text-red-600">Could not load orders. Reload the page.</p>;
-  }
-
-  if (!current) {
-    return <p className="text-sm text-zinc-500">Loading orders…</p>;
-  }
+  const current = data.view === view && data.query === query ? data : initial;
 
   const archived = current.view === "archived";
   const tabs: AdminTab[] = [
