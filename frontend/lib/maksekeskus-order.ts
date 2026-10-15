@@ -6,6 +6,7 @@ import {
   sendOrderConfirmationEmail,
 } from "@/lib/email";
 import { getTransaction } from "@/lib/maksekeskus";
+import { syncOrderToAdmin } from "@/lib/sync-admin-order";
 
 export type MaksekeskusPaymentReturn = {
   amount?: string;
@@ -100,6 +101,7 @@ export async function completeMaksekeskusOrder(orderId: string): Promise<boolean
   revalidatePath("/admin/inventory");
   revalidatePath("/admin/products");
   revalidatePath("/admin/abandoned-carts");
+  void syncOrderToAdmin(orderId);
 
   return true;
 }

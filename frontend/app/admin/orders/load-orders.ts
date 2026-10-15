@@ -5,7 +5,7 @@ import type { AdminSerializedOrder } from "./orders-list";
 export type AdminOrderView = "all" | "unpaid" | "open" | "archived";
 
 const UNPAID_STATUSES: OrderStatus[] = ["PENDING", "REQUIRES_PAYMENT"];
-const OPEN_STATUSES: OrderStatus[] = ["PAID", "PROCESSING"];
+const OPEN_STATUSES: OrderStatus[] = ["PAID", "PROCESSING", "SHIPPED"];
 
 export function parseOrderView(value: string | null | undefined): AdminOrderView {
   if (value === "unpaid" || value === "open" || value === "archived") return value;

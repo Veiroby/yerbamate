@@ -3,6 +3,7 @@ import { writeAuditLog } from "@/lib/admin-audit";
 import { getOrCreateDpdLabelForOrder, type DpdLabelResult } from "@/lib/dpd-label-service";
 import { isEmailConfigured, sendOrderShippedEmail } from "@/lib/email";
 import { deductInventoryForFulfilledOrder } from "@/lib/shelf-stock";
+import { syncOrderToAdmin } from "@/lib/sync-admin-order";
 
 export type ShipOrderResult =
   | (Extract<DpdLabelResult, { ok: true }> & { status: string; alreadyShipped: boolean })
@@ -44,6 +45,7 @@ export async function shipOrderWithDpdLabel(
     }
 
     await deductInventoryForFulfilledOrder(orderId);
+    void syncOrderToAdmin(orderId);
 
     if (
       isEmailConfigured() &&

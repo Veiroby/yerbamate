@@ -21,6 +21,7 @@ import {
   syncRecoveryIdentityFromCart,
 } from "@/lib/abandoned-cart";
 import { fireTelegramOrderNotify } from "@/lib/telegram-order-notify-fire";
+import { syncOrderToAdmin } from "@/lib/sync-admin-order";
 
 function getSiteOrigin(request: Request): string {
   const configured = process.env.NEXT_PUBLIC_APP_ORIGIN?.trim();
@@ -342,6 +343,7 @@ export async function POST(request: Request) {
     },
   });
   fireTelegramOrderNotify(order);
+  void syncOrderToAdmin(order.id);
   await markRecoveryForOrderConversion(sessionId, email.trim().toLowerCase());
 
   if (discountCode) {
