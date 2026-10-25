@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { chargedUnitPrice } from "@/lib/product-price";
+import { exceedsShelfStock } from "@/lib/shelf-stock";
 import { recordEvent } from "@/lib/analytics";
 import { calculateShippingForOrder } from "@/lib/shipping/service";
 import {
@@ -152,11 +153,17 @@ export async function POST(request: Request) {
       const product = item.productId
         ? await prisma.product.findUnique({
             where: { id: item.productId },
-            include: { bundleOffers: { where: { active: true } } },
+            include: {
+              bundleOffers: { where: { active: true } },
+              variants: { include: { inventoryItems: true } },
+            },
           })
         : null;
 
       if (!product || !product.active || product.archived) {
+        throw new Error("Product no longer available");
+      }
+      if (await exceedsShelfStock(product, item.quantity)) {
         throw new Error("Product no longer available");
       }
 

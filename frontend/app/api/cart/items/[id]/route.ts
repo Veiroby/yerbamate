@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { touchRecoveryFromSession } from "@/lib/abandoned-cart";
+import { exceedsShelfStock } from "@/lib/shelf-stock";
 
 type RouteParams = {
   params: Promise<{ id: string }>;
@@ -40,6 +41,16 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     await prisma.cartItem.delete({ where: { id } });
     await touchRecoveryFromSession(sessionId);
     return NextResponse.json({ success: true, deleted: true });
+  }
+
+  const product = item.productId
+    ? await prisma.product.findUnique({
+        where: { id: item.productId },
+        include: { variants: { include: { inventoryItems: true } } },
+      })
+    : null;
+  if (product && (await exceedsShelfStock(product, quantity))) {
+    return NextResponse.json({ error: "Not enough stock" }, { status: 409 });
   }
 
   const updatedItem = await prisma.cartItem.update({

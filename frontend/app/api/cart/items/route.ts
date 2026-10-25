@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db";
 import { chargedUnitPrice } from "@/lib/product-price";
+import { exceedsShelfStock } from "@/lib/shelf-stock";
 import { recordEvent } from "@/lib/analytics";
 import { checkRateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { getCurrentUser } from "@/lib/auth";
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
 
   const product = await prisma.product.findUnique({
     where: { id: productId },
+    include: { variants: { include: { inventoryItems: true } } },
   });
 
   if (!product || !product.active || product.archived) {
@@ -87,6 +89,11 @@ export async function POST(request: Request) {
       variantId: null,
     },
   });
+
+  const nextQuantity = (existingItem?.quantity ?? 0) + quantity;
+  if (await exceedsShelfStock(product, nextQuantity)) {
+    return NextResponse.json({ error: "Not enough stock" }, { status: 409 });
+  }
 
   if (existingItem) {
     await prisma.cartItem.update({
