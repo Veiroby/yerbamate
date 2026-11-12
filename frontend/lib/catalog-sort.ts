@@ -1,10 +1,10 @@
 /** Shared storefront catalog ordering: in stock first, warehouse next, sold-out last. */
 
 export function isSoldOutForCatalog(
-  stockLocation: string | null | undefined,
+  _stockLocation: string | null | undefined,
   quantityLeft: number,
 ): boolean {
-  return (stockLocation ?? "instock") === "instock" && quantityLeft <= 0;
+  return quantityLeft <= 0;
 }
 
 export type CatalogSortable = {

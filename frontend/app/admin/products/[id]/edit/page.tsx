@@ -11,6 +11,7 @@ import { ConfirmDeleteImageForm } from "@/app/admin/components/confirm-delete-im
 import { ComputerImageFields } from "../../computer-image-fields";
 import { revalidateStorefront } from "@/lib/revalidate-storefront";
 import { storefrontCategoryChoices } from "@/lib/store-categories";
+import { getInventoryStockBySlug, onHandFromVariants } from "@/lib/shelf-stock";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -248,7 +249,10 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
   });
   if (!product) notFound();
 
-  const categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
+  const [categories, stockBySlug] = await Promise.all([
+    prisma.category.findMany({ orderBy: { name: "asc" } }),
+    getInventoryStockBySlug(),
+  ]);
   const categoryChoices = storefrontCategoryChoices(categories);
   if (
     product.categoryId &&
@@ -260,10 +264,7 @@ export default async function AdminProductEditPage({ params, searchParams }: Pro
       label: current?.name ?? "Current category",
     });
   }
-  const quantityLeft = product.variants.reduce(
-    (sum, v) => sum + v.inventoryItems.reduce((s, i) => s + i.quantity, 0),
-    0,
-  );
+  const quantityLeft = onHandFromVariants(stockBySlug, product);
 
   return (
     <div className="space-y-6">

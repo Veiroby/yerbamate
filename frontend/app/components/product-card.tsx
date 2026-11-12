@@ -46,7 +46,7 @@ export function ProductCard({ product }: Props) {
     product.name,
     product.imageAlt,
   );
-  const soldOut = product.stockLocation !== "warehouse" && product.quantityLeft <= 0;
+  const soldOut = product.quantityLeft <= 0;
   const stockStatus = soldOut
     ? "sold_out"
     : product.stockLocation === "warehouse"

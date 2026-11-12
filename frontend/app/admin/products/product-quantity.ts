@@ -1,6 +1,7 @@
 "use server";
 
 import { prisma } from "@/lib/db";
+import { upsertInventoryStock } from "@/lib/inventory-stock-write";
 
 const DEFAULT_SKU_PREFIX = "default-";
 
@@ -87,6 +88,7 @@ export async function setProductQuantityWithLocation(
     if (audit && inv && qty !== 0) {
       await recordAdjustment(inv.id, qty, qty, audit);
     }
+    await mirrorInventoryStock(productId, qty);
     return;
   }
 
@@ -114,4 +116,28 @@ export async function setProductQuantityWithLocation(
       await recordAdjustment(created.id, qty, qty, audit);
     }
   }
+  await mirrorInventoryStock(productId, qty);
+}
+
+async function mirrorInventoryStock(productId: string, quantity: number): Promise<void> {
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    select: {
+      slug: true,
+      name: true,
+      price: true,
+      active: true,
+      category: { select: { slug: true, name: true } },
+    },
+  });
+  if (!product) return;
+  await upsertInventoryStock({
+    slug: product.slug,
+    name: product.name,
+    price: Number(product.price),
+    quantity,
+    categorySlug: product.category?.slug,
+    categoryName: product.category?.name,
+    active: product.active,
+  });
 }

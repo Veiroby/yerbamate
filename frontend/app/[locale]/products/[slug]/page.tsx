@@ -167,13 +167,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   const quantityLeft = onHandFromVariants(stockBySlug, product);
   const stockLocation = product.stockLocation ?? "instock";
-  const soldOut = stockLocation !== "warehouse" && quantityLeft <= 0;
-  const stockLabel =
-    stockLocation === "warehouse"
+  const soldOut = quantityLeft <= 0;
+  const stockLabel = soldOut
+    ? "sold_out"
+    : stockLocation === "warehouse"
       ? "get_in_5_7_days"
-      : quantityLeft > 0
-        ? "in_stock"
-        : "get_in_5_7_days";
+      : "in_stock";
   const primaryImage = product.images[0];
   const price = Number(product.price);
   const bottleDeposit = product.bottleDeposit != null ? Number(product.bottleDeposit) : 0;

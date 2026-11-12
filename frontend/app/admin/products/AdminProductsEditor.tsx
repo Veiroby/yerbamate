@@ -320,9 +320,9 @@ export function AdminProductsEditor({
               : categories;
           const expanded = expandedId === product.id;
           const stockLabel =
-            product.stockLocation === "warehouse"
-              ? "Warehouse"
-              : `${totalStock(product.variants)} in stock`;
+            displayLocation === "warehouse"
+              ? `Warehouse (${displayQty})`
+              : `${displayQty} in stock`;
           const isNew = isNewProduct(product.createdAt, listView);
 
           return (

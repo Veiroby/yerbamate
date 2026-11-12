@@ -27,9 +27,9 @@ function toAbsoluteUrl(url: string): string {
   return `${BASE_URL}${normalized}`;
 }
 
-function availabilityFromStock(stockLocation: string | null, quantityLeft: number): "in stock" | "out of stock" {
-  if (stockLocation === "warehouse") return "in stock";
-  return quantityLeft > 0 ? "in stock" : "out of stock";
+function availabilityFromStock(_stockLocation: string | null, quantityLeft: number): "in stock" | "out of stock" {
+  if (quantityLeft <= 0) return "out of stock";
+  return "in stock";
 }
 
 export async function GET() {

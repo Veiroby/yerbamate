@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { prisma } from "@/lib/db";
 import { getProductTotalStock, setProductQuantityWithLocation } from "@/app/admin/products/product-quantity";
-import { slugify } from "@/lib/slugify";
+import { inventoryLookupKeys } from "@/lib/inventory-stock-write";
 
 type ShelfRow = { slug: string | null; stock_quantity: number | null };
 
@@ -59,24 +59,17 @@ export function onHandFromVariants(
   return storefrontOnHand(stockBySlug, product.slug, product.stockLocation, local);
 }
 
-/** Shelf products use inventory stock. Warehouse products keep the shop quantity. */
+/** Every matched product uses inventory stock, including warehouse. */
 export function storefrontOnHand(
   stockBySlug: Map<string, number>,
   slug: string,
   stockLocation: string | null | undefined,
   localQuantity: number,
 ): number {
-  if ((stockLocation ?? "instock") === "warehouse") return localQuantity;
+  void stockLocation;
   const remote = inventoryQuantity(stockBySlug, slug);
   if (remote == null) return localQuantity;
   return remote;
-}
-
-/** Shop slugs are sometimes the product name. Inventory slugs are kebab-case. */
-function inventoryLookupKeys(slug: string): string[] {
-  const raw = slug.trim().toLowerCase();
-  const dashed = slugify(slug);
-  return [...new Set([raw, dashed].filter(Boolean))];
 }
 
 export async function exceedsShelfStock(
@@ -87,7 +80,7 @@ export async function exceedsShelfStock(
   },
   quantity: number,
 ): Promise<boolean> {
-  if ((product.stockLocation ?? "instock") === "warehouse") return false;
+  void product.stockLocation;
   const onHand = onHandFromVariants(await getInventoryStockBySlug(), product);
   return quantity > onHand;
 }
@@ -157,7 +150,7 @@ export async function deductInventoryForFulfilledOrder(orderId: string): Promise
 
   for (const item of order.items) {
     const product = item.product;
-    if (!product || product.stockLocation === "warehouse") continue;
+    if (!product) continue;
     const amount = Math.max(0, item.quantity);
     if (amount === 0) continue;
 

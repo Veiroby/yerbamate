@@ -213,11 +213,11 @@ export default async function ProductsPage({ params, searchParams }: Props) {
     const quantityLeft = onHandFromVariants(stockBySlug, p);
     const location = p.stockLocation ?? "instock";
     const stockStatus =
-      location === "warehouse"
-        ? "get_in_5_7_days"
-        : quantityLeft > 0
-          ? "in_stock"
-          : "get_in_5_7_days";
+      quantityLeft <= 0
+        ? "sold_out"
+        : location === "warehouse"
+          ? "get_in_5_7_days"
+          : "in_stock";
     const img = p.images[0];
 
     const localizedDescription =

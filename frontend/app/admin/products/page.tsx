@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { AdminProductsEditor } from "./AdminProductsEditor";
 import { ComputerImageFields } from "./computer-image-fields";
 import { storefrontCategoryChoices } from "@/lib/store-categories";
+import { getInventoryStockBySlug, onHandFromVariants } from "@/lib/shelf-stock";
 
 async function deleteProductAction(formData: FormData) {
   // no-op: delete is handled by `app/admin/products/actions.ts`
@@ -36,7 +37,7 @@ export default async function AdminProductsPage({
   const prefillBarcode = sp?.barcode?.toString() ?? "";
   const prefillQuantity = sp?.quantity?.toString() ?? "";
 
-  const [products, categories] = await Promise.all([
+  const [products, categories, stockBySlug] = await Promise.all([
     prisma.product.findMany({
       where: {
         archived: archivedView,
@@ -60,6 +61,7 @@ export default async function AdminProductsPage({
     categoryDelegate
       ? categoryDelegate.findMany({ orderBy: { name: "asc" as const } })
       : Promise.resolve([]),
+    getInventoryStockBySlug(),
   ]);
 
   const categoryChoices = storefrontCategoryChoices(categories);
@@ -188,7 +190,21 @@ export default async function AdminProductsPage({
       >
         <AdminProductsEditor
           listView={archivedView ? "archived" : "active"}
-          products={products.map((p) => ({
+          products={products.map((p) => {
+            const onHand = onHandFromVariants(stockBySlug, p);
+            const variants = p.variants.map((variant, variantIndex) => ({
+              ...variant,
+              inventoryItems:
+                variant.inventoryItems.length > 0
+                  ? variant.inventoryItems.map((item, itemIndex) => ({
+                      ...item,
+                      quantity: variantIndex === 0 && itemIndex === 0 ? onHand : 0,
+                    }))
+                  : variantIndex === 0
+                    ? [{ quantity: onHand }]
+                    : [],
+            }));
+            return {
             id: p.id,
             name: p.name,
             slug: p.slug,
@@ -210,8 +226,9 @@ export default async function AdminProductsPage({
                   ? "instock"
                   : null,
             images: p.images,
-            variants: p.variants,
-          }))}
+            variants,
+          };
+          })}
           categories={categoryChoices}
         />
       </section>
