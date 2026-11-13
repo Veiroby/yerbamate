@@ -9,6 +9,13 @@ export const dynamic = "force-dynamic";
 
 function successRedirect(request: Request, orderNumber: string, locale: string): NextResponse {
   const url = new URL(request.url);
+  // Telegram Mini App checkout returns here with channel=tg
+  if (url.searchParams.get("channel")?.trim() === "tg") {
+    const target = new URL("/tg/success", `${url.protocol}//${url.host}`);
+    target.searchParams.set("provider", "maksekeskus");
+    target.searchParams.set("orderNumber", orderNumber);
+    return NextResponse.redirect(target, { status: 303 });
+  }
   const prefix = locale === "lv" || locale === "en" ? `/${locale}` : "";
   const target = new URL(`${prefix}/checkout/success`, `${url.protocol}//${url.host}`);
   target.searchParams.set("provider", "maksekeskus");
