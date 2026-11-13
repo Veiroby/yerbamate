@@ -5,7 +5,22 @@ import { exceedsShelfStock } from "@/lib/shelf-stock";
 import { allocateNextInvoiceOrderNumber } from "@/lib/invoice-number";
 import { fireTelegramOrderNotify } from "@/lib/telegram-order-notify-fire";
 import { syncOrderToAdmin } from "@/lib/sync-admin-order";
-import { LOCAL_PICKUP_LOCATION } from "@/lib/shipping/local-pickup";
+import {
+  LOCAL_PICKUP_LOCATION,
+  LOCAL_PICKUP_METHOD_ID,
+} from "@/lib/shipping/local-pickup";
+import {
+  DPD_PARCEL_MACHINE_METHOD_ID,
+  resolveDpdPickupPointById,
+} from "@/lib/shipping/dpd";
+import { calculateShippingForOrder } from "@/lib/shipping/service";
+import { stripe } from "@/lib/stripe";
+import {
+  createTransaction,
+  getRedirectUrl,
+  isMaksekeskusConfigured,
+} from "@/lib/maksekeskus";
+import { makseCustomerLocaleForCountry } from "@/lib/maksekeskus-baltic";
 
 type TgOrderItemInput = {
   productId?: unknown;
@@ -18,7 +33,15 @@ type TgOrderBody = {
   email?: unknown;
   notes?: unknown;
   items?: unknown;
+  country?: unknown;
+  shippingOptionId?: unknown;
+  dpdPickupPointId?: unknown;
+  dpdPickupPointName?: unknown;
+  paymentMethod?: unknown;
+  maksekeskusMethodUrl?: unknown;
 };
+
+type PaymentChoice = "stripe" | "maksekeskus";
 
 function asTrimmedString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
@@ -38,14 +61,37 @@ function parseItems(raw: unknown): Array<{ productId: string; quantity: number }
   return items.length ? items : null;
 }
 
-function syntheticTelegramEmail(phone: string): string {
-  const digits = phone.replace(/\D/g, "").slice(-12) || "unknown";
-  return `tg-${digits}@telegram.yerbatea.lv`;
+function getSiteOrigin(request: Request): string {
+  const configured = process.env.NEXT_PUBLIC_APP_ORIGIN?.trim();
+  if (configured) return configured.replace(/\/+$/, "");
+  return "https://yerbatea.lv";
+}
+
+function getClientIp(request: Request): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    const first = forwarded.split(",")[0]?.trim();
+    if (first) return first;
+  }
+  return request.headers.get("x-real-ip")?.trim() || "127.0.0.1";
+}
+
+function buildDirectMethodUrl(template: string, transactionId: string): string | null {
+  const raw = (template ?? "").trim();
+  if (!raw) return null;
+  try {
+    const u = new URL(raw);
+    u.searchParams.set("trx", transactionId);
+    return u.toString();
+  } catch {
+    return null;
+  }
 }
 
 /**
- * Telegram Mini App checkout (v1): name + phone → PENDING order.
- * Does not touch Stripe / Maksekeskus / wire-transfer routes.
+ * Telegram Mini App checkout.
+ * Reuses store shipping (DPD / local pickup) + Stripe / Maksekeskus / pay-later.
+ * Does not modify storefront checkout routes.
  */
 export async function POST(request: Request) {
   let body: TgOrderBody;
@@ -59,6 +105,15 @@ export async function POST(request: Request) {
   const phone = asTrimmedString(body.phone);
   const notes = asTrimmedString(body.notes);
   const emailInput = asTrimmedString(body.email).toLowerCase();
+  const country = (asTrimmedString(body.country) || "LV").toUpperCase();
+  const shippingOptionId =
+    asTrimmedString(body.shippingOptionId) || LOCAL_PICKUP_METHOD_ID;
+  const dpdPickupPointId = asTrimmedString(body.dpdPickupPointId);
+  const dpdPickupPointName = asTrimmedString(body.dpdPickupPointName);
+  const paymentRaw = asTrimmedString(body.paymentMethod) || "stripe";
+  const paymentMethod: PaymentChoice =
+    paymentRaw === "maksekeskus" ? "maksekeskus" : "stripe";
+  const maksekeskusMethodUrl = asTrimmedString(body.maksekeskusMethodUrl);
   const parsedItems = parseItems(body.items);
 
   if (!name || !phone) {
@@ -67,8 +122,37 @@ export async function POST(request: Request) {
   if (!parsedItems) {
     return NextResponse.json({ error: "At least one valid item is required" }, { status: 400 });
   }
-  if (emailInput && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput)) {
-    return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+  if (!emailInput || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput)) {
+    return NextResponse.json(
+      { error: "A valid email is required for payment" },
+      { status: 400 },
+    );
+  }
+
+  const isDpd = shippingOptionId === DPD_PARCEL_MACHINE_METHOD_ID;
+  const isLocalPickup = shippingOptionId === LOCAL_PICKUP_METHOD_ID;
+  if (!isDpd && !isLocalPickup) {
+    return NextResponse.json(
+      { error: "Choose DPD parcel locker or local pickup" },
+      { status: 400 },
+    );
+  }
+  if (isDpd && !dpdPickupPointId) {
+    return NextResponse.json({ error: "Please select a DPD parcel locker" }, { status: 400 });
+  }
+
+  if (paymentMethod === "stripe" && !process.env.STRIPE_SECRET_KEY) {
+    return NextResponse.json({ error: "Stripe is not configured" }, { status: 500 });
+  }
+  if (
+    paymentMethod === "stripe" &&
+    !process.env.STRIPE_WEBHOOK_SECRET &&
+    process.env.NODE_ENV === "production"
+  ) {
+    return NextResponse.json({ error: "Stripe webhook is not configured" }, { status: 500 });
+  }
+  if (paymentMethod === "maksekeskus" && !isMaksekeskusConfigured()) {
+    return NextResponse.json({ error: "Maksekeskus is not configured" }, { status: 500 });
   }
 
   const productIds = [...new Set(parsedItems.map((i) => i.productId))];
@@ -120,31 +204,68 @@ export async function POST(request: Request) {
     });
   }
 
-  const subtotal = validated.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  const shippingCost = 0;
+  const subtotal =
+    Math.round(
+      validated.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) * 100,
+    ) / 100;
+  const currency = validated[0]?.currency ?? "EUR";
+  const email = emailInput;
+
+  const shipping = await calculateShippingForOrder(
+    { country },
+    null,
+    shippingOptionId,
+    subtotal,
+    "en",
+  );
+  if (shipping.invalidSelection || !shipping.option) {
+    return NextResponse.json({ error: "Invalid shipping option" }, { status: 400 });
+  }
+  const shippingCost = shipping.amount;
   const tax = 0;
   const total = Math.round((subtotal + shippingCost + tax) * 100) / 100;
-  const currency = validated[0]?.currency ?? "EUR";
-  const email = emailInput || syntheticTelegramEmail(phone);
 
-  const shippingAddress = {
-    name,
-    line1: `Telegram Mini App — ${LOCAL_PICKUP_LOCATION.line1}`,
-    city: LOCAL_PICKUP_LOCATION.city,
-    postalCode: LOCAL_PICKUP_LOCATION.postalCode,
-    country: LOCAL_PICKUP_LOCATION.country,
-    channel: "telegram_miniapp",
-    notes: notes || undefined,
-  };
+  const shippingAddress = isDpd
+    ? await (async () => {
+        const point = await resolveDpdPickupPointById(country, dpdPickupPointId);
+        if (!point) return null;
+        return {
+          name,
+          line1: `${point.name} — ${point.address}`,
+          city: point.city,
+          postalCode: point.postalCode,
+          country: point.country,
+          dpdPickupPointId: point.id,
+          dpdPickupPointName: dpdPickupPointName || point.name,
+          channel: "telegram_miniapp" as const,
+          notes: notes || undefined,
+        };
+      })()
+    : {
+        name,
+        line1: `Local pick-up — ${LOCAL_PICKUP_LOCATION.line1}`,
+        city: LOCAL_PICKUP_LOCATION.city,
+        postalCode: LOCAL_PICKUP_LOCATION.postalCode,
+        country: LOCAL_PICKUP_LOCATION.country,
+        channel: "telegram_miniapp" as const,
+        notes: notes || undefined,
+      };
+
+  if (!shippingAddress) {
+    return NextResponse.json({ error: "Invalid DPD pickup point" }, { status: 400 });
+  }
+
+  const status = "REQUIRES_PAYMENT";
+  const dbPaymentMethod =
+    paymentMethod === "maksekeskus" ? "MAKSEKESKUS" : "STRIPE";
 
   const order = await prisma.order.create({
     data: {
       orderNumber: await allocateNextInvoiceOrderNumber(),
       email,
-      status: "PENDING",
+      status,
       customerType: "INDIVIDUAL",
-      // Closest existing “pay later” method; Mini App does not charge card here.
-      paymentMethod: "WIRE_TRANSFER",
+      paymentMethod: dbPaymentMethod,
       phone,
       subtotal,
       shippingCost,
@@ -175,10 +296,109 @@ export async function POST(request: Request) {
   });
   void syncOrderToAdmin(order.id);
 
+  const origin = getSiteOrigin(request);
+
+  if (paymentMethod === "stripe") {
+    const lineItems = validated.map((item) => ({
+      quantity: item.quantity,
+      price_data: {
+        currency,
+        unit_amount: Math.round(item.unitPrice * 100),
+        product_data: { name: item.name },
+      },
+    }));
+    if (shippingCost > 0) {
+      lineItems.push({
+        quantity: 1,
+        price_data: {
+          currency,
+          unit_amount: Math.round(shippingCost * 100),
+          product_data: {
+            name: shipping.option?.name ?? "Shipping",
+          },
+        },
+      });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      customer_email: email,
+      line_items: lineItems,
+      metadata: { orderId: order.id },
+      success_url: `${origin}/tg/success?orderNumber=${encodeURIComponent(order.orderNumber)}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/tg/checkout`,
+    });
+
+    if (!session.url) {
+      return NextResponse.json(
+        { error: "Unable to create Stripe checkout session" },
+        { status: 500 },
+      );
+    }
+
+    return NextResponse.json({
+      ok: true,
+      orderNumber: order.orderNumber,
+      total: Number(order.total),
+      currency: order.currency,
+      payment: "stripe",
+      redirectUrl: session.url,
+      openExternal: true,
+    });
+  }
+
+  // Maksekeskus / Makecommerce — redirect out of WebView when possible
+  const makseEnabled = process.env.MAKSEKESKUS_ENABLED === "true";
+  if (!makseEnabled) {
+    return NextResponse.json({ error: "Maksekeskus is disabled" }, { status: 400 });
+  }
+
+  const result = await createTransaction({
+    amount: total,
+    currency,
+    ip: getClientIp(request),
+    return_url: `${origin}/api/checkout/maksekeskus/return?orderNumber=${encodeURIComponent(order.orderNumber)}&locale=en&channel=tg`,
+    cancel_url: `${origin}/tg/checkout`,
+    notification_url: `${origin}/api/checkout/maksekeskus/notify`,
+    reference: order.orderNumber,
+    merchant_data: order.id,
+    customer: {
+      country,
+      locale: makseCustomerLocaleForCountry(country, "en"),
+    },
+  });
+
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: result.error ?? "Payment provider error" },
+      { status: 500 },
+    );
+  }
+
+  const redirectUrl =
+    (maksekeskusMethodUrl
+      ? buildDirectMethodUrl(maksekeskusMethodUrl, result.transaction.id)
+      : null) ?? getRedirectUrl(result.transaction);
+
+  if (!redirectUrl) {
+    return NextResponse.json(
+      { error: "Invalid response from payment provider" },
+      { status: 500 },
+    );
+  }
+
+  await prisma.order.update({
+    where: { id: order.id },
+    data: { maksekeskusTransactionId: result.transaction.id },
+  });
+
   return NextResponse.json({
     ok: true,
     orderNumber: order.orderNumber,
     total: Number(order.total),
     currency: order.currency,
+    payment: "maksekeskus",
+    redirectUrl,
+    openExternal: true,
   });
 }
