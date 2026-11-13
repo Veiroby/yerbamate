@@ -41,14 +41,16 @@ export default function TgProductPage() {
   }, [params.id]);
 
   if (loading) {
-    return <p className="py-8 text-center text-sm text-black/50">Loading…</p>;
+    return <p className="tg-center tg-muted">Loading…</p>;
   }
 
   if (error || !product) {
     return (
-      <div className="space-y-3 py-8 text-center">
-        <p className="text-sm text-red-700">{error || "Not found"}</p>
-        <Link href="/tg" className="text-sm text-[var(--copper,#BC6C25)]">
+      <div className="tg-center" style={{ display: "grid", gap: "0.75rem" }}>
+        <p className="tg-error" style={{ display: "inline-block" }}>
+          {error || "Not found"}
+        </p>
+        <Link href="/tg" className="tg-link">
           Back to catalog
         </Link>
       </div>
@@ -71,43 +73,38 @@ export default function TgProductPage() {
   }
 
   return (
-    <div className="space-y-5">
-      <div className="overflow-hidden rounded-2xl bg-[var(--cornsilk,#FEFAE0)]">
+    <div style={{ display: "grid", gap: "1.15rem" }}>
+      <div className="tg-media-hero">
         {image?.url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={image.url}
-            alt={image.altText || product.name}
-            className="aspect-[4/3] w-full object-cover"
-          />
+          <img src={image.url} alt={image.altText || product.name} />
         ) : (
-          <div className="flex aspect-[4/3] items-center justify-center text-sm text-black/40">
+          <div
+            style={{
+              display: "grid",
+              placeItems: "center",
+              height: "100%",
+              color: "var(--tg-ink-soft)",
+            }}
+          >
             No image
           </div>
         )}
       </div>
 
       <div>
-        <h1 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold text-[var(--black-forest,#283618)]">
-          {product.name}
-        </h1>
-        <p className="mt-2 text-lg font-semibold text-[var(--copper,#BC6C25)]">
+        <h1 className="tg-title">{product.name}</h1>
+        <p className="tg-product-row__price" style={{ fontSize: "1.15rem" }}>
           {formatMoney(price, product.currency || "EUR")}
         </p>
-        {description ? (
-          <p className="mt-3 text-sm leading-relaxed text-black/65">{description}</p>
-        ) : null}
+        {description ? <p className="tg-sub">{description}</p> : null}
       </div>
 
-      <button
-        type="button"
-        onClick={onAdd}
-        className="w-full rounded-xl bg-[var(--copper,#BC6C25)] px-4 py-3 text-sm font-semibold text-white"
-      >
+      <button type="button" onClick={onAdd} className="tg-btn">
         Add to cart
       </button>
 
-      <Link href="/tg" className="block text-center text-sm text-black/50">
+      <Link href="/tg" className="tg-link" style={{ textAlign: "center" }}>
         ← Back to catalog
       </Link>
     </div>

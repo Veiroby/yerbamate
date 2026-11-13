@@ -10,9 +10,9 @@ export default function TgCartPage() {
 
   if (itemCount === 0) {
     return (
-      <div className="space-y-4 py-10 text-center">
-        <h1 className="text-xl font-semibold">Cart is empty</h1>
-        <Link href="/tg" className="text-sm text-[var(--copper,#BC6C25)]">
+      <div className="tg-center" style={{ display: "grid", gap: "0.85rem" }}>
+        <h1 className="tg-title">Cart is empty</h1>
+        <Link href="/tg" className="tg-link">
           Browse products
         </Link>
       </div>
@@ -20,51 +20,62 @@ export default function TgCartPage() {
   }
 
   return (
-    <div className="space-y-5">
+    <div style={{ display: "grid", gap: "1.15rem" }}>
       <div>
-        <h1 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold">
-          Cart
-        </h1>
-        <p className="mt-1 text-sm text-black/55">
+        <h1 className="tg-title">Cart</h1>
+        <p className="tg-sub">
           {itemCount} item{itemCount === 1 ? "" : "s"} · {formatMoney(total, currency)}
         </p>
       </div>
 
-      <ul className="space-y-3">
+      <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: "0.65rem" }}>
         {items.map(({ product, quantity }) => {
           const unit = productUnitPrice(product);
           return (
-            <li
-              key={product.id}
-              className="rounded-2xl border border-black/5 bg-white/70 p-3"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate font-semibold">{product.name}</p>
-                  <p className="text-sm text-[var(--copper,#BC6C25)]">
+            <li key={product.id} className="tg-panel">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  gap: "0.75rem",
+                }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <p className="tg-product-row__name">{product.name}</p>
+                  <p className="tg-product-row__price">
                     {formatMoney(unit * quantity, product.currency || "EUR")}
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => removeItem(product.id)}
-                  className="text-xs text-black/45"
+                  className="tg-muted"
+                  style={{
+                    border: "none",
+                    background: "transparent",
+                    cursor: "pointer",
+                    font: "inherit",
+                  }}
                 >
                   Remove
                 </button>
               </div>
-              <div className="mt-3 flex items-center gap-2">
+              <div style={{ marginTop: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                 <button
                   type="button"
-                  className="h-8 w-8 rounded-lg border border-black/10"
+                  className="tg-btn--ghost"
+                  style={{ width: "2rem", height: "2rem", padding: 0 }}
                   onClick={() => setQuantity(product.id, quantity - 1)}
                 >
                   −
                 </button>
-                <span className="min-w-8 text-center text-sm font-semibold">{quantity}</span>
+                <span style={{ minWidth: "1.5rem", textAlign: "center", fontWeight: 700 }}>
+                  {quantity}
+                </span>
                 <button
                   type="button"
-                  className="h-8 w-8 rounded-lg border border-black/10"
+                  className="tg-btn--ghost"
+                  style={{ width: "2rem", height: "2rem", padding: 0 }}
                   onClick={() => setQuantity(product.id, quantity + 1)}
                 >
                   +
@@ -75,10 +86,7 @@ export default function TgCartPage() {
         })}
       </ul>
 
-      <Link
-        href="/tg/checkout"
-        className="block w-full rounded-xl bg-[var(--copper,#BC6C25)] px-4 py-3 text-center text-sm font-semibold text-white"
-      >
+      <Link href="/tg/checkout" className="tg-btn">
         Checkout · {formatMoney(total, currency)}
       </Link>
     </div>
