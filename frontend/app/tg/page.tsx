@@ -44,32 +44,30 @@ export default function TgHomePage() {
   }, [products]);
 
   if (loading) {
-    return <p className="py-8 text-center text-sm text-black/50">Loading catalog…</p>;
+    return <p className="tg-center tg-muted">Loading catalog…</p>;
   }
 
   if (error) {
-    return (
-      <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
-    );
+    return <p className="tg-error">{error}</p>;
   }
 
   return (
-    <div className="space-y-6">
-      <section>
-        <h1 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold text-[var(--black-forest,#283618)]">
-          Order
-        </h1>
-        <p className="mt-1 text-sm text-black/55">
-          Browse the YerbaTea catalog, add items, and send your order.
+    <div>
+      <section className="tg-hero">
+        <h1 className="tg-brand tg-hero__brand">YerbaTea</h1>
+        <p className="tg-hero__line">
+          Yerba mate &amp; mate gourds — pick items, checkout in Telegram.
         </p>
       </section>
 
-      {groups.map(([category, list]) => (
-        <section key={category} className="space-y-3">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-[var(--olive,#606C38)]">
-            {category}
-          </h2>
-          <div className="space-y-2">
+      {groups.map(([category, list], index) => (
+        <section
+          key={category}
+          className="tg-section"
+          style={{ animationDelay: `${0.08 + index * 0.04}s` }}
+        >
+          <h2 className="tg-section__label">{category}</h2>
+          <div className="tg-product-list">
             {list.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}

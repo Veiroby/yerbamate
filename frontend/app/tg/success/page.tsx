@@ -10,18 +10,15 @@ function SuccessBody() {
   const provider = params.get("provider");
 
   return (
-    <div className="space-y-4 py-10 text-center">
-      <h1 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold text-[var(--black-forest,#283618)]">
-        Thank you
-      </h1>
-      <p className="text-sm text-black/55">
+    <div className="tg-center" style={{ display: "grid", gap: "0.9rem", justifyItems: "center" }}>
+      <p className="tg-brand" style={{ fontSize: "1.1rem", margin: 0 }}>
+        YerbaTea
+      </p>
+      <h1 className="tg-title">Thank you</h1>
+      <p className="tg-sub" style={{ maxWidth: "18rem" }}>
         {orderNumber ? (
           <>
-            Order{" "}
-            <span className="font-semibold text-[var(--black-forest,#283618)]">
-              {orderNumber}
-            </span>{" "}
-            is confirmed
+            Order <strong>{orderNumber}</strong> is confirmed
             {provider === "maksekeskus"
               ? " (bank payment)."
               : provider
@@ -32,10 +29,7 @@ function SuccessBody() {
           "Your payment was submitted. You can close this window and return to Telegram."
         )}
       </p>
-      <Link
-        href="/tg"
-        className="inline-block rounded-xl bg-[var(--copper,#BC6C25)] px-4 py-2.5 text-sm font-semibold text-white"
-      >
+      <Link href="/tg" className="tg-btn" style={{ maxWidth: "14rem" }}>
         Back to catalog
       </Link>
     </div>
@@ -44,7 +38,7 @@ function SuccessBody() {
 
 export default function TgSuccessPage() {
   return (
-    <Suspense fallback={<p className="py-8 text-center text-sm text-black/50">Loading…</p>}>
+    <Suspense fallback={<p className="tg-center tg-muted">Loading…</p>}>
       <SuccessBody />
     </Suspense>
   );

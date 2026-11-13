@@ -173,7 +173,6 @@ export default function TgCheckoutPage() {
             logoSrc: m.logo_url ?? null,
           }));
         if (cancelled) return;
-        // Configured shop can still offer redirect page even with empty bank list
         setMakseAvailable(true);
         setMakseBanks(banks);
       })
@@ -271,9 +270,9 @@ export default function TgCheckoutPage() {
 
   if (items.length === 0 && !orderNumber) {
     return (
-      <div className="space-y-4 py-8 text-center">
-        <h1 className="text-xl font-semibold">Nothing to checkout</h1>
-        <Link href="/tg" className="text-sm text-[var(--copper,#BC6C25)]">
+      <div className="tg-center" style={{ display: "grid", gap: "0.85rem" }}>
+        <h1 className="tg-title">Nothing to checkout</h1>
+        <Link href="/tg" className="tg-link">
           Back to catalog
         </Link>
       </div>
@@ -282,17 +281,19 @@ export default function TgCheckoutPage() {
 
   if (orderNumber && awaitingExternalPay) {
     return (
-      <div className="space-y-4 py-8 text-center">
-        <h1 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold">
-          Complete payment
-        </h1>
-        <p className="text-sm text-black/55">
-          Order <span className="font-semibold">{orderNumber}</span> was created. Finish
-          payment in the browser window that opened, then return here.
+      <div className="tg-center" style={{ display: "grid", gap: "0.9rem", justifyItems: "center" }}>
+        <p className="tg-brand" style={{ fontSize: "1.05rem", margin: 0 }}>
+          YerbaTea
+        </p>
+        <h1 className="tg-title">Complete payment</h1>
+        <p className="tg-sub" style={{ maxWidth: "18rem" }}>
+          Order <strong>{orderNumber}</strong> was created. Finish payment in the
+          browser window that opened, then return here.
         </p>
         <Link
           href={`/tg/success?orderNumber=${encodeURIComponent(orderNumber)}`}
-          className="inline-block rounded-xl bg-[var(--copper,#BC6C25)] px-4 py-2.5 text-sm font-semibold text-white"
+          className="tg-btn"
+          style={{ maxWidth: "14rem" }}
         >
           I’ve paid
         </Link>
@@ -300,122 +301,109 @@ export default function TgCheckoutPage() {
     );
   }
 
-  const inputClass =
-    "w-full rounded-xl border border-black/10 bg-white/80 px-3 py-2.5 text-sm outline-none focus:border-[var(--copper,#BC6C25)]";
-
   return (
-    <div className="space-y-5">
+    <div style={{ display: "grid", gap: "1.2rem" }}>
       <div>
-        <h1 className="font-[family-name:var(--font-fraunces)] text-2xl font-semibold">
-          Checkout
-        </h1>
-        <p className="mt-1 text-sm text-black/55">
+        <p className="tg-brand" style={{ fontSize: "0.95rem", margin: "0 0 0.35rem" }}>
+          YerbaTea
+        </p>
+        <h1 className="tg-title">Checkout</h1>
+        <p className="tg-sub">
           Items {formatMoney(itemsTotal, currency)}
           {shippingAmount > 0 ? ` + shipping ${formatMoney(shippingAmount, currency)}` : ""}
           {" = "}
-          <span className="font-semibold text-[var(--black-forest,#283618)]">
-            {formatMoney(grandTotal, currency)}
-          </span>
+          <strong>{formatMoney(grandTotal, currency)}</strong>
         </p>
       </div>
 
-      <form onSubmit={submitOrder} className="space-y-4">
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--olive,#606C38)]">
-            Contact
-          </h2>
-          <label className="block space-y-1.5">
-            <span className="text-sm font-medium">Name</span>
+      <form onSubmit={submitOrder} style={{ display: "grid", gap: "1.15rem" }}>
+        <section style={{ display: "grid", gap: "0.65rem" }}>
+          <h2 className="tg-section__label">Contact</h2>
+          <label className="tg-field">
+            <span>Name</span>
             <input
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className={inputClass}
+              className="tg-input"
               autoComplete="name"
             />
           </label>
-          <label className="block space-y-1.5">
-            <span className="text-sm font-medium">Phone</span>
+          <label className="tg-field">
+            <span>Phone</span>
             <input
               required
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className={inputClass}
+              className="tg-input"
               placeholder="+371 ..."
               autoComplete="tel"
             />
           </label>
-          <label className="block space-y-1.5">
-            <span className="text-sm font-medium">Email</span>
+          <label className="tg-field">
+            <span>Email</span>
             <input
               required
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className={inputClass}
+              className="tg-input"
               placeholder="you@example.com"
               autoComplete="email"
             />
           </label>
         </section>
 
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--olive,#606C38)]">
-            Shipping
-          </h2>
-          <div className="space-y-2">
-            {shippingMethods.map((method) => (
-              <label
-                key={method.id}
-                className={`flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-3 text-sm ${
-                  shippingOptionId === method.id
-                    ? "border-[var(--copper,#BC6C25)] bg-[var(--cornsilk,#FEFAE0)]"
-                    : "border-black/10 bg-white/70"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="shipping"
-                  className="mt-1"
-                  checked={shippingOptionId === method.id}
-                  onChange={() => {
-                    setShippingOptionId(method.id);
-                    if (method.id !== DPD_PARCEL_MACHINE_METHOD_ID) {
-                      setDpdPickupPointId("");
-                    }
-                  }}
-                />
-                <span className="flex-1">
-                  <span className="font-medium">{method.name}</span>
-                  <span className="mt-0.5 block text-xs text-black/50">
-                    {method.amount <= 0
-                      ? "Free"
-                      : formatMoney(method.amount, currency)}
-                  </span>
+        <section style={{ display: "grid", gap: "0.65rem" }}>
+          <h2 className="tg-section__label">Shipping</h2>
+          {shippingMethods.map((method) => (
+            <label
+              key={method.id}
+              className="tg-choice"
+              data-active={shippingOptionId === method.id}
+            >
+              <input
+                type="radio"
+                name="shipping"
+                style={{ marginTop: "0.2rem" }}
+                checked={shippingOptionId === method.id}
+                onChange={() => {
+                  setShippingOptionId(method.id);
+                  if (method.id !== DPD_PARCEL_MACHINE_METHOD_ID) {
+                    setDpdPickupPointId("");
+                  }
+                }}
+              />
+              <span style={{ flex: 1 }}>
+                <span style={{ fontWeight: 650, display: "block" }}>{method.name}</span>
+                <span className="tg-muted">
+                  {method.amount <= 0 ? "Free" : formatMoney(method.amount, currency)}
                 </span>
-              </label>
-            ))}
-          </div>
+              </span>
+            </label>
+          ))}
 
           {isDpd ? (
-            <div className="space-y-2 rounded-xl border border-black/10 bg-white/70 p-3">
-              <p className="text-sm font-medium">DPD parcel locker</p>
+            <div className="tg-panel" style={{ display: "grid", gap: "0.55rem" }}>
+              <p style={{ margin: 0, fontWeight: 650, fontSize: "0.875rem" }}>
+                DPD parcel locker
+              </p>
               {pickupLoading ? (
-                <p className="text-xs text-black/50">Loading lockers…</p>
+                <p className="tg-muted">Loading lockers…</p>
               ) : (
                 <>
                   <input
                     value={pickupFilter}
                     onChange={(e) => setPickupFilter(e.target.value)}
-                    className={inputClass}
+                    className="tg-input"
                     placeholder="Search city or locker…"
                   />
                   <select
                     required
                     value={dpdPickupPointId}
                     onChange={(e) => setDpdPickupPointId(e.target.value)}
-                    className={inputClass}
+                    className="tg-select"
                   >
                     <option value="">Select a locker</option>
                     {filteredPoints.map((p) => (
@@ -430,37 +418,26 @@ export default function TgCheckoutPage() {
           ) : null}
         </section>
 
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--olive,#606C38)]">
-            Payment
-          </h2>
-          <p className="text-xs text-black/45">
-            Card / bank payment opens in the system browser (more reliable in Telegram).
+        <section style={{ display: "grid", gap: "0.65rem" }}>
+          <h2 className="tg-section__label">Payment</h2>
+          <p className="tg-muted" style={{ margin: 0 }}>
+            Card / bank payment opens in the system browser.
           </p>
-          <label
-            className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-3 text-sm ${
-              paymentChoice === "stripe"
-                ? "border-[var(--copper,#BC6C25)] bg-[var(--cornsilk,#FEFAE0)]"
-                : "border-black/10 bg-white/70"
-            }`}
-          >
+          <label className="tg-choice" data-active={paymentChoice === "stripe"}>
             <input
               type="radio"
               name="payment"
               checked={paymentChoice === "stripe"}
               onChange={() => setPaymentChoice("stripe")}
             />
-            <span className="font-medium">Card (Stripe)</span>
+            <span style={{ fontWeight: 650 }}>Card (Stripe)</span>
           </label>
 
           {makseAvailable ? (
-            <div className="space-y-2">
+            <div style={{ display: "grid", gap: "0.55rem" }}>
               <label
-                className={`flex cursor-pointer items-center gap-3 rounded-xl border px-3 py-3 text-sm ${
-                  paymentChoice === "maksekeskus"
-                    ? "border-[var(--copper,#BC6C25)] bg-[var(--cornsilk,#FEFAE0)]"
-                    : "border-black/10 bg-white/70"
-                }`}
+                className="tg-choice"
+                data-active={paymentChoice === "maksekeskus"}
               >
                 <input
                   type="radio"
@@ -468,13 +445,13 @@ export default function TgCheckoutPage() {
                   checked={paymentChoice === "maksekeskus"}
                   onChange={() => setPaymentChoice("maksekeskus")}
                 />
-                <span className="font-medium">Bank link (Maksekeskus)</span>
+                <span style={{ fontWeight: 650 }}>Bank link (Maksekeskus)</span>
               </label>
               {paymentChoice === "maksekeskus" && makseBanks.length > 0 ? (
                 <select
                   value={makseMethodUrl}
                   onChange={(e) => setMakseMethodUrl(e.target.value)}
-                  className={inputClass}
+                  className="tg-select"
                 >
                   <option value="">All banks / provider page</option>
                   {makseBanks.map((b) => (
@@ -488,20 +465,18 @@ export default function TgCheckoutPage() {
           ) : null}
         </section>
 
-        <label className="block space-y-1.5">
-          <span className="text-sm font-medium">Notes (optional)</span>
+        <label className="tg-field">
+          <span>Notes (optional)</span>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
-            className={`${inputClass} resize-none`}
+            className="tg-textarea"
             placeholder="Delivery notes…"
           />
         </label>
 
-        {error ? (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
-        ) : null}
+        {error ? <p className="tg-error">{error}</p> : null}
 
         <button
           type="submit"
@@ -512,11 +487,9 @@ export default function TgCheckoutPage() {
             !email.trim() ||
             (isDpd && !dpdPickupPointId)
           }
-          className="w-full rounded-xl bg-[var(--copper,#BC6C25)] px-4 py-3 text-sm font-semibold text-white disabled:opacity-55"
+          className="tg-btn"
         >
-          {submitting
-            ? "Processing…"
-            : `Pay ${formatMoney(grandTotal, currency)}`}
+          {submitting ? "Processing…" : `Pay ${formatMoney(grandTotal, currency)}`}
         </button>
       </form>
     </div>
