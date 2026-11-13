@@ -5,10 +5,11 @@ import { DEFAULT_LOCALE, isValidLocale } from "./lib/locale";
 export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
-  // Skip API, admin, and static
+  // Skip API, admin, Telegram Mini App, and static
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/tg") ||
     pathname.startsWith("/_next") ||
     pathname.includes(".")
   ) {
