@@ -31,6 +31,9 @@ export function CookieConsent() {
     setVisible(false);
   };
 
+  // Telegram Mini App has its own surface — don't cover /tg with the store banner.
+  if (pathname?.startsWith("/tg")) return null;
+
   if (!visible) return null;
 
   return (
